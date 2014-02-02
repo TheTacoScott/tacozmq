@@ -9,10 +9,13 @@ Author: Scott Powers
 import sys
 import argparse
 import zmq
+import json
 import taco.bottle
 import taco.constants
 import taco.server
 import taco.dispatch
+import taco.crypto
+import taco.settings
 
 if __name__ == '__main__':
   if zmq.zmq_version_info() < (4,0):
