@@ -1,3 +1,7 @@
 body {
   padding-top: 60px;
 }
+.input-group
+{
+  padding-bottom: 2px;
+}

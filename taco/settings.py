@@ -38,8 +38,8 @@ def Load_Settings():
     valid_list = False
     for value in taco.globals.settings["Shares"]:
       if type(value) == type([]):
-        if len(value[0]) == 2: 
-          (sharename,shareloc) = value[0]
+        if len(value) == 2: 
+          (sharename,shareloc) = value
           if type(sharename) == type(shareloc) == type(unicode("test")): 
             valid_list = True
       if not valid_list:       

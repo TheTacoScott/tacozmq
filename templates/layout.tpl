@@ -41,11 +41,11 @@
         <div class="collapse navbar-collapse">
           <ul class="nav navbar-nav">
             <li class="{{"active" if title=="Home" else ""}}"><a href="/"><i class="glyphicon glyphicon-home"></i> Home</a></li>
-            <li class="{{"active" if title=="Chat" else ""}}"><a href="/chat.taco"><i class="glyphicon glyphicon-user"></i> Chat</a></li>
+            <li class="{{"active" if title=="Chat" else ""}}"><a href="/chat.taco"><i class="glyphicon glyphicon-comment"></i> Chat</a></li>
             <li class="{{"active" if title=="Transfers" else ""}}"><a href="#transfers"><i class="glyphicon glyphicon-transfer"></i> Transfers</a></li>
             <li class="{{"active" if title=="Search" else ""}}"><a href="search.taco"><i class="glyphicon glyphicon-search"></i> Search</a></li>
             <li class="{{"active" if title=="Browse" else ""}}"><a href="#browse"><i class="glyphicon glyphicon-folder-open"></i> Browse</a></li>
-            <li class="{{"active" if title=="Settings" else ""}}"><a href="#settings"><i class="glyphicon glyphicon-edit"></i> Settings</a></li>
+            <li class="{{"active" if title=="Settings" else ""}}"><a href="/settings.taco"><i class="glyphicon glyphicon-edit"></i> Settings</a></li>
             <li class="{{"active" if title=="Help" else ""}}"><a href="#help"><i class="glyphicon glyphicon-info-sign"></i> Help</a></li> 
           </ul>
       
