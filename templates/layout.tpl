@@ -40,10 +40,10 @@
         </div>
         <div class="collapse navbar-collapse">
           <ul class="nav navbar-nav">
-            <li class="{{"active" if title=="Home" else ""}}"><a href="#"><i class="glyphicon glyphicon-home"></i> Home</a></li>
-            <li class="{{"active" if title=="Chat" else ""}}"><a href="#chat"><i class="glyphicon glyphicon-user"></i> Chat</a></li>
+            <li class="{{"active" if title=="Home" else ""}}"><a href="/"><i class="glyphicon glyphicon-home"></i> Home</a></li>
+            <li class="{{"active" if title=="Chat" else ""}}"><a href="/chat.taco"><i class="glyphicon glyphicon-user"></i> Chat</a></li>
             <li class="{{"active" if title=="Transfers" else ""}}"><a href="#transfers"><i class="glyphicon glyphicon-transfer"></i> Transfers</a></li>
-            <li class="{{"active" if title=="Search" else ""}}"><a href="#search"><i class="glyphicon glyphicon-search"></i> Search</a></li>
+            <li class="{{"active" if title=="Search" else ""}}"><a href="search.taco"><i class="glyphicon glyphicon-search"></i> Search</a></li>
             <li class="{{"active" if title=="Browse" else ""}}"><a href="#browse"><i class="glyphicon glyphicon-folder-open"></i> Browse</a></li>
             <li class="{{"active" if title=="Settings" else ""}}"><a href="#settings"><i class="glyphicon glyphicon-edit"></i> Settings</a></li>
             <li class="{{"active" if title=="Help" else ""}}"><a href="#help"><i class="glyphicon glyphicon-info-sign"></i> Help</a></li> 
@@ -68,5 +68,16 @@
     <script src="/static/js/jquery-1.11.0.min.js"></script>
     <script src="/static/js/bootstrap.min.js"></script>
   </body>
+  <footer class="text-center">
+    <div class="panel panel-default">
+      <div class="panel-body">
+        %random.shuffle(taco.constants.APP_AUTHOR)
+        <small><small>
+        {{taco.constants.APP_NAME}} v{{taco.constants.APP_VERSION}} "{{taco.constants.APP_CODE_NAME}}" -- {{taco.constants.APP_STAGE}} --  MIT License -- Written by {{" and ".join(taco.constants.APP_AUTHOR)}}<br>
+        {{random.choice(taco.constants.APP_TAGLINE)}}
+        </small></small>
+      </div>
+    </div>
+  </footer>
 </html>
 

@@ -5,7 +5,13 @@ import re
 APP_CODE_NAME = "Dirt Diver ZMQ"
 #Cool Breeze,Betty Blue, Hammerhead, Dirt Diver, Whiplash, Whipporwill,Dog Patch 06,Red Cap
 APP_NAME = "TacoNET"
-APP_TAGLINE = ["Blue and Orange because I am a hack. --Scott","Save it for Beta. --Scott","Laddergoatdotcom.com --Scott","You're going to say THAT about Swifty? To ME of all people? AND WITH THAT TONE? --Scott","Forget the search feature. Why would we spend time developing something nobody will use? --Scott"]
+APP_TAGLINE = []
+APP_TAGLINE.append("It's blue and orange because I am a hack. --Scott")
+APP_TAGLINE.append("Save it for beta. --Scott")
+APP_TAGLINE.append("Laddergoatdotcom.com --Scott")
+APP_TAGLINE.append("You're going to say THAT about Swifty? To ME of all people? AND WITH THAT TONE? --Scott")
+APP_TAGLINE.append("Forget the search feature. Why would we spend time developing something nobody will use? --Scott")
+APP_TAGLINE.append("No is an acceptable answer. --Scott")
 
 APP_VERSION = 0.01
 APP_STAGE = "Alpha"
