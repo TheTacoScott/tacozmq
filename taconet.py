@@ -11,13 +11,10 @@ import argparse
 import zmq
 import json
 import logging
+import signal
+import os
 
-import taco.bottle
 import taco.constants
-import taco.server
-import taco.dispatch
-import taco.crypto
-import taco.settings
 
 if zmq.zmq_version_info() < (4,0):
   raise RuntimeError("Security is not supported in libzmq version < 4.0. libzmq version {0}".format(zmq.zmq_version()))
@@ -33,6 +30,20 @@ args = parser.parse_args()
 level = logging.ERROR
 if args.verbose == True: level = logging.INFO
 if args.debug == True: level = logging.DEBUG
-logging.basicConfig(level=level, format="[%(levelname)s]\t[%(asctime)s] - %(filename)s:%(lineno)d\t%(funcName)s:\t%(message)s")
+logging.basicConfig(level=level, format="[%(levelname)s]\t[%(asctime)s] [%(filename)s:%(lineno)d] [%(funcName)s] %(message)s")
 
+import taco.bottle
+import taco.routes
+import taco.server
+import taco.dispatch
+import taco.crypto
+import taco.settings
+
+signal.signal(signal.SIGINT, taco.globals.properexit)
+
+logging.info(taco.constants.APP_NAME + " v" + str(taco.constants.APP_VERSION) + " " + taco.constants.APP_STAGE + " STARTED")
 taco.settings.Load_Settings()
+taco.crypto.Init_Local_Crypto()
+
+logging.info("Starting Local Webserver on " + taco.globals.settings["Web IP"] + ":" + str(taco.globals.settings["Web Port"]))
+taco.bottle.run(host=taco.globals.settings["Web IP"], port=int(taco.globals.settings["Web Port"]),reloader=False,quiet=False,debug=True,server="cherrypy")

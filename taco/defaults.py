@@ -1,9 +1,8 @@
 import uuid
+import taco.constants
 
 default_settings_kv = {}
-default_settings_kv["Download Location"] = "/tmp"
-default_settings_kv["Network Password"] = "Some password here"
-default_settings_kv["Download Location"] = "/tmp"
+default_settings_kv["Download Location"] = "downloads/"
 default_settings_kv["Nickname"] = "Your Nickname Here"
 default_settings_kv["Application Port"] = 9001
 default_settings_kv["Application IP"] = "0.0.0.0"
@@ -14,6 +13,9 @@ default_settings_kv["External IP"] = "127.0.0.1"
 default_settings_kv["Download Limit"] = 50
 default_settings_kv["Upload Limit"] = 50
 default_settings_kv["Local UUID"] = unicode(str(uuid.uuid4()))
+default_settings_kv["Curve Temp Location"] = "keys/certs/"
+default_settings_kv["Curve Private Location"] = "keys/private/"
+default_settings_kv["Curve Public Location"] = "keys/public/"
 
 default_peers_kv = {}
 default_peers_kv["Enabled"] = False

@@ -1,8 +1,7 @@
 import threading
 import taco.constants
-
-json_file_settings_lock = threading.Lock()
-
+import logging
+import os
 settings_lock  = threading.Lock()
 settings = {}
 
@@ -21,3 +20,9 @@ def continue_running():
 def stop_running():
     with taco.globals.continue_running_lock:
         taco.globals.continue_running_value = False
+
+def properexit(signum, frame):
+  logging.warning("SIGINT Detected, stopping TacoNET")
+  stop_running()
+  os._exit(3)
+
