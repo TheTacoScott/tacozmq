@@ -16,6 +16,7 @@ import taco.server
 import taco.dispatch
 import taco.crypto
 import taco.settings
+import logging
 
 if __name__ == '__main__':
   if zmq.zmq_version_info() < (4,0):
@@ -25,4 +26,13 @@ if __name__ == '__main__':
   
 parser = argparse.ArgumentParser(description='TacoNET: a darknet written in python and zeromq')
 parser.add_argument('--config', default=taco.constants.JSON_SETTINGS_FILENAME,dest='configfile',help='specify the location of the config json')
+parser.add_argument("--verbose", default=False,dest="verbose",help="increase output verbosity",action="store_true")
+parser.add_argument("--debug", default=False,dest="debug",help="increase output verbosity to an insane level",action="store_true")
 args = parser.parse_args()
+
+level = logging.ERROR
+if args.verbose == True: level = logging.INFO
+if args.debug == True: level = logging.DEBUG
+logging.basicConfig(level=level, format="[%(levelname)s]\t[%(asctime)s] - %(filename)s:%(lineno)d\t%(funcName)s:\t%(message)s")
+
+taco.settings.Load_Settings()

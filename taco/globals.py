@@ -6,12 +6,6 @@ json_file_settings_lock = threading.Lock()
 settings_lock  = threading.Lock()
 settings = {}
 
-peers_lock  = threading.Lock()
-peers = {}
-
-shares_lock = threading.Lock()
-shares = []
-
 chat_log = []
 chat_log_lock = threading.Lock()
 
