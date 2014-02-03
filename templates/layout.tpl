@@ -17,12 +17,11 @@
     <link href="/static/css/bootstrap.css" rel="stylesheet">
     <link href="/static/css/taconet-default.css" rel="stylesheet">
 
-    <script type="text/javascript" src="/static/main.js"></script>
-    %try:
-    <script type="text/javascript" src="/static/{{jsfile}}.js"></script>
-    %except NameError:
-    %pass
-    %end
+    <script src="/static/js/jquery-1.11.0.min.js"></script>
+    <script src="/static/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="/static/js/main.js"></script>
+    <script type="text/javascript" src="/static/js/{{title.lower()}}.js"></script>
+  
   </head>
 
   <body>
@@ -64,9 +63,6 @@
     <div class="container">
     %include
     </div>
-
-    <script src="/static/js/jquery-1.11.0.min.js"></script>
-    <script src="/static/js/bootstrap.min.js"></script>
   </body>
   <footer class="text-center">
     <div class="panel panel-default">

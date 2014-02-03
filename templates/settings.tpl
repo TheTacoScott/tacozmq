@@ -33,34 +33,36 @@
 <div class="col-md-12">
   <div class="panel panel-info">
     <div class="panel-heading"><h3 class="panel-title">Edit Shares</h3></div>
-    <div class="panel-body">
-    %for (name,location) in local_settings_copy["Shares"]:
-      <div class="input-group">
-        <span class="input-group-btn">
-         <button class="btn btn-default" type="button"><span class="glyphicon glyphicon-pencil"></span> {{name}}</button>
-        </span>
-        <input type="text" class="form-control" placeholder="{{location}}">
-        <div class="input-group-btn">
-          <button class="btn btn-default" tabindex="-1" type="button"><span class="glyphicon glyphicon-folder-open"></span>&nbsp Browse</button>
-          <button class="btn btn-default" tabindex="-1" type="button"><span class="glyphicon glyphicon-remove"></span> Delete</button>
-        </div>
-      </div>
-    %end
       <div id="share-add-helper" class="input-group hide">
         <span class="input-group-btn">
-         <button class="btn btn-default" type="button"><span class="glyphicon glyphicon-pencil"></span> New Share Name</button>
+         <button data-type="share" data-action="rename" data-index="-1" data-name='Blank' class="btn btn-default" type="button"><span class="glyphicon glyphicon-pencil"></span> <span class="sharenamedisplay">Share Name</span></button>
         </span>
-        <input type="text" class="form-control" placeholder="">
+        <input type="text" class="form-control" placeholder="Share Path">
         <div class="input-group-btn">
-          <button class="btn btn-default" tabindex="-1" type="button"><span class="glyphicon glyphicon-folder-open"></span>&nbsp Browse</button>
-          <button class="btn btn-default" tabindex="-1" type="button"><span class="glyphicon glyphicon-remove"></span> Delete</button>
+          <button data-type="share" data-action="browse" data-index="-1" class="btn btn-default" type="button"><span class="glyphicon glyphicon-folder-open"></span>&nbsp Browse</button>
+          <button data-type="share" data-action="delete" data-index="-1" class="btn btn-default" type="button"><span class="glyphicon glyphicon-remove"></span> Delete</button>
         </div>
       </div>
 
+    <div id="share-listing" class="panel-body text-center">
+    %for key,(sharename,sharelocation) in local_settings_copy["Shares"].iteritems():
+      <div class="input-group">
+        <span class="input-group-btn">
+         <button data-type="share" data-action="rename" data-index="{{key}}" data-name='{{sharename}}' class="btn btn-default" type="button"><span class="glyphicon glyphicon-pencil"></span> <span class="sharenamedisplay">{{sharename}}</span></button>
+        </span>
+        <input type="text" class="form-control" placeholder="{{sharelocation}}">
+        <div class="input-group-btn">
+          <button data-type="share" data-action="browse" data-index="{{key}}" class="btn btn-default" type="button"><span class="glyphicon glyphicon-folder-open"></span>&nbsp Browse</button>
+          <button data-type="share" data-action="delete" data-index="{{key}}" class="btn btn-default" type="button"><span class="glyphicon glyphicon-remove"></span> Delete</button>
+        </div>
+      </div>
+    %end
     </div>
-    <div class="panel-footer text-center">
-      <button type="button" class="btn btn-default">Add Share</button>
-      <button type="button" class="btn btn-default">Save Changes</button>
+    <div class="panel-footer text-right">
+      <span id="shares-saving" class="label label-info hide">Saving Settings... <img src="/static/images/ajax_loader.gif"></span>
+      <span id="shares-saved" class="label label-success hide">Settings Saved</span>
+      <button id="add-share" type="button" class="btn btn-default">Add Share</button>
+      <button id="save-shares" type="button" class="btn btn-default">Save Changes</button>
     </div>
   </div>
 </div>

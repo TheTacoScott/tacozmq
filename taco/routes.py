@@ -5,7 +5,7 @@ import taco.constants
 import taco.filesystem
 import urllib
 import re
-import os
+import os,uuid
 import logging
 
 #static content
@@ -28,31 +28,30 @@ def index():
 def taco_page(name):
   return bottle.template('templates/'+str(name)+'.tpl')
 
-#web api to add a peer or share
-@bottle.route('/add/<what>')
-@bottle.route('/add/<what>/<uuid>')
-def index(what, uuid = None):
-  if what=="peer":
-    taco.settings.Add_Peer(uuid)
-    return "1"
-  if what=="share":
-    taco.settings.Add_Share("")
-    return "1"
 
-@bottle.route('/delete/<what>/<option>')
-def index(what,option):
-  if what=="peer":
-    taco.settings.Delete_Peer(option)
-    return "1"
-  if what=="share":
-    taco.settings.Delete_Share(int(option))
-    return "1"
+@bottle.route('/shareedit/<index>/<name>/<sharepath:path>')
+def index(index,name,sharepath):
+  logging.info("Editing Share UUID: " + str(index) + " " + name + " -- " + sharepath)
+  with taco.globals.settings_lock:
+    taco.globals.settings["Shares"][index] = [name,sharepath]
+    taco.settings.Save_Settings(False)
+  return "1"
 
+@bottle.route('/sharedelete/<share_uuid>')
+def index(share_uuid):
+  logging.info("Deleting Share share_uuid" + str(share_uuid))
+  with taco.globals.settings_lock:
+    if taco.globals.settings["Shares"].has_key(share_uuid):
+      del taco.globals.settings["Shares"][share_uuid]
+  taco.settings.Save_Settings()
+  return "1"
 
 @bottle.route('/get/<what>')
 def getData(what):
   output = ""
   logging.debug("Route -- Getting your: " + what)
+  if what=="uuid":
+    return str(uuid.uuid4())
   if what=="ip":
     data = urllib.urlopen("http://checkip.dyndns.org/").read()
     m = re.match(r'.*Current IP Address: (.*)</body>',data)
