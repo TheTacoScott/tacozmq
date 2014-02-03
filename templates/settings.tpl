@@ -22,7 +22,7 @@
       <div class="input-group"><span class="input-group-addon">Curve Private Key Location</span><input type="text" class="form-control" placeholder="{{os.path.normpath(os.path.abspath(local_settings_copy["Curve Private Location"]))}}"><span class="input-group-btn"><button class="btn btn-default" type="button"><span class="glyphicon glyphicon-folder-open"></span>&nbsp Browse</button></span></div>
       <div class="input-group"><span class="input-group-addon">Curve Public Key Location</span><input type="text" class="form-control" placeholder="{{os.path.normpath(os.path.abspath(local_settings_copy["Curve Public Location"]))}}"><span class="input-group-btn"><button class="btn btn-default" type="button"><span class="glyphicon glyphicon-folder-open"></span>&nbsp Browse </button></span></div>
     </div>
-    <div class="panel-footer text-center">
+    <div class="panel-footer text-right">
       <button type="button" class="btn btn-default">Save Changes</button>
     </div>
   </div>
@@ -74,7 +74,7 @@
     <div class="panel-heading"><h3 class="panel-title">Edit Peers</h3></div>
     <div class="panel-body">
     </div>
-    <div class="panel-footer text-center">
+    <div class="panel-footer text-right">
       <button type="button" class="btn btn-default">Add Peer</button>
       <button type="button" class="btn btn-default">Save Changes</button>
     </div>
