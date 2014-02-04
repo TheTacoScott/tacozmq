@@ -7,6 +7,7 @@ import urllib
 import re
 import os,uuid
 import logging
+import json
 
 #static content
 @bottle.route('/static/<filename:path>')
@@ -43,8 +44,24 @@ def index(share_uuid):
   with taco.globals.settings_lock:
     if taco.globals.settings["Shares"].has_key(share_uuid):
       del taco.globals.settings["Shares"][share_uuid]
-  taco.settings.Save_Settings()
+    taco.settings.Save_Settings(False)
   return "1"
+
+@bottle.route('/browselocaldirs/')
+@bottle.route('/browselocaldirs/<browse_path:path>')
+def index(browse_path="/"):
+  if browse_path=="": browse_path ="/"
+  browse_path = "/" + browse_path
+  browse_path = unicode(browse_path)
+  contents = os.listdir(browse_path)
+  final_contents = []
+  for item in contents:
+    if os.path.isdir(os.path.join(browse_path,item)):
+      final_contents.append(item)
+  final_contents.sort()
+  return json.dumps(final_contents)
+      
+  
 
 @bottle.route('/get/<what>')
 def getData(what):
