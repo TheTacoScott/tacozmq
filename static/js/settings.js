@@ -38,6 +38,7 @@ function Share_Browse($browsedir="")
     if ($browsedir=="") { $browsedir = "/"; }
     $("#addshareloc").val($browsedir);
     Share_Browse_Setup();
+    $("#sharebrowselistdiv").scrollTop(0);
   });
 }
 function Share_Browse_Setup()
