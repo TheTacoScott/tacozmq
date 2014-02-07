@@ -43,12 +43,12 @@ body {
 {
 margin-top: 0px;
 }
-.panel-padding .btn-success 
+.panel-padding .btn-success,.btn-info 
 {
   width: 100%;
 }
-.panel-padding .btn-success span
+.panel-padding hr
 {
-  font-size: 48px;
+  margin-top:5px;
+  margin-bottom:5px;
 }
-

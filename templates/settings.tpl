@@ -258,8 +258,9 @@
               </div>
               <div class="col-md-2 text-center">
                 <button type="button" class="btn btn-success" data-trigger="hover" data-container="body" data-placement="left" data-content="Peer is currently enabled, click to disable.">
-                <span class="glyphicon glyphicon-ok"></span><br>Enabled
-                </button>
+                <span class="glyphicon glyphicon-ok"></span><br>Peer is Enabled
+                </button><hr>
+                <button type="button" class="btn btn-info" data-trigger="hover" data-container="body" data-placement="left" data-content="Peer is currently set to be dynamic. Meaning the hostname we connect to it with may change. Click to set peer to have a static ip/hostname"><span class="glyphicon glyphicon-cog"></span><br>Peer has a dynamic IP</button>
                 <hr>
                 <button type="button" class="btn btn-default"><span class="glyphicon glyphicon-remove"></span> Delete </button>
               </div>
