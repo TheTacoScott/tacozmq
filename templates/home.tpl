@@ -60,8 +60,7 @@
         <li><b>Download Limit:</b> {{local_settings_copy["Download Limit"]}} KB/s
         <li><b>Upload Limit:</b> {{local_settings_copy["Upload Limit"]}} KB/s
         <li><b>Local UUID:</b> {{local_settings_copy["Local UUID"]}}
-        <li><b>Curve PRIVATE Keys:</b> {{os.path.normpath(os.path.abspath(local_settings_copy["Curve Private Location"]))}}
-        <li><b>Curve PUBLIC Keys:</b> {{os.path.normpath(os.path.abspath(local_settings_copy["Curve Public Location"]))}}
+        <li><b>TacoNET Certificates Store:</b> {{os.path.normpath(os.path.abspath(local_settings_copy["TacoNET Certificates Store"]))}}
       </ul>
     </div>
   </div>

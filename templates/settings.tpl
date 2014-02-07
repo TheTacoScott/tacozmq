@@ -6,6 +6,95 @@
 %taco.globals.settings_lock.release()
 
 %rebase templates/layout title='Settings'
+
+<div class="modal fade bs-modal-lg" id="addPeerModal" tabindex="-1" role="dialog">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h4 class="modal-title">Add Peer</h4>
+      </div>
+      <div class="modal-body">
+        <h4>You need the following information from your peer:</h4>
+        <div class="input-group"><span class="input-group-addon">Peer IP or Hostname: </span><input maxlength="32" id="addpeerip" type="text" class="form-control" placeholder="Hostname or IP Address"></div>
+        <div class="input-group"><span class="input-group-addon">Peer Port: </span><input maxlength="32" id="addpeerip" type="text" class="form-control" placeholder="Port Number"></div>
+        <div class="input-group"><span class="input-group-addon">Peer Server Public Key: </span><input maxlength="32" id="addpeerserverpublic" type="text" class="form-control" placeholder="Server Public Key"></div>
+        <div class="input-group"><span class="input-group-addon">Peer Client Public Key: </span><input maxlength="32" id="addpeerclientpublic" type="text" class="form-control" placeholder="Client Public Key"></div>
+        <h4>Your peer needs the following information from you</h4>
+        <div class="input-group"><span class="input-group-addon">Your External Hostname: </span><input maxlength="32" id="addpeermyhostname" type="text" class="form-control" placeholder="Your External Hostname"></div>
+        <div class="input-group"><span class="input-group-addon">Your External Port: </span><input maxlength="32" id="addpeermyport" type="text" class="form-control" placeholder="Your External Port"></div>
+        <div class="input-group"><span class="input-group-addon">Your Server Public Key: </span><input maxlength="32" id="addpeermyserverpublic" type="text" class="form-control" placeholder="Server Public Key"></div>
+        <div class="input-group"><span class="input-group-addon">Your Client Public Key: </span><input maxlength="32" id="addpeermyclientpublic" type="text" class="form-control" placeholder="Client Public Key"></div>
+        <h4>Here is a nice copy and pastable version of what your peer needs:</h4>
+        <textarea class="form-control" rows="3"></textarea>
+        <h4>If your peer provided you with their version of the copyable/pastable information above, paste it below to quickly populate the peer fields above.</h4>
+        <textarea class="form-control" rows="3"></textarea>
+
+      </div>
+      <div class="modal-footer">
+        <button type="button" id="addpeercancelbutton" class="btn btn-default">Cancel</button>
+        <button type="button" id="addpeerconfirmbutton" class="btn btn-primary"><span class="glyphicon glyphicon-plus"></span> Add Peer</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="downloadModal" tabindex="-1" role="dialog">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h4 class="modal-title">Specify Download Location</h4>
+      </div>
+      <div class="modal-body">
+        <div class="alert alert-danger" >
+          <strong>Warning!</strong> Existing downloads will not be moved. Downloads in flight will be canceled, and restarted from the beginning.
+        </div>
+
+        <div class="input-group"><span class="input-group-addon">Download Location: </span><input readonly="readonly" id="downloadloc" type="text" class="form-control"></div>
+        <div class="row">
+          <div class="col-md-12">
+              <div id="downloadlistdiv" class="list-group">
+              </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" id="downloadcancelbutton" class="btn btn-default">Cancel</button>
+        <button type="button" id="downloadconfirmbutton" class="btn btn-primary"><span class="glyphicon glyphicon-ok"></span> Confirm Location</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<div class="modal fade" id="certModal" tabindex="-1" role="dialog">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h4 class="modal-title">Specify Cetifcate Store Location</h4>
+      </div>
+      <div class="modal-body">
+        <div class="alert alert-danger" >
+          <strong>Warning!</strong> Existing Certs will not be moved. Don't change this setting unless you know what you're doing.
+        </div>
+
+        <div class="input-group"><span class="input-group-addon">TacoNET Certificate Store Location: </span><input readonly="readonly" id="certloc" type="text" class="form-control"></div>
+        <div class="row">
+          <div class="col-md-12">
+              <div id="certloclistdiv" class="list-group">
+              </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" id="certcancelbutton" class="btn btn-default">Cancel</button>
+        <button type="button" id="certconfirmbutton" class="btn btn-primary"><span class="glyphicon glyphicon-ok"></span> Confirm Location</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
 <div class="modal fade" id="addShareModal" tabindex="-1" role="dialog">
   <div class="modal-dialog">
     <div class="modal-content">
@@ -22,7 +111,6 @@
         <div class="input-group"><span class="input-group-addon">Share Location: </span><input readonly id="addshareloc" type="text" class="form-control"></div>
         <div class="row">
           <div class="col-md-12">
-              <h5>Share Location</h5>
               <div id="sharebrowselistdiv" class="list-group">
               </div>
           </div> 
@@ -57,7 +145,7 @@
 <div class="row">
 <div class="col-md-12">
   <div class="panel panel-info">
-    <div class="panel-heading"><h3 class="panel-title">Edit Settings</h3></div>
+    <div class="panel-heading"><h3 class="panel-title">Settings</h3></div>
     <div class="panel-body">
 
       <div class="alert alert-warning alert-dismissable alert-tweak hide" id="setting-nickname-alert"><button type="button" class="close">&times;</button><strong>Warning!</strong> Nickname must be between 3 and 64 characters long, and must only contain alphanumeric characters, spaces, and periods. <span class="glyphicon glyphicon-hand-down"></span></div>
@@ -67,7 +155,7 @@
       </div>
 
       <div class="input-group"><span class="input-group-addon"><span data-trigger="hover" data-container="body" data-placement="right" data-content="The location you want to save downloaded files" class="glyphicon glyphicon-info-sign"></span> Download Location</span>
-      <input id="setting-downloadlocation" readonly="readonly" type="text" class="form-control" value="{{os.path.normpath(os.path.abspath(local_settings_copy["Download Location"]))}}"><span class="input-group-btn"><button class="btn btn-default" type="button"><span class="glyphicon glyphicon-folder-open"></span>&nbsp Browse</button></span></div>
+      <input id="setting-downloadlocation" readonly="readonly" type="text" class="form-control" value="{{os.path.normpath(os.path.abspath(local_settings_copy["Download Location"]))}}"><span class="input-group-btn"><button id="browsedownload" class="btn btn-default" type="button"><span class="glyphicon glyphicon-folder-open"></span>&nbsp Browse</button></span></div>
 
       <div class="alert alert-warning alert-dismissable alert-tweak hide" id="setting-appip-alert"><button type="button" class="close">&times;</button><strong>Warning!</strong> You must specify the ip in numeric form only. <span class="glyphicon glyphicon-hand-down"></span></div>
       <div class="input-group"><span class="input-group-addon"><span data-trigger="hover" data-container="body" data-placement="right" data-content="The IP address that the TacoNET application server will bind to. If you are unaware of what that means, it is best to leave it as the default of '0.0.0.0'" class="glyphicon glyphicon-info-sign"></span> Application IP</span>
@@ -94,7 +182,7 @@
       <input id="setting-uplimit" type="text" class="form-control" value="{{local_settings_copy["Upload Limit"]}}"></div>
 
       <div class="input-group"><span class="input-group-addon"><span data-trigger="hover" data-container="body" data-placement="right" data-content="The location your want to store your public and private certificates for use with your personal TacoNET. If you are unaware of publickey cryptography concepts, it's best to just leave this the default." class="glyphicon glyphicon-info-sign"></span> TacoNET Certificate Store</span>
-      <input id="setting-certlocation" readonly="readonly" type="text" class="form-control" value="{{os.path.normpath(os.path.abspath(local_settings_copy["TacoNET Certificates Store"]))}}"><span class="input-group-btn"><button class="btn btn-default" type="button"><span class="glyphicon glyphicon-folder-open"></span>&nbsp Browse</button></span></div>
+      <input id="setting-certlocation" readonly="readonly" type="text" class="form-control" value="{{os.path.normpath(os.path.abspath(local_settings_copy["TacoNET Certificates Store"]))}}"><span class="input-group-btn"><button id="browsecert" class="btn btn-default" type="button"><span class="glyphicon glyphicon-folder-open"></span>&nbsp Browse</button></span></div>
 
     </div>
     <div class="panel-footer text-right">
@@ -111,7 +199,7 @@
 <div class="row">
 <div class="col-md-12">
   <div class="panel panel-info">
-    <div class="panel-heading"><h3 class="panel-title">Edit Shares</h3></div>
+    <div class="panel-heading"><h3 class="panel-title">Shares</h3></div>
 
       <div id="share-add-helper" class="input-group hide">
 
@@ -155,12 +243,44 @@
 <div class="row">
 <div class="col-md-12">
   <div class="panel panel-info">
-    <div class="panel-heading"><h3 class="panel-title">Edit Peers</h3></div>
-    <div class="panel-body">
+    <div class="panel-heading"><h3 class="panel-title">Peers</h3></div>
+
+      <div id="peer-add-helper">
+        <div class="panel panel-default panel-padding">
+          <div class="panel-body">
+            <h4><span class="glyphicon glyphicon-user"></span> Peer Nickname</h4>
+            <div class="row">
+              <div class="col-md-10">
+                <div class="input-group"><span class="input-group-addon">Hostname</span><input type="text" class="form-control" value="External Hostname"></div>
+                <div class="input-group"><span class="input-group-addon">Port</span><input type="text" class="form-control" value="External Port"></div>
+                <div class="input-group"><span class="input-group-addon">Server Public Key Location</span><input readonly="readonly" type="text" class="form-control" value="/fg/fg"></div>
+                <div class="input-group"><span class="input-group-addon">Client Public Key Location</span><input readonly="readonly" type="text" class="form-control" value="/fg/fg"></div>
+              </div>
+              <div class="col-md-2 text-center">
+                <button type="button" class="btn btn-success" data-trigger="hover" data-container="body" data-placement="left" data-content="Peer is currently enabled, click to disable.">
+                <span class="glyphicon glyphicon-ok"></span><br>Enabled
+                </button>
+                <hr>
+                <button type="button" class="btn btn-default"><span class="glyphicon glyphicon-remove"></span> Delete </button>
+              </div>
+            </div>
+          </div>
+        </div>
+    </div>
+
+    <div class="panel-body text-center">
+    %if len(local_settings_copy["Peers"].keys()) == 0:
+     <div id="addapeerbelow">
+    %else:
+     <div id="addapeerbelow" class="hide">
+    %end
+      <h4>You don't have any peers set up, set one up by clicking the "Add Peer" button below. <span class="glyphicon glyphicon-hand-down"></span></h4>
+     </div>
+
     </div>
     <div class="panel-footer text-right">
-      <button type="button" class="btn btn-default"><span class="glyphicon glyphicon-plus"></span> Add Peer</button>
-      <button type="button" class="btn btn-default"><span class="glyphicon glyphicon-ok-sign"></span> Save Changes</button>
+      <button id="add-peer" type="button" class="btn btn-default"><span class="glyphicon glyphicon-plus"></span> Add Peer</button>
+      <button id="save-peers" type="button" class="btn btn-default"><span class="glyphicon glyphicon-ok-sign"></span> Save Changes</button>
     </div>
   </div>
 </div>

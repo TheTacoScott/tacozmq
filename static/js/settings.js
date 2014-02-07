@@ -1,4 +1,34 @@
-function Share_Browse($browsedir="")
+function Download_Browse()
+{
+  Share_Browse("/",$("#downloadlistdiv"),$("#downloadloc"))
+  $("#downloadloc").val("/");
+  $("button[id='downloadconfirmbutton']").unbind("click").click(function() { 
+    $("#setting-downloadlocation").val($("#downloadloc").val());
+    $("#setting-downloadlocation").addClass("input-changed");
+    $("span[id='settings-unsaved']").removeClass("hide");
+    $('#downloadModal').modal('hide');
+
+  });
+  $("button[id='downloadcancelbutton']").unbind("click").click(function() { $("#downloadlistdiv").scrollTop(0); $('#downloadModal').modal('hide');  });
+  $('#downloadModal').modal();
+}
+
+function Cert_Browse()
+{
+  Share_Browse("/",$("#certloclistdiv"),$("#certloc"))
+  $("#certloc").val("/");
+  $("button[id='certconfirmbutton']").unbind("click").click(function() { 
+    $("#setting-certlocation").val($("#certloc").val());
+    $("#setting-certlocation").addClass("input-changed");
+    $("span[id='settings-unsaved']").removeClass("hide");
+    $('#certModal').modal('hide'); 
+  });
+  $("button[id='certcancelbutton']").unbind("click").click(function() { $("#certloclistdiv").scrollTop(0); $('#certModal').modal('hide');  });
+  $('#certModal').modal();
+}
+
+
+function Share_Browse($browsedir="",$target,$target2)
 {
   $.getJSON( "/browselocaldirs/" + $browsedir, function( data ) 
   {
@@ -14,19 +44,15 @@ function Share_Browse($browsedir="")
       if ($browsedir=="/") { $browsedir=""; }
       items.push('<a href="#" data-browsedir="'+$browsedir+'/'+val+'" class="list-group-item"><span class="glyphicon glyphicon-folder-open"></span> &nbsp'+val+'</a>');
     });
-    $("#sharebrowselistdiv").html(items.join(""));
+    $target.html(items.join(""));
     if ($browsedir=="") { $browsedir = "/"; }
-    $("#addshareloc").val($browsedir);
-    Share_Browse_Setup();
-    $("#sharebrowselistdiv").scrollTop(0);
-  });
-}
-function Share_Browse_Setup()
-{
-  $("#sharebrowselistdiv a[class='list-group-item']").unbind("click").click(function()
-  {
-    $browsedir = $(this).data("browsedir");
-    Share_Browse($browsedir);
+    $target2.val($browsedir);
+    $target.find("a[class='list-group-item']").unbind("click").click(function()
+    {
+      $browsedir = $(this).data("browsedir");
+      Share_Browse($browsedir,$target,$target2);
+    });
+    $target.scrollTop(0);
   });
 }
 function Confirm_Add_Share()
@@ -60,7 +86,7 @@ function Confirm_Add_Share()
 function Add_Share()
 {
   //$("div[id='share-add-helper']").clone().removeAttr("id").removeClass("hide").appendTo("div[id='share-listing']");
-  Share_Browse();
+  Share_Browse("/",$("#sharebrowselistdiv"),$("#addshareloc"))
   $("#addShareModal .modal-body div[id='alphanumonly']").addClass('hide');
   $("#addshareloc").val("/");
   $("#addsharename").val("");
@@ -123,6 +149,7 @@ function Save_Shares()
 function Set_Up_Delete_Share()
 {
  $("button[data-type='share'][data-action='delete']").unbind("click").click(function() { Delete_Share($(this)); });
+ $("button[data-type='share'][data-action='delete']").prop("disabled",false);
 }
 
 function Save_Settings()
@@ -193,15 +220,34 @@ function Save_Settings()
   
 }
 
+function Confirm_Add_Peer()
+{
+}
+
+function Add_Peer()
+{
+  $('#addPeerModal button[id="addpeercancelbutton"]').unbind("click").click(function() {$('#addPeerModal').modal('hide'); } );
+  $('#addPeerModal button[id="addpeerconfirmbutton"]').unbind("click").click(function() { Confirm_Add_Peer(); } );
+  $('#addPeerModal').modal();  
+}
+
 $( document ).ready(function() {
  Set_Up_Delete_Share();
  $("button[id='add-share']").click(function() { Add_Share(); });
+ 
+ $("button[id='browsedownload']").click(function() { Download_Browse(); });
+ $("button[id='browsecert']").click(function() { Cert_Browse(); });
+
+ $("button[id='add-peer']").click(function() { Add_Peer(); });
  $("button[id='save-shares']").prop("disabled",false).click(function() { Save_Shares(); });
  $("button[id='save-settings']").prop("disabled",false).click(function() { Save_Settings(); });
 
  $('#addShareModal').on('shown.bs.modal', function () {$('#addsharename').focus();  });
+ $('#addPeerModal').on('shown.bs.modal', function () {$('#addpeername').focus();  });
+
  $("button[class='close']").click(function() { $(this).parent().addClass("hide");});
  $("span").popover();
+ $("button").popover();
 
  $("input[id^='setting-']").on("change keyup paste", function(){
     $(this).addClass("input-changed");

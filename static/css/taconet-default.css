@@ -5,10 +5,10 @@ body {
 {
   padding-bottom: 2px;
 }
-#sharebrowselistdiv
+#certloclistdiv,#downloadlistdiv,#sharebrowselistdiv
 {
     min-height: 100px;
-    max-height: 300px;
+    max-height: 350px;
     overflow-y: auto;
 }
 
@@ -28,11 +28,27 @@ body {
   background-color: rgb(235, 204, 209);
 }
 
-.input-changed
+.input-changed,.input-changed[readonly]
 {
   border-width: 2px;
   border-color: rgb(49, 112, 143);
   background-color: rgb(217, 237, 247);
 
+}
+.panel-padding
+{
+  margin: 10px 10px 10px 10px;
+}
+.panel-padding h4
+{
+margin-top: 0px;
+}
+.panel-padding .btn-success 
+{
+  width: 100%;
+}
+.panel-padding .btn-success span
+{
+  font-size: 48px;
 }
 
