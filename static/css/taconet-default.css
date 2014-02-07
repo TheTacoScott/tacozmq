@@ -16,3 +16,23 @@ body {
 {
     background-color:#fff;
 }
+.alert-tweak
+{
+  margin-bottom: 1px;
+  margin-top: 10px;
+}
+.input-error
+{
+  border-width: 2px;
+  border-color: rgb(132, 53, 52);
+  background-color: rgb(235, 204, 209);
+}
+
+.input-changed
+{
+  border-width: 2px;
+  border-color: rgb(49, 112, 143);
+  background-color: rgb(217, 237, 247);
+
+}
+

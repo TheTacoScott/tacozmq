@@ -15,7 +15,7 @@
       <div class="modal-body">
         <div class="alert alert-warning alert-dismissable hide" id="alphanumonly">
           <button type="button" class="close">&times;</button>
-          <strong>Warning!</strong> Sharename must be between 3 and 64 characters long, and must only contain alphanumeric characters, spaces, and periods.
+          <strong>Warning!</strong> Sharename must be between 3 and 64 characters long, and must only contain alphanumeric characters, spaces, and periods. In addition, duplicate share names are not allowed.
         </div>
 
         <div class="input-group"><span class="input-group-addon">Share Name: </span><input maxlength="32" id="addsharename" type="text" class="form-control" placeholder="Name your share here"></div>
@@ -59,19 +59,50 @@
   <div class="panel panel-info">
     <div class="panel-heading"><h3 class="panel-title">Edit Settings</h3></div>
     <div class="panel-body">
-      <div class="input-group"><span class="input-group-addon">Your Nickname</span><input type="text" class="form-control" placeholder="{{local_settings_copy["Nickname"]}}"></div>
-      <div class="input-group"><span class="input-group-addon">Download Location</span><input type="text" class="form-control" placeholder="{{os.path.normpath(os.path.abspath(local_settings_copy["Download Location"]))}}"><span class="input-group-btn"><button class="btn btn-default" type="button"><span class="glyphicon glyphicon-folder-open"></span>&nbsp Browse</button></span></div>
-      <div class="input-group"><span class="input-group-addon">Application IP</span><input type="text" class="form-control" placeholder="{{local_settings_copy["Application IP"]}}"></div>
-      <div class="input-group"><span class="input-group-addon">Application Port</span><input type="text" class="form-control" placeholder="{{local_settings_copy["Application Port"]}}"></div>
-      <div class="input-group"><span class="input-group-addon">Web Interface IP</span><input type="text" class="form-control" placeholder="{{local_settings_copy["Web IP"]}}"></div>
-      <div class="input-group"><span class="input-group-addon">Web Interface Port</span><input type="text" class="form-control" placeholder="{{local_settings_copy["Web Port"]}}"></div>
-      <div class="input-group"><span class="input-group-addon">Download Limit in KB/s</span><input type="text" class="form-control" placeholder="{{local_settings_copy["Download Limit"]}}"><span class="input-group-btn"><button class="btn btn-default" type="button"><span class="glyphicon glyphicon-cog"></span> Change</button></span></div>
-      <div class="input-group"><span class="input-group-addon">Upload Limit in KB/s</span><input type="text" class="form-control" placeholder="{{local_settings_copy["Upload Limit"]}}"><span class="input-group-btn"><button class="btn btn-default" type="button"><span class="glyphicon glyphicon-cog"></span> Change</button></span></div>
-      <div class="input-group"><span class="input-group-addon">Curve Private Key Location</span><input type="text" class="form-control" placeholder="{{os.path.normpath(os.path.abspath(local_settings_copy["Curve Private Location"]))}}"><span class="input-group-btn"><button class="btn btn-default" type="button"><span class="glyphicon glyphicon-folder-open"></span>&nbsp Browse</button></span></div>
-      <div class="input-group"><span class="input-group-addon">Curve Public Key Location</span><input type="text" class="form-control" placeholder="{{os.path.normpath(os.path.abspath(local_settings_copy["Curve Public Location"]))}}"><span class="input-group-btn"><button class="btn btn-default" type="button"><span class="glyphicon glyphicon-folder-open"></span>&nbsp Browse </button></span></div>
+
+      <div class="alert alert-warning alert-dismissable alert-tweak hide" id="setting-nickname-alert"><button type="button" class="close">&times;</button><strong>Warning!</strong> Nickname must be between 3 and 64 characters long, and must only contain alphanumeric characters, spaces, and periods. <span class="glyphicon glyphicon-hand-down"></span></div>
+      <div class="input-group">
+        <span class="error input-group-addon"><span data-trigger="hover" data-container="body" data-placement="right" data-content="A unique nickname that you wish to be identified as on your personal TacoNET" class="glyphicon glyphicon-info-sign"></span> Your Nickname</span>
+        <input id="setting-nickname" type="text" class="form-control" value="{{local_settings_copy["Nickname"]}}">
+      </div>
+
+      <div class="input-group"><span class="input-group-addon"><span data-trigger="hover" data-container="body" data-placement="right" data-content="The location you want to save downloaded files" class="glyphicon glyphicon-info-sign"></span> Download Location</span>
+      <input id="setting-downloadlocation" readonly="readonly" type="text" class="form-control" value="{{os.path.normpath(os.path.abspath(local_settings_copy["Download Location"]))}}"><span class="input-group-btn"><button class="btn btn-default" type="button"><span class="glyphicon glyphicon-folder-open"></span>&nbsp Browse</button></span></div>
+
+      <div class="alert alert-warning alert-dismissable alert-tweak hide" id="setting-appip-alert"><button type="button" class="close">&times;</button><strong>Warning!</strong> You must specify the ip in numeric form only. <span class="glyphicon glyphicon-hand-down"></span></div>
+      <div class="input-group"><span class="input-group-addon"><span data-trigger="hover" data-container="body" data-placement="right" data-content="The IP address that the TacoNET application server will bind to. If you are unaware of what that means, it is best to leave it as the default of '0.0.0.0'" class="glyphicon glyphicon-info-sign"></span> Application IP</span>
+      <input id="setting-appip" type="text" class="form-control" value="{{local_settings_copy["Application IP"]}}"></div>
+
+      <div class="alert alert-warning alert-dismissable alert-tweak hide" id="setting-appport-alert"><button type="button" class="close">&times;</button><strong>Warning!</strong> The application port must be a valid port number. <span class="glyphicon glyphicon-hand-down"></span></div>
+      <div class="input-group"><span class="input-group-addon"><span data-trigger="hover" data-container="body" data-placement="right" data-content="The PORT that the TacoNET application server will bind to. If you are unaware of what that means, it is best to leave it as the default of '9001'. This port will need be public accessible by anyone on your personal TacoNET. Router configuration may be required." class="glyphicon glyphicon-info-sign"></span> Application Port</span>
+      <input id="setting-appport" type="text" class="form-control" value="{{local_settings_copy["Application Port"]}}"></div>
+
+      <div class="alert alert-warning alert-dismissable alert-tweak hide" id="setting-webip-alert"><button type="button" class="close">&times;</button><strong>Warning!</strong> You must specify the ip in numeric form only. <span class="glyphicon glyphicon-hand-down"></span></div>
+      <div class="input-group"><span class="input-group-addon"><span data-trigger="hover" data-container="body" data-placement="right" data-content="The IP address that the TacoNET web interface will bind to. If you are running TacoNET on the same system you are accessing it's web interface from, it's best to leave this as the default of '127.0.0.1', otherwise it may be wise to use '0.0.0.0'. If you are unaware of what this is, leave it the default." class="glyphicon glyphicon-info-sign"></span> Web Interface IP</span>
+      <input id="setting-webip" type="text" class="form-control" value="{{local_settings_copy["Web IP"]}}"></div>
+
+      <div class="alert alert-warning alert-dismissable alert-tweak hide" id="setting-webport-alert"><button type="button" class="close">&times;</button><strong>Warning!</strong> The web server port must be a valid port number. <span class="glyphicon glyphicon-hand-down"></span></div>
+      <div class="input-group"><span class="input-group-addon"><span data-trigger="hover" data-container="body" data-placement="right" data-content="The PORT that the TacoNET web server will bind to. If you are unaware of what that means, it is best to leave it as the default of '9002'. This port will typically NOT need be public accessible. This is the port you'll need to use to access TacoNET via your web browser." class="glyphicon glyphicon-info-sign"></span> Web Interface Port</span>
+      <input id="setting-webport" type="text" class="form-control" value="{{local_settings_copy["Web Port"]}}"></div>
+
+      <div class="alert alert-warning alert-dismissable alert-tweak hide" id="setting-down-alert"><button type="button" class="close">&times;</button><strong>Warning!</strong> The download limit must be expressed as a whole integer. It needs to be greater than 1. <span class="glyphicon glyphicon-hand-down"></span></div>
+      <div class="input-group"><span class="input-group-addon"><span data-trigger="hover" data-container="body" data-placement="right" data-content="This is the limit TacoNET will attempt to respect when downloading content. Since ZeroMQ is a bit of socket magic, TacoNET will ATTEMPT to respect this limit." class="glyphicon glyphicon-info-sign"></span> Download Limit in KB/s</span>
+      <input id="setting-downlimit" type="text" class="form-control" value="{{local_settings_copy["Download Limit"]}}"></div>
+
+      <div class="alert alert-warning alert-dismissable alert-tweak hide" id="setting-up-alert"><button type="button" class="close">&times;</button><strong>Warning!</strong> The upload limit must be expressed as a whole integer. It needs to be greater than 1. <span class="glyphicon glyphicon-hand-down"></span></div>
+      <div class="input-group"><span class="input-group-addon"><span data-trigger="hover" data-container="body" data-placement="right" data-content="This is the limit TacoNET will attempt to respect when uploading content. Since ZeroMQ is a bit of socket magic, TacoNET will ATTEMPT to respect this limit." class="glyphicon glyphicon-info-sign"></span> Upload Limit in KB/s</span>
+      <input id="setting-uplimit" type="text" class="form-control" value="{{local_settings_copy["Upload Limit"]}}"></div>
+
+      <div class="input-group"><span class="input-group-addon"><span data-trigger="hover" data-container="body" data-placement="right" data-content="The location your want to store your public and private certificates for use with your personal TacoNET. If you are unaware of publickey cryptography concepts, it's best to just leave this the default." class="glyphicon glyphicon-info-sign"></span> TacoNET Certificate Store</span>
+      <input id="setting-certlocation" readonly="readonly" type="text" class="form-control" value="{{os.path.normpath(os.path.abspath(local_settings_copy["TacoNET Certificates Store"]))}}"><span class="input-group-btn"><button class="btn btn-default" type="button"><span class="glyphicon glyphicon-folder-open"></span>&nbsp Browse</button></span></div>
+
     </div>
     <div class="panel-footer text-right">
-      <button type="button" class="btn btn-default">Save Changes</button>
+      <span id="settings-saving" class="label label-info hide">Saving Settings... <img src="/static/images/ajax_loader.gif"></span>
+      <span id="settings-saved" class="label label-success hide">Settings Saved</span>
+      <span id="settings-unsaved" class="label label-danger hide">Unsaved Settings</span>
+
+      <button id="save-settings" type="button" class="btn btn-default"><span class="glyphicon glyphicon-ok-sign"></span> Save Changes</button>
     </div>
   </div>
 </div>
@@ -85,7 +116,7 @@
       <div id="share-add-helper" class="input-group hide">
 
           <span class="input-group-addon"></span>
-          <input type="text" class="form-control" placeholder="" value="" readonly="readonly">
+          <input type="text" class="form-control" value="" readonly="readonly">
           <div class="input-group-btn">
             <button data-type="share" data-action="delete" data-name="" class="btn btn-default" type="button"><span class="glyphicon glyphicon-remove"></span> Delete</button>
           </div>
@@ -103,7 +134,7 @@
     %for (sharename,sharelocation) in local_settings_copy["Shares"]:
       <div class="input-group">
         <span class="input-group-addon">{{sharename}}</span>
-        <input type="text" class="form-control" placeholder="{{sharelocation}}" value="{{sharelocation}}" readonly="readonly">
+        <input type="text" class="form-control" value="{{sharelocation}}" readonly="readonly">
         <div class="input-group-btn">
           <button data-type="share" data-action="delete" data-name="{{sharename}}" class="btn btn-default" type="button"><span class="glyphicon glyphicon-remove"></span> Delete</button>
         </div>

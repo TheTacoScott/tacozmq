@@ -32,9 +32,13 @@ function Share_Browse_Setup()
 function Confirm_Add_Share()
 {
   var pattern = new RegExp("^[a-zA-Z0-9\. ]{3,64}$");
-  $sharename = $("input[id='addsharename']").val();
-  $sharelocation = $("input[id='addshareloc']").val();
-  if (pattern.test($sharename))
+  var $sharename = $("input[id='addsharename']").val();
+  var $sharelocation = $("input[id='addshareloc']").val();
+  var $valid_name = true;
+  $("button[data-type='share'][data-action='delete']").each(function () {
+   if ($(this).data("name").toLowerCase() == $sharename.toLowerCase())  { $valid_name = false; }
+  });
+  if (pattern.test($sharename) && $valid_name)
   { 
     $("div[id='share-add-helper'] span:first").html($sharename);
     $("div[id='share-add-helper'] input:first").val($sharelocation);
@@ -121,16 +125,88 @@ function Set_Up_Delete_Share()
  $("button[data-type='share'][data-action='delete']").unbind("click").click(function() { Delete_Share($(this)); });
 }
 
+function Save_Settings()
+{
+  var nick_pattern = new RegExp("^[a-zA-Z0-9\. ]{3,64}$");
+  var ip_pattern = new RegExp("^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?).(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?).(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?).(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$");
+  var port_pattern = new RegExp("^0*(?:6553[0-5]|655[0-2][0-9]|65[0-4][0-9]{2}|6[0-4][0-9]{3}|[1-5][0-9]{4}|[1-9][0-9]{1,3}|[0-9])$");
+  var limit_pattern = new RegExp("^[1-9][0-9]+$");
 
+  $("input[id^='setting-']").removeClass("input-error");
+  $("input[id^='setting-']").removeClass("input-changed");
+  $("div[id^='setting-']").addClass("hide");
 
+  $nickname = $("input[id='setting-nickname']").val();
+  $download_location = $("input[id='setting-downloadlocation']").val();
+  $appip = $("input[id='setting-appip']").val();
+  $appport = $("input[id='setting-appport']").val();
+  $webip = $("input[id='setting-webip']").val();
+  $webport = $("input[id='setting-webport']").val();
+  $down = $("input[id='setting-downlimit']").val();
+  $up = $("input[id='setting-uplimit']").val();
+  $cert = $("input[id='setting-certlocation']").val();
+
+  if (!nick_pattern.test($nickname)) { $("input[id='setting-nickname']").addClass("input-error"); $("div[id='setting-nickname-alert']").removeClass("hide");  }
+  if (!ip_pattern.test($appip)) {  $("input[id='setting-appip']").addClass("input-error"); $("div[id='setting-appip-alert']").removeClass("hide");  }
+  if (!ip_pattern.test($webip)) {  $("input[id='setting-webip']").addClass("input-error"); $("div[id='setting-webip-alert']").removeClass("hide");  }
+  
+  if (!port_pattern.test($appport)) { $("input[id='setting-appport']").addClass("input-error"); $("div[id='setting-appport-alert']").removeClass("hide");  }
+  if (!port_pattern.test($webport)) { $("input[id='setting-webport']").addClass("input-error"); $("div[id='setting-webport-alert']").removeClass("hide");  }
+  
+  if (!limit_pattern.test($down)) {  $("input[id='setting-downlimit']").addClass("input-error"); $("div[id='setting-down-alert']").removeClass("hide");  }
+  if (!limit_pattern.test($up)) {  $("input[id='setting-uplimit']").addClass("input-error"); $("div[id='setting-up-alert']").removeClass("hide");  }
+  
+  if ($("input[id^='setting-'][class~='input-error']").length ==0)
+  {
+    $("span[id='settings-saving']").removeClass("hide");
+    var $api_action = {"action":"settingssave","data":[]};
+
+    $api_action["data"].push(["Application IP",$appip]);
+    $api_action["data"].push(["Web IP",$webip]);
+    $api_action["data"].push(["Application Port",parseInt($appport)]);
+    $api_action["data"].push(["Web Port",parseInt($webport)]);
+    $api_action["data"].push(["Nickname",$nickname]);
+    $api_action["data"].push(["Upload Limit",parseInt($up)]);
+    $api_action["data"].push(["Download Limit",parseInt($down)]);
+    $api_action["data"].push(["Download Location",$download_location]);
+    $api_action["data"].push(["TacoNET Certificates Store",$cert]);
+    $("button[id='save-settings']").prop("disabled",true);
+    $.ajax({url:"/api/settings",type:"POST",data:JSON.stringify($api_action),contentType:"application/json; charset=utf-8",dataType:"json",success: function(data)
+      {
+        if (data==1) {
+          $("span[id='settings-unsaved']").addClass("hide");
+          $("span[id='settings-saving']").addClass("hide");
+          $("span[id='settings-saved']").hide().removeClass("hide").fadeIn();
+          setTimeout(function()
+            {
+              $("span[id='settings-saved']").fadeOut(1000,function()
+              {
+                $("button[id='save-settings']").prop("disabled",false);
+              });
+            },2000);
+        }
+      }
+    });
+
+  }
+
+  
+}
 
 $( document ).ready(function() {
  Set_Up_Delete_Share();
  $("button[id='add-share']").click(function() { Add_Share(); });
  $("button[id='save-shares']").prop("disabled",false).click(function() { Save_Shares(); });
+ $("button[id='save-settings']").prop("disabled",false).click(function() { Save_Settings(); });
 
  $('#addShareModal').on('shown.bs.modal', function () {$('#addsharename').focus();  });
  $("button[class='close']").click(function() { $(this).parent().addClass("hide");});
+ $("span").popover();
+
+ $("input[id^='setting-']").on("change keyup paste", function(){
+    $(this).addClass("input-changed");
+    $("span[id='settings-unsaved']").removeClass("hide");
+  })
 
 });
 
