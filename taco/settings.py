@@ -24,20 +24,15 @@ def Load_Settings(needlock=True):
       taco.globals.settings[keyname] =  taco.defaults.default_settings_kv[keyname]
       save_after = True
 
-  if not os.path.isdir(taco.globals.settings["Curve Temp Location"]): 
-    logging.debug("Making CURVE Working Directory")
-    os.makedirs(taco.globals.settings["Curve Temp Location"])
-  if not os.path.isdir(taco.globals.settings["Curve Private Location"]): 
-    logging.debug("Making CURVE Private Directory")
-    os.makedirs(taco.globals.settings["Curve Private Location"])
-  if not os.path.isdir(taco.globals.settings["Curve Public Location"]): 
-    logging.debug("Making CURVE Public Directory")
-    os.makedirs(taco.globals.settings["Curve Public Location"])
+  if not os.path.isdir(taco.globals.settings["TacoNET Certificates Store"]): 
+    logging.debug("Making TacoNET Certificates Store")
+    os.makedirs(taco.globals.settings["TacoNET Certificates Store"])
 
   logging.debug("Verifying settings share list is in correct format")
   valid_list = False
-  if type(taco.globals.settings["Shares"]) == type({}):
+  if type(taco.globals.settings["Shares"]) == type([]):
     valid_list = True
+
   if not valid_list:       
     taco.globals.shares = []
     save_after = True

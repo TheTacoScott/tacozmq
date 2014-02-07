@@ -11,3 +11,8 @@ body {
     max-height: 300px;
     overflow-y: auto;
 }
+
+.form-control[readonly]
+{
+    background-color:#fff;
+}

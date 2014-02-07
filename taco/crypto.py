@@ -7,15 +7,16 @@ import shutil
 def Init_Local_Crypto():
   logging.debug("Started")
   with taco.globals.settings_lock:
-    workingdir = taco.globals.settings["Curve Temp Location"]
-    privatedir = taco.globals.settings["Curve Private Location"]
+    workingdir = taco.globals.settings["TacoNET Certificates Store"]
+    privatedir = os.path.normpath(os.path.abspath(taco.globals.settings["TacoNET Certificates Store"] + "/private"))
+  if not os.path.isdir(privatedir): os.makedirs(privatedir)
 
   server_generate = False
-  if not os.path.isfile(os.path.abspath(os.path.normpath(os.path.join(privatedir,"taconet-server.key")))) or not os.path.isfile(os.path.abspath(os.path.normpath(os.path.join(privatedir,"taconet-server.key_secret")))): 
+  if not os.path.isfile(os.path.abspath(os.path.normpath(os.path.join(workingdir,"taconet-server.key")))) or not os.path.isfile(os.path.abspath(os.path.normpath(os.path.join(workingdir,"taconet-server.key_secret")))): 
     server_generate = True
 
   client_generate = False
-  if not os.path.isfile(os.path.abspath(os.path.normpath(os.path.join(privatedir,"taconet-client.key")))) or not os.path.isfile(os.path.abspath(os.path.normpath(os.path.join(privatedir,"taconet-client.key_secret")))): 
+  if not os.path.isfile(os.path.abspath(os.path.normpath(os.path.join(workingdir,"taconet-client.key")))) or not os.path.isfile(os.path.abspath(os.path.normpath(os.path.join(workingdir,"taconet-client.key_secret")))): 
     client_generate = True
 
   if server_generate:

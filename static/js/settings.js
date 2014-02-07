@@ -1,23 +1,3 @@
-//SHARES
-//Delete Function
-function Setup_Share_Delete_Buttons()
-{
- $("div[id='share-listing'] button[data-type='share'][data-action='delete']").click(function()
- {
-    var $index = $(this).data("index");
-    var $fadeoutdiv = $(this).parent().parent();
-    //if (confirm('Are you sure you want to delete this share?')) {
-    //  $.get('/sharedelete/' + $index, function(data){
-    //    if (data=="1") { $fadeoutdiv.fadeOut(1000,function() { $(this).remove();}); }
-    //  });
-    //}
-     $('#deleteShareModal .modal-body').html("<h5>Delete sharename: <b>"+$(this).data("name")+"</b>?</h5>");
-     $('#deleteShareModal').modal();
-  
-
-  });
-
-}
 function Share_Browse($browsedir="")
 {
   $.getJSON( "/browselocaldirs/" + $browsedir, function( data ) 
@@ -43,7 +23,7 @@ function Share_Browse($browsedir="")
 }
 function Share_Browse_Setup()
 {
-  $("#sharebrowselistdiv a[class='list-group-item']").click(function()
+  $("#sharebrowselistdiv a[class='list-group-item']").unbind("click").click(function()
   {
     $browsedir = $(this).data("browsedir");
     Share_Browse($browsedir);
@@ -51,18 +31,54 @@ function Share_Browse_Setup()
 }
 function Confirm_Add_Share()
 {
-  $("#addShareModal .modal-body div[id='alphanumonly']").removeClass('hide');
-  setTimeout(function() { $("#addShareModal .modal-body div[id='alphanumonly']").fadeOut(); },5000);  
+  var pattern = new RegExp("^[a-zA-Z0-9\. ]{3,64}$");
+  $sharename = $("input[id='addsharename']").val();
+  $sharelocation = $("input[id='addshareloc']").val();
+  if (pattern.test($sharename))
+  { 
+    $("div[id='share-add-helper'] span:first").html($sharename);
+    $("div[id='share-add-helper'] input:first").val($sharelocation);
+    $("div[id='share-add-helper']").clone().removeAttr("id").removeClass("hide").attr("id","TEMPSHARE").appendTo("div[id='share-listing']");
+    $("div[id='TEMPSHARE'] button[data-action='delete']").data("name",$sharename);
+    $("div[id='TEMPSHARE'] button[data-action='edit']").data("name",$sharename);
+    $("div[id='TEMPSHARE']").removeAttr("id");
+    Set_Up_Delete_Share();
+    $('#addShareModal').modal('hide');
+    $("div[id='addasharebelow']").addClass("hide");
+    $("span[id='shares-unsaved']").removeClass("hide"); 
+  }
+  else
+  {
+    $("#addShareModal .modal-body div[id='alphanumonly']").removeClass('hide');
+  }
+  //setTimeout(function() { $("#addShareModal .modal-body div[id='alphanumonly']").fadeOut(); },5000);  
 }
 function Add_Share()
 {
   //$("div[id='share-add-helper']").clone().removeAttr("id").removeClass("hide").appendTo("div[id='share-listing']");
   Share_Browse();
+  $("#addShareModal .modal-body div[id='alphanumonly']").addClass('hide');
   $("#addshareloc").val("/");
   $("#addsharename").val("");
+  $("button[id='addshareconfirmbutton']").unbind("click").click(function() { Confirm_Add_Share(); });
+  $("button[id='addsharecancelbutton']").unbind("click").click(function() { $("#sharebrowselistdiv").scrollTop(0); $('#addShareModal').modal('hide');  });
   $('#addShareModal').modal();
-  
+}
 
+function Delete_Share($id)
+{
+  var $sharename = $id.data("name");
+  var $fadeoutdiv = $id.parent().parent();
+  $('#deleteShareModal .modal-body').html("<h5>Delete sharename: <b>"+$sharename+"</b>?</h5>");
+  $('#deleteShareModal').modal();
+  $("button[id='deleteshareconfirmbutton']").unbind("click").click(function() { Confirm_Delete_Share($sharename,$fadeoutdiv); });
+}
+function Confirm_Delete_Share($name,$div)
+{
+  $('#deleteShareModal').modal('hide');
+  $div.fadeOut(1000,function() { $(this).remove(); if ($("div[id='share-listing'] div[class='input-group']").length == 0) { $("div[id='addasharebelow']").removeClass("hide"); } });
+  $("span[id='shares-unsaved']").removeClass("hide");
+  
 }
 
 function Save_Shares()
@@ -70,42 +86,51 @@ function Save_Shares()
 
   $("button[id='save-shares']").prop("disabled",true);
   $("span[id='shares-saving']").removeClass("hide");
-  var deferreds = [];
+  var $api_action = {"action":"sharesave","data":[]};
+
   $("div[id='share-listing'] div[class='input-group']").each(function()
   {
     var $sharename = $(this).find("span:first").html();
-    var $text = $(this).find("input[type='text']").val();
-    var $placeholder = $(this).find("input[type='text']").attr("placeholder");
-    var $index = $(this).find("button:first").data("index")
-    if ($text == "") { $text = $placeholder; }
-    if ($text != "") {
-      deferreds.push($.get('/shareedit/' + $index + "/" + $sharename + "/" + $text,function(data)
-      {
-        var waiting=1;   
-      }));
+    var $sharelocation = $(this).find("input[type='text']").val();
+    if ($sharelocation != "" && $sharename != "") 
+    {
+      $api_action["data"].push([$sharename,$sharelocation]);
     }
   });
-  
-  $.when.apply($,deferreds).then(function() {
-    setTimeout(function() {
-    $("span[id='shares-saving']").addClass("hide");
-    $("span[id='shares-saved']").hide().removeClass("hide").fadeIn();
-    setTimeout(function() { $("span[id='shares-saved']").fadeOut(1000,function() {$("button[id='save-shares']").prop("disabled",false);});},2000);
-    },500);
-  });
+  $.ajax({url:"/api/share",type:"POST",data:JSON.stringify($api_action),contentType:"application/json; charset=utf-8",dataType:"json",success: function(data)
+  { 
+    if (data==1) { 
+      $("span[id='shares-unsaved']").addClass("hide");
+      $("span[id='shares-saving']").addClass("hide");
+      $("span[id='shares-saved']").hide().removeClass("hide").fadeIn();
+      setTimeout(function() 
+        { 
+          $("span[id='shares-saved']").fadeOut(1000,function() 
+          {
+            $("button[id='save-shares']").prop("disabled",false);
+            if ($("div[id='share-listing'] div[class='input-group']").length == 0) { $("div[id='addasharebelow']").removeClass("hide"); }
+          });
+        },2000);
+    }    
+  }
+  }); 
 }
 
+function Set_Up_Delete_Share()
+{
+ $("button[data-type='share'][data-action='delete']").unbind("click").click(function() { Delete_Share($(this)); });
+}
+
+
+
+
 $( document ).ready(function() {
- Setup_Share_Delete_Buttons();
+ Set_Up_Delete_Share();
  $("button[id='add-share']").click(function() { Add_Share(); });
- $("button[id='save-shares']").click(function() { Save_Shares(); });
- $("button[id='addsharecancelbutton']").click(function() { $("#sharebrowselistdiv").scrollTop(0); $('#addShareModal').modal('hide');  });
- $("button[id='addshareconfirmbutton']").click(function() { Confirm_Add_Share(); });
+ $("button[id='save-shares']").prop("disabled",false).click(function() { Save_Shares(); });
 
- $('#addShareModal').on('shown.bs.modal', function () {
-    $('#addsharename').focus();
- });
-
+ $('#addShareModal').on('shown.bs.modal', function () {$('#addsharename').focus();  });
+ $("button[class='close']").click(function() { $(this).parent().addClass("hide");});
 
 });
 

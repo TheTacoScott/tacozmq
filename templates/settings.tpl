@@ -13,8 +13,9 @@
         <h4 class="modal-title">Add Share</h4>
       </div>
       <div class="modal-body">
-        <div class="alert alert-warning hide" id="alphanumonly">
-          <strong>Warning!</strong> Sharename man only be 32 characters long, and must only contain alphanumeric characters, spaces, and periods.
+        <div class="alert alert-warning alert-dismissable hide" id="alphanumonly">
+          <button type="button" class="close">&times;</button>
+          <strong>Warning!</strong> Sharename must be between 3 and 64 characters long, and must only contain alphanumeric characters, spaces, and periods.
         </div>
 
         <div class="input-group"><span class="input-group-addon">Share Name: </span><input maxlength="32" id="addsharename" type="text" class="form-control" placeholder="Name your share here"></div>
@@ -44,8 +45,8 @@
       <div class="modal-body">
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
-        <button type="button" class="btn btn-danger"><span class="glyphicon glyphicon-remove"></span> Delete Share</button>
+        <button type="button" id="deletesharecancelbutton" class="btn btn-default" data-dismiss="modal">Cancel</button>
+        <button type="button" id="deleteshareconfirmbutton" class="btn btn-danger"><span class="glyphicon glyphicon-remove"></span> Delete Share</button>
       </div>
     </div>
   </div>
@@ -82,24 +83,29 @@
     <div class="panel-heading"><h3 class="panel-title">Edit Shares</h3></div>
 
       <div id="share-add-helper" class="input-group hide">
-        <span class="input-group-btn">
-         <button data-type="share" data-action="rename" data-index="-1" data-name='Blank' class="btn btn-default" type="button"><span class="glyphicon glyphicon-pencil"></span> <span class="sharenamedisplay">Share Name</span></button>
-        </span>
-        <input type="text" class="form-control" placeholder="Share Path">
-        <div class="input-group-btn">
-          <button data-type="share" data-action="browse" data-index="-1" class="btn btn-default" type="button"><span class="glyphicon glyphicon-cog"></span>&nbsp Edit</button>
-          <button data-type="share" data-action="delete" data-index="-1" class="btn btn-default" type="button"><span class="glyphicon glyphicon-remove"></span> Delete</button>
-        </div>
-      </div>
 
+          <span class="input-group-addon"></span>
+          <input type="text" class="form-control" placeholder="" value="" readonly="readonly">
+          <div class="input-group-btn">
+            <button data-type="share" data-action="delete" data-name="" class="btn btn-default" type="button"><span class="glyphicon glyphicon-remove"></span> Delete</button>
+          </div>
+
+      </div>
     <div id="share-listing" class="panel-body text-center">
-    %for key,(sharename,sharelocation) in local_settings_copy["Shares"].iteritems():
+    %if len(local_settings_copy["Shares"]) == 0:
+     <div id="addasharebelow">
+    %else:
+     <div id="addasharebelow" class="hide">
+    %end
+      <h4>You don't have any shares set up, set one up by clicking the "Add Share" button below. <span class="glyphicon glyphicon-hand-down"></span></h4>
+     </div>
+
+    %for (sharename,sharelocation) in local_settings_copy["Shares"]:
       <div class="input-group">
         <span class="input-group-addon">{{sharename}}</span>
-        <input type="text" class="form-control" placeholder="{{sharelocation}}">
+        <input type="text" class="form-control" placeholder="{{sharelocation}}" value="{{sharelocation}}" readonly="readonly">
         <div class="input-group-btn">
-          <button data-type="share" data-action="browse" data-index="{{key}}" data-name="{{sharename}}" class="btn btn-default" type="button"><span class="glyphicon glyphicon-cog"></span>&nbsp Edit</button>
-          <button data-type="share" data-action="delete" data-index="{{key}}" data-name="{{sharename}}" class="btn btn-default" type="button"><span class="glyphicon glyphicon-remove"></span> Delete</button>
+          <button data-type="share" data-action="delete" data-name="{{sharename}}" class="btn btn-default" type="button"><span class="glyphicon glyphicon-remove"></span> Delete</button>
         </div>
       </div>
     %end
@@ -107,8 +113,9 @@
     <div class="panel-footer text-right">
       <span id="shares-saving" class="label label-info hide">Saving Settings... <img src="/static/images/ajax_loader.gif"></span>
       <span id="shares-saved" class="label label-success hide">Settings Saved</span>
-      <button id="add-share" type="button" class="btn btn-default">Add Share</button>
-      <button id="save-shares" type="button" class="btn btn-default">Save Changes</button>
+      <span id="shares-unsaved" class="label label-danger hide">Unsaved Settings</span>
+      <button id="add-share" type="button" class="btn btn-default"><span class="glyphicon glyphicon-plus"></span> Add Share</button>
+      <button id="save-shares" type="button" class="btn btn-default"><span class="glyphicon glyphicon-ok-sign"></span> Save Changes</button>
     </div>
   </div>
 </div>
@@ -121,8 +128,8 @@
     <div class="panel-body">
     </div>
     <div class="panel-footer text-right">
-      <button type="button" class="btn btn-default">Add Peer</button>
-      <button type="button" class="btn btn-default">Save Changes</button>
+      <button type="button" class="btn btn-default"><span class="glyphicon glyphicon-plus"></span> Add Peer</button>
+      <button type="button" class="btn btn-default"><span class="glyphicon glyphicon-ok-sign"></span> Save Changes</button>
     </div>
   </div>
 </div>

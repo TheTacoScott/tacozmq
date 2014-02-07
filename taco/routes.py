@@ -30,6 +30,29 @@ def taco_page(name):
   return bottle.template('templates/'+str(name)+'.tpl')
 
 
+@bottle.post('/api/share')
+def index():
+  try:
+    api_call = bottle.request.json
+  except:
+    return "0"
+  logging.debug("API Access: SHARE --" + str(bottle.request.json))
+  if not bottle.request.json.has_key("action"): return "0"
+  if not bottle.request.json.has_key("data"): return "0"
+  if bottle.request.json[u"action"] == u"sharesave":
+    if type(bottle.request.json[u"data"]) == type([]):
+      if len(bottle.request.json[u"data"]) >= 0:
+        with taco.globals.settings_lock:
+          logging.info("API Access: SHARE -- Action: SAVE")
+          taco.globals.settings["Shares"] = []
+          for (sharename,sharelocation) in bottle.request.json[u"data"]:
+            taco.globals.settings["Shares"].append([sharename,sharelocation])
+          taco.settings.Save_Settings(False)
+          return "1"
+
+  return "-1"
+
+
 @bottle.route('/shareedit/<index>/<name>/<sharepath:path>')
 def index(index,name,sharepath):
   logging.info("Editing Share UUID: " + str(index) + " " + name + " -- " + sharepath)
