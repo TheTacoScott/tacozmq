@@ -11,6 +11,9 @@ chat_log_lock = threading.Lock()
 continue_running_lock = threading.Lock()
 continue_running_value = True
 
+public_keys_lock = threading.Lock()
+public_keys = {}
+
 def continue_running():
     return_value = True
     with taco.globals.continue_running_lock:

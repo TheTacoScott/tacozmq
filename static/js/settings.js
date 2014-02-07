@@ -223,16 +223,50 @@ function Save_Settings()
 function Confirm_Add_Peer()
 {
 }
+function Update_CopyPastePeerThing()
+{
+  var $jsonthing = {};
+  $jsonthing["hostname"] = $("#addpeermyhostname").val();
+  $jsonthing["port"] = $("#addpeermyport").val();
+  $jsonthing["serverkey"] = $("#addpeermyclientpublic").val();
+  $jsonthing["clientkey"] = $("#addpeermyserverpublic").val();
+  $("#peerneedsthis").html(JSON.stringify($jsonthing));
 
+}
 function Add_Peer()
 {
   $('#addPeerModal button[id="addpeercancelbutton"]').unbind("click").click(function() {$('#addPeerModal').modal('hide'); } );
   $('#addPeerModal button[id="addpeerconfirmbutton"]').unbind("click").click(function() { Confirm_Add_Peer(); } );
   $('#addPeerModal').modal();  
+  Update_CopyPastePeerThing();
+}
+
+function Set_Up_Peer_Buttons()
+{
+  $("button[class~='peer-enabled-button']").unbind("click").click(function() { 
+    $(this).toggleClass("btn-success").toggleClass("btn-danger"); 
+      $(this).data("status",!$(this).data("status"));
+      var $msg = "Peer is Enabled"; if (!$(this).data("status")) { $msg = "Peer is Disabled";  }
+      $(this).find("span[class='peer-text']").html($msg);
+      $(this).find("span[class~='glyphicon']").toggleClass("glyphicon-ok").toggleClass("glyphicon-remove");
+      $("#peers-unsaved").removeClass("hide");
+  });
+  
+  $("button[class~='peer-dynamic-button']").unbind("click").click(function() {
+    $(this).toggleClass("btn-info").toggleClass("btn-warning");
+      $(this).data("status",!$(this).data("status"));
+      var $msg = "Peer has a dynamic IP"; if (!$(this).data("status")) { var $msg = "Peer has a static IP";   }
+      $(this).find("span[class='peer-text']").html($msg);
+      $(this).find("span[class~='glyphicon']").toggleClass("glyphicon-cog").toggleClass("glyphicon-remove");
+      $("#peers-unsaved").removeClass("hide");
+  });
+
+
 }
 
 $( document ).ready(function() {
  Set_Up_Delete_Share();
+ Set_Up_Peer_Buttons()
  $("button[id='add-share']").click(function() { Add_Share(); });
  
  $("button[id='browsedownload']").click(function() { Download_Browse(); });
@@ -250,9 +284,23 @@ $( document ).ready(function() {
  $("button").popover();
 
  $("input[id^='setting-']").on("change keyup paste", function(){
-    $(this).addClass("input-changed");
-    $("span[id='settings-unsaved']").removeClass("hide");
-  })
+   $(this).addClass("input-changed");
+   $("span[id='settings-unsaved']").removeClass("hide");
+ });
+ $('#addPeerModal textarea').click(function() { $(this).select(); } );
+ 
+ $("#addpeermyhostname").on("change keyup paste", function(){ Update_CopyPastePeerThing(); });
+ $("#addpeermyport").on("change keyup paste", function(){ Update_CopyPastePeerThing(); });
+ 
+ $("#getexternalip").click(function() {
+    $button = $(this);
+    $(this).prop("disabled",true).find("span[class='button-text']").html("Working...");
+    $.get("/get/ip",function(data) {
+      $("#addpeermyhostname").val(data); 
+      Update_CopyPastePeerThing();
+      $button.prop("disabled",false).find("span[class='button-text']").html("Get External IP");
+    });
+  }); 
 
 });
 

@@ -75,23 +75,6 @@ def index():
   return "-1"
 
 
-@bottle.route('/shareedit/<index>/<name>/<sharepath:path>')
-def index(index,name,sharepath):
-  logging.info("Editing Share UUID: " + str(index) + " " + name + " -- " + sharepath)
-  with taco.globals.settings_lock:
-    taco.globals.settings["Shares"][index] = [name,sharepath]
-    taco.settings.Save_Settings(False)
-  return "1"
-
-@bottle.route('/sharedelete/<share_uuid>')
-def index(share_uuid):
-  logging.info("Deleting Share share_uuid" + str(share_uuid))
-  with taco.globals.settings_lock:
-    if taco.globals.settings["Shares"].has_key(share_uuid):
-      del taco.globals.settings["Shares"][share_uuid]
-    taco.settings.Save_Settings(False)
-  return "1"
-
 @bottle.route('/browselocaldirs/')
 @bottle.route('/browselocaldirs/<browse_path:path>')
 def index(browse_path="/"):

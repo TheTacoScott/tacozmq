@@ -5,6 +5,11 @@
 %local_settings_copy = taco.globals.settings.copy()
 %taco.globals.settings_lock.release()
 
+%taco.globals.public_keys_lock.acquire()
+%local_keys_copy = taco.globals.public_keys.copy()
+%taco.globals.public_keys_lock.release()
+
+
 %rebase templates/layout title='Settings'
 
 <div class="modal fade bs-modal-lg" id="addPeerModal" tabindex="-1" role="dialog">
@@ -20,14 +25,18 @@
         <div class="input-group"><span class="input-group-addon">Peer Server Public Key: </span><input maxlength="32" id="addpeerserverpublic" type="text" class="form-control" placeholder="Server Public Key"></div>
         <div class="input-group"><span class="input-group-addon">Peer Client Public Key: </span><input maxlength="32" id="addpeerclientpublic" type="text" class="form-control" placeholder="Client Public Key"></div>
         <h4>Your peer needs the following information from you</h4>
-        <div class="input-group"><span class="input-group-addon">Your External Hostname: </span><input maxlength="32" id="addpeermyhostname" type="text" class="form-control" placeholder="Your External Hostname"></div>
+        <div class="input-group"><span class="input-group-addon">Your External Hostname: </span><input maxlength="32" id="addpeermyhostname" type="text" class="form-control" placeholder="Your External Hostname">
+          <div class="input-group-btn">
+            <button id="getexternalip" class="btn btn-default" type="button"><span class="glyphicon glyphicon-refresh"></span> <span class="button-text">Get External IP</span></button>
+          </div>
+        </div>
         <div class="input-group"><span class="input-group-addon">Your External Port: </span><input maxlength="32" id="addpeermyport" type="text" class="form-control" placeholder="Your External Port"></div>
-        <div class="input-group"><span class="input-group-addon">Your Server Public Key: </span><input maxlength="32" id="addpeermyserverpublic" type="text" class="form-control" placeholder="Server Public Key"></div>
-        <div class="input-group"><span class="input-group-addon">Your Client Public Key: </span><input maxlength="32" id="addpeermyclientpublic" type="text" class="form-control" placeholder="Client Public Key"></div>
+        <div class="input-group"><span class="input-group-addon">Your Server Public Key: </span><input readonly="readonly" id="addpeermyserverpublic" type="text" class="form-control" value="{{local_keys_copy['server']}}"></div>
+        <div class="input-group"><span class="input-group-addon">Your Client Public Key: </span><input readonly="readonly" id="addpeermyclientpublic" type="text" class="form-control" value="{{local_keys_copy['client']}}"></div>
         <h4>Here is a nice copy and pastable version of what your peer needs:</h4>
-        <textarea class="form-control" rows="3"></textarea>
+        <textarea id="peerneedsthis" readonly="readonly" class="form-control" rows="3"></textarea>
         <h4>If your peer provided you with their version of the copyable/pastable information above, paste it below to quickly populate the peer fields above.</h4>
-        <textarea class="form-control" rows="3"></textarea>
+        <textarea id="ineedthis" class="form-control" rows="3"></textarea>
 
       </div>
       <div class="modal-footer">
@@ -257,10 +266,10 @@
                 <div class="input-group"><span class="input-group-addon">Client Public Key Location</span><input readonly="readonly" type="text" class="form-control" value="/fg/fg"></div>
               </div>
               <div class="col-md-2 text-center">
-                <button type="button" class="btn btn-success" data-trigger="hover" data-container="body" data-placement="left" data-content="Peer is currently enabled, click to disable.">
-                <span class="glyphicon glyphicon-ok"></span><br>Peer is Enabled
+                <button type="button" class="btn btn-success peer-enabled-button" data-status=1 data-trigger="hover" data-container="body" data-placement="left" data-content="Click to toggle between enabled and disabled.">
+                <span class="glyphicon glyphicon-ok"></span><br><span class="peer-text">Peer is Enabled</span>
                 </button><hr>
-                <button type="button" class="btn btn-info" data-trigger="hover" data-container="body" data-placement="left" data-content="Peer is currently set to be dynamic. Meaning the hostname we connect to it with may change. Click to set peer to have a static ip/hostname"><span class="glyphicon glyphicon-cog"></span><br>Peer has a dynamic IP</button>
+                <button type="button" class="btn btn-info peer-dynamic-button" data-status=1 data-trigger="hover" data-container="body" data-placement="left" data-content="Click to toggle between dynamic and static hostname."><span class="glyphicon glyphicon-cog"></span><br><span class="peer-text">Peer has a dynamic IP</span></button>
                 <hr>
                 <button type="button" class="btn btn-default"><span class="glyphicon glyphicon-remove"></span> Delete </button>
               </div>
@@ -280,6 +289,10 @@
 
     </div>
     <div class="panel-footer text-right">
+      <span id="peers-saving" class="label label-info hide">Saving Settings... <img src="/static/images/ajax_loader.gif"></span>
+      <span id="peers-saved" class="label label-success hide">Settings Saved</span>
+      <span id="peers-unsaved" class="label label-danger hide">Unsaved Settings</span>
+
       <button id="add-peer" type="button" class="btn btn-default"><span class="glyphicon glyphicon-plus"></span> Add Peer</button>
       <button id="save-peers" type="button" class="btn btn-default"><span class="glyphicon glyphicon-ok-sign"></span> Save Changes</button>
     </div>

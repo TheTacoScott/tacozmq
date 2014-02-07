@@ -43,7 +43,10 @@ body {
 {
 margin-top: 0px;
 }
-.panel-padding .btn-success,.btn-info 
+.panel-padding .btn-success,
+.panel-padding .btn-info,
+.panel-padding .btn-warning,
+.panel-padding .btn-danger
 {
   width: 100%;
 }
