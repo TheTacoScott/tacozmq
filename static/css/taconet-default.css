@@ -10,6 +10,7 @@ body {
     min-height: 100px;
     max-height: 350px;
     overflow-y: auto;
+    
 }
 
 .form-control[readonly]
@@ -54,4 +55,24 @@ margin-top: 0px;
 {
   margin-top:5px;
   margin-bottom:5px;
+}
+.modal-titlebar
+{
+  color: rgb(255, 255, 255);
+  background-color: rgb(91, 192, 222);
+  background-size: 10px 10px;
+  background-image: linear-gradient(-45deg, rgba(255, 255, 255, 0.2) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, 0.2) 50%, rgba(255, 255, 255, 0.2) 75%, transparent 75%, transparent);
+}
+.modal-title
+{
+  text-shadow: 1px 1px 3px #000000;
+}
+.modal-footer
+{
+ margin-top: 0px;
+}
+
+.modal-body .list-group
+{
+  margin-bottom: 0px;
 }

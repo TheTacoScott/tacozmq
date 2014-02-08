@@ -28,7 +28,7 @@ function Cert_Browse()
 }
 
 
-function Share_Browse($browsedir="",$target,$target2)
+function Share_Browse($browsedir,$target,$target2)
 {
   $.getJSON( "/browselocaldirs/" + $browsedir, function( data ) 
   {
@@ -252,16 +252,6 @@ function Set_Up_Peer_Buttons()
       $("#peers-unsaved").removeClass("hide");
   });
   
-  $("button[class~='peer-dynamic-button']").unbind("click").click(function() {
-    $(this).toggleClass("btn-info").toggleClass("btn-warning");
-      $(this).data("status",!$(this).data("status"));
-      var $msg = "Peer has a dynamic IP"; if (!$(this).data("status")) { var $msg = "Peer has a static IP";   }
-      $(this).find("span[class='peer-text']").html($msg);
-      $(this).find("span[class~='glyphicon']").toggleClass("glyphicon-cog").toggleClass("glyphicon-remove");
-      $("#peers-unsaved").removeClass("hide");
-  });
-
-
 }
 
 $( document ).ready(function() {

@@ -15,28 +15,25 @@
 <div class="modal fade bs-modal-lg" id="addPeerModal" tabindex="-1" role="dialog">
   <div class="modal-dialog modal-lg">
     <div class="modal-content">
-      <div class="modal-header">
-        <h4 class="modal-title">Add Peer</h4>
+      <div class="modal-header modal-titlebar">
+        <h4 class="modal-title">Add Peer Wizard</h4>
       </div>
       <div class="modal-body">
-        <h4>You need the following information from your peer:</h4>
-        <div class="input-group"><span class="input-group-addon">Peer IP or Hostname: </span><input maxlength="32" id="addpeerip" type="text" class="form-control" placeholder="Hostname or IP Address"></div>
-        <div class="input-group"><span class="input-group-addon">Peer Port: </span><input maxlength="32" id="addpeerip" type="text" class="form-control" placeholder="Port Number"></div>
-        <div class="input-group"><span class="input-group-addon">Peer Server Public Key: </span><input maxlength="32" id="addpeerserverpublic" type="text" class="form-control" placeholder="Server Public Key"></div>
-        <div class="input-group"><span class="input-group-addon">Peer Client Public Key: </span><input maxlength="32" id="addpeerclientpublic" type="text" class="form-control" placeholder="Client Public Key"></div>
-        <h4>Your peer needs the following information from you</h4>
-        <div class="input-group"><span class="input-group-addon">Your External Hostname: </span><input maxlength="32" id="addpeermyhostname" type="text" class="form-control" placeholder="Your External Hostname">
+        <h3>Your peer will need to know the following information from you:</h3>
+        <div class="input-group"><span class="input-group-addon">Your External Hostname or IP: </span><input maxlength="32" id="addpeermyhostname" type="text" class="form-control" placeholder="Your External Hostname">
           <div class="input-group-btn">
             <button id="getexternalip" class="btn btn-default" type="button"><span class="glyphicon glyphicon-refresh"></span> <span class="button-text">Get External IP</span></button>
           </div>
         </div>
         <div class="input-group"><span class="input-group-addon">Your External Port: </span><input maxlength="32" id="addpeermyport" type="text" class="form-control" placeholder="Your External Port"></div>
-        <div class="input-group"><span class="input-group-addon">Your Server Public Key: </span><input readonly="readonly" id="addpeermyserverpublic" type="text" class="form-control" value="{{local_keys_copy['server']}}"></div>
-        <div class="input-group"><span class="input-group-addon">Your Client Public Key: </span><input readonly="readonly" id="addpeermyclientpublic" type="text" class="form-control" value="{{local_keys_copy['client']}}"></div>
-        <h4>Here is a nice copy and pastable version of what your peer needs:</h4>
-        <textarea id="peerneedsthis" readonly="readonly" class="form-control" rows="3"></textarea>
-        <h4>If your peer provided you with their version of the copyable/pastable information above, paste it below to quickly populate the peer fields above.</h4>
-        <textarea id="ineedthis" class="form-control" rows="3"></textarea>
+        <div class="input-group hide"><span class="input-group-addon">Your Server Public Key: </span><input readonly="readonly" id="addpeermyserverpublic" type="text" class="form-control" value="{{local_keys_copy['server']}}"></div>
+        <div class="input-group hide"><span class="input-group-addon">Your Client Public Key: </span><input readonly="readonly" id="addpeermyclientpublic" type="text" class="form-control" value="{{local_keys_copy['client']}}"></div>
+        <br>
+        <h4>Below is the "Quick Connect String" your peer will need.</h4>
+        <textarea id="peerneedsthis" readonly="readonly" class="form-control" rows="2"></textarea>
+        <br>
+        <h4>Paste the "Quick Connect String" you recieved from your peer below.</h4>
+        <textarea id="ineedthis" class="form-control" rows="2"></textarea>
 
       </div>
       <div class="modal-footer">
@@ -50,7 +47,7 @@
 <div class="modal fade" id="downloadModal" tabindex="-1" role="dialog">
   <div class="modal-dialog">
     <div class="modal-content">
-      <div class="modal-header">
+      <div class="modal-header modal-titlebar">
         <h4 class="modal-title">Specify Download Location</h4>
       </div>
       <div class="modal-body">
@@ -78,7 +75,7 @@
 <div class="modal fade" id="certModal" tabindex="-1" role="dialog">
   <div class="modal-dialog">
     <div class="modal-content">
-      <div class="modal-header">
+      <div class="modal-header modal-titlebar">
         <h4 class="modal-title">Specify Cetifcate Store Location</h4>
       </div>
       <div class="modal-body">
@@ -107,8 +104,8 @@
 <div class="modal fade" id="addShareModal" tabindex="-1" role="dialog">
   <div class="modal-dialog">
     <div class="modal-content">
-      <div class="modal-header">
-        <h4 class="modal-title">Add Share</h4>
+      <div class="modal-header modal-titlebar">
+        <h4 class="modal-title">Add Share Wizard</h4>
       </div>
       <div class="modal-body">
         <div class="alert alert-warning alert-dismissable hide" id="alphanumonly">
@@ -118,12 +115,7 @@
 
         <div class="input-group"><span class="input-group-addon">Share Name: </span><input maxlength="32" id="addsharename" type="text" class="form-control" placeholder="Name your share here"></div>
         <div class="input-group"><span class="input-group-addon">Share Location: </span><input readonly id="addshareloc" type="text" class="form-control"></div>
-        <div class="row">
-          <div class="col-md-12">
-              <div id="sharebrowselistdiv" class="list-group">
-              </div>
-          </div> 
-        </div>
+        <div id="sharebrowselistdiv" class="list-group"></div>
       </div>
       <div class="modal-footer">
         <button type="button" id="addsharecancelbutton" class="btn btn-default">Cancel</button>
@@ -257,20 +249,17 @@
       <div id="peer-add-helper">
         <div class="panel panel-default panel-padding">
           <div class="panel-body">
-            <h4><span class="glyphicon glyphicon-user"></span> Peer Nickname</h4>
+            <h4><span class="glyphicon glyphicon-user"></span> Peer Nickname <small>( Local Nickname )</small></h4>
             <div class="row">
               <div class="col-md-10">
                 <div class="input-group"><span class="input-group-addon">Hostname</span><input type="text" class="form-control" value="External Hostname"></div>
                 <div class="input-group"><span class="input-group-addon">Port</span><input type="text" class="form-control" value="External Port"></div>
-                <div class="input-group"><span class="input-group-addon">Server Public Key Location</span><input readonly="readonly" type="text" class="form-control" value="/fg/fg"></div>
-                <div class="input-group"><span class="input-group-addon">Client Public Key Location</span><input readonly="readonly" type="text" class="form-control" value="/fg/fg"></div>
+                <div class="input-group"><span class="input-group-addon">Local Nickname</span><input type="text" class="form-control" value="Local Nickname"></div>
               </div>
               <div class="col-md-2 text-center">
                 <button type="button" class="btn btn-success peer-enabled-button" data-status=1 data-trigger="hover" data-container="body" data-placement="left" data-content="Click to toggle between enabled and disabled.">
                 <span class="glyphicon glyphicon-ok"></span><br><span class="peer-text">Peer is Enabled</span>
                 </button><hr>
-                <button type="button" class="btn btn-info peer-dynamic-button" data-status=1 data-trigger="hover" data-container="body" data-placement="left" data-content="Click to toggle between dynamic and static hostname."><span class="glyphicon glyphicon-cog"></span><br><span class="peer-text">Peer has a dynamic IP</span></button>
-                <hr>
                 <button type="button" class="btn btn-default"><span class="glyphicon glyphicon-remove"></span> Delete </button>
               </div>
             </div>
