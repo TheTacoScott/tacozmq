@@ -1,9 +1,12 @@
 subscriptions
 network identifier names
-help dialogs of some form or another for settings
-drop curve language
 directory downloading
-in place preferable to popup
 
-shares should have an edit box that looks like plex
-share add should bring up that edit box with defaults or something
+add peer dialog needs to lose ANYTHIGN that it doesn't 100% need. Make it simple, make an advanved button if you care.
+quick info line, or some such language
+peer connect line
+peer connect string
+drop dynamic ip concept, make it all dynamic
+get rid of peer block key locations
+local nickname perhaps
+possible ability to revert changes without leaving page
