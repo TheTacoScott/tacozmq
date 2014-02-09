@@ -20,12 +20,12 @@
       </div>
       <div class="modal-body">
         <h3>Your peer will need to know the following information from you:</h3>
-        <div class="input-group"><span class="input-group-addon">Your External Hostname or IP: </span><input maxlength="32" id="addpeermyhostname" type="text" class="form-control" placeholder="Your External Hostname">
+        <div class="input-group"><span class="input-group-addon"><span class="glyphicon glyphicon-info-sign" data-content="This is the publicly accessible IP or Hostname of your TacoNET application instance." data-placement="right" data-container="#addPeerModal" data-trigger="hover" data-original-title="" title=""></span> Your External Hostname or IP: </span><input maxlength="32" id="addpeermyhostname" type="text" class="form-control" placeholder="Your External Hostname">
           <div class="input-group-btn">
             <button id="getexternalip" class="btn btn-default" type="button"><span class="glyphicon glyphicon-refresh"></span> <span class="button-text">Get External IP</span></button>
           </div>
         </div>
-        <div class="input-group"><span class="input-group-addon">Your External Port: </span><input maxlength="32" id="addpeermyport" type="text" class="form-control" placeholder="Your External Port"></div>
+        <div class="input-group"><span class="input-group-addon"><span class="glyphicon glyphicon-info-sign" data-content="This is the publicly accessible port of your TacoNET application instance. It must be forwarded from your router." data-placement="right" data-container="#addPeerModal" data-trigger="hover" data-original-title="" title=""></span> Your External Port: </span><input maxlength="32" id="addpeermyport" type="text" class="form-control" placeholder="Your External Port"></div>
         <div class="input-group hide"><span class="input-group-addon">Your Server Public Key: </span><input readonly="readonly" id="addpeermyserverpublic" type="text" class="form-control" value="{{local_keys_copy['server']}}"></div>
         <div class="input-group hide"><span class="input-group-addon">Your Client Public Key: </span><input readonly="readonly" id="addpeermyclientpublic" type="text" class="form-control" value="{{local_keys_copy['client']}}"></div>
         <div class="input-group hide"><span class="input-group-addon">Your UUID: </span><input readonly="readonly" id="addpeermyuuid" type="text" class="form-control" value="{{local_settings_copy['Local UUID']}}"></div>
@@ -36,7 +36,8 @@
         <h4>Paste the "Quick Connect String" you recieved from your peer below.</h4>
         <div class="alert alert-warning alert-dismissable hide" id='bad-connect-string'>
           <button type="button" class="close">&times;</button>
-          <strong>Warning!</strong> The text below does not appear to be a valid "Quick Connect String". Have your peer create a new one, and confirm you have pasted it correctly. This could be due to an incomplete string, an invalid port or missing keys.
+          <strong>Warning!</strong> The text below does not appear to be a valid "Quick Connect String". Have your peer create a new one, and confirm you have pasted it correctly.<br>
+          <strong>Error:</strong> <span class="exact-error"></span>
         </div>
 
         <textarea id="ineedthis" class="form-control" rows="2"></textarea>
@@ -212,7 +213,7 @@
       <span id="settings-saving" class="label label-info hide">Saving Settings... <img src="/static/images/ajax_loader.gif"></span>
       <span id="settings-saved" class="label label-success hide">Settings Saved</span>
       <span id="settings-unsaved" class="label label-danger hide">Unsaved Settings</span>
-
+      <span id="settings-errors" class="label label-danger hide">You have errors your must correct</span>
       <button id="save-settings" type="button" class="btn btn-default"><span class="glyphicon glyphicon-ok-sign"></span> Save Changes</button>
     </div>
   </div>
@@ -269,18 +270,27 @@
     <div class="panel-heading"><h3 class="panel-title">Peers</h3></div>
 
       <div id="peer-add-helper" class='hide'>
-        <div class="panel panel-default panel-padding red-bg">
+        <div class="panel panel-default panel-padding red-bg peerblock">
           <div class="panel-body">
             <div class="row">
               <div class="col-md-8">
                 <h4><span class="glyphicon glyphicon-user"></span> <span class="peernick">Peer Nickname</span></h4>
-                <div class="input-group"><span class="input-group-addon">Hostname or IP</span><input autocomplete="off" type="text" class="form-control peerhost" placeholder="External Hostname" value="">
-                  <span class="input-group-addon">Dynamic? <input class='peerdynamic' type="checkbox"></input></span></div>
+
+                <div class="alert alert-warning alert-dismissable alert-tweak hide peerhostbad"><button type="button" class="close">&times;</button><strong>Warning!</strong> The hostname you have specified is invalid.<span class="glyphicon glyphicon-hand-down"></span></div>
+                <div class="input-group"><span class="input-group-addon">Hostname or IP</span><input autocomplete="off" type="text" class="form-control peerhost" placeholder="External Hostname" value=""><span class="input-group-addon">Dynamic? <input class='peerdynamic' type="checkbox"></input></span></div>
+
+                <div class="alert alert-warning alert-dismissable alert-tweak hide peerportbad"><button type="button" class="close">&times;</button><strong>Warning!</strong> The port you have specified is invalid.<span class="glyphicon glyphicon-hand-down"></span></div>
                 <div class="input-group"><span class="input-group-addon">Port</span><input autocomplete="off" type="text" class="form-control peerport" placeholder="External Port" value=""></div>
+
+                <div class="alert alert-warning alert-dismissable alert-tweak hide peernickbad"><button type="button" class="close">&times;</button><strong>Warning!</strong> The local nickname you have specified is invalid.<span class="glyphicon glyphicon-hand-down"></span></div>
                 <div class="input-group"><span class="input-group-addon">Local Nickname</span><input autocomplete="off" type="text" class="form-control peerlocalnick" placeholder="Local Nickname"></div>
                 <div class="advanced-options">
+                
+                  <div class="alert alert-warning alert-dismissable alert-tweak hide peeruuidbad"><button type="button" class="close">&times;</button><strong>Warning!</strong> The UUID you have specified is invalid.<span class="glyphicon glyphicon-hand-down"></span></div>
                   <div class="input-group"><span class="input-group-addon">UUID</span><input autocomplete="off" type="text" class="form-control peeruuid" placeholder="UUID"></div>
+                  <div class="alert alert-warning alert-dismissable alert-tweak hide peerclientbad"><button type="button" class="close">&times;</button><strong>Warning!</strong> The Client Public Key you have specified is invalid.<span class="glyphicon glyphicon-hand-down"></span></div>
                   <div class="input-group"><span class="input-group-addon">Client Public</span><input autocomplete="off" type="text" class="form-control peerclient" placeholder=""></div>
+                  <div class="alert alert-warning alert-dismissable alert-tweak hide peerserverbad"><button type="button" class="close">&times;</button><strong>Warning!</strong> The Server Public Key you have specified is invalid.<span class="glyphicon glyphicon-hand-down"></span></div>
                   <div class="input-group"><span class="input-group-addon">Server Public</span><input autocomplete="off" type="text" class="form-control peerserver" placeholder=""></div>
                 </div>
               </div>
@@ -307,18 +317,25 @@
      </div>
     %for p_uuid in local_settings_copy["Peers"].keys():
       %add_class = "red-bg"
-       <div class="panel panel-default panel-padding {{"green-bg" if local_settings_copy["Peers"][p_uuid]["enabled"] else "red-bg"}}">
-          <div class="panel-body peerblock">
+       <div class="panel panel-default panel-padding {{"green-bg" if local_settings_copy["Peers"][p_uuid]["enabled"] else "red-bg"}} peerblock">
+          <div class="panel-body">
             <div class="row">
               <div class="col-md-8">
                 <h4><span class="glyphicon glyphicon-user"></span> <span class="peernick">Peer Nickname</span></h4>
-                <div class="input-group"><span class="input-group-addon">Hostname or IP</span><input autocomplete="off" type="text" class="form-control peerhost" placeholder="External Hostname" value="{{local_settings_copy["Peers"][p_uuid]["hostname"]}}">
-                  <span class="input-group-addon">Dynamic? <input class='peerdynamic' type="checkbox" {{"checked='yes'" if local_settings_copy["Peers"][p_uuid]["dynamic"] else ""}}></input></span></div>
+
+                <div class="alert alert-warning alert-dismissable alert-tweak hide peerhostbad"><button type="button" class="close">&times;</button><strong>Warning!</strong> The hostname you have specified is invalid.<span class="glyphicon glyphicon-hand-down"></span></div>
+                <div class="input-group"><span class="input-group-addon">Hostname or IP</span><input autocomplete="off" type="text" class="form-control peerhost" placeholder="External Hostname" value="{{local_settings_copy["Peers"][p_uuid]["hostname"]}}"><span class="input-group-addon">Dynamic? <input class='peerdynamic' type="checkbox" {{"checked='yes'" if local_settings_copy["Peers"][p_uuid]["dynamic"] else ""}}></input></span></div>
+                
+                <div class="alert alert-warning alert-dismissable alert-tweak hide peerportbad"><button type="button" class="close">&times;</button><strong>Warning!</strong> The port you have specified is invalid.<span class="glyphicon glyphicon-hand-down"></span></div>
                 <div class="input-group"><span class="input-group-addon">Port</span><input autocomplete="off" type="text" class="form-control peerport" placeholder="External Port" value="{{local_settings_copy["Peers"][p_uuid]["port"]}}"></div>
+                <div class="alert alert-warning alert-dismissable alert-tweak hide peernickbad"><button type="button" class="close">&times;</button><strong>Warning!</strong> The local nickname you have specified is invalid.<span class="glyphicon glyphicon-hand-down"></span></div>
                 <div class="input-group"><span class="input-group-addon">Local Nickname</span><input autocomplete="off" type="text" class="form-control peerlocalnick" placeholder="Local Nickname" value="{{local_settings_copy["Peers"][p_uuid]["localnick"]}}"></div>
                 <div class="advanced-options">
+                  <div class="alert alert-warning alert-dismissable alert-tweak hide peeruuidbad"><button type="button" class="close">&times;</button><strong>Warning!</strong> The UUID you have specified is invalid.<span class="glyphicon glyphicon-hand-down"></span></div>
                   <div class="input-group"><span class="input-group-addon">UUID</span><input autocomplete="off" type="text" class="form-control peeruuid" placeholder="UUID" value="{{p_uuid}}"></div>
+                  <div class="alert alert-warning alert-dismissable alert-tweak hide peerclientbad"><button type="button" class="close">&times;</button><strong>Warning!</strong> The Client Public Key you have specified is invalid.<span class="glyphicon glyphicon-hand-down"></span></div>
                   <div class="input-group"><span class="input-group-addon">Client Public</span><input autocomplete="off" type="text" class="form-control peerclient" placeholder="" value="{{local_settings_copy["Peers"][p_uuid]["clientkey"]}}"></div>
+                  <div class="alert alert-warning alert-dismissable alert-tweak hide peerserverbad"><button type="button" class="close">&times;</button><strong>Warning!</strong> The Server Public Key you have specified is invalid.<span class="glyphicon glyphicon-hand-down"></span></div>
                   <div class="input-group"><span class="input-group-addon">Server Public</span><input autocomplete="off" type="text" class="form-control peerserver" placeholder="" value="{{local_settings_copy["Peers"][p_uuid]["serverkey"]}}"></div>
                 </div>
               </div>
@@ -343,6 +360,7 @@
       <span id="peers-saving" class="label label-info hide">Saving Settings... <img src="/static/images/ajax_loader.gif"></span>
       <span id="peers-saved" class="label label-success hide">Settings Saved</span>
       <span id="peers-unsaved" class="label label-danger hide">Unsaved Settings</span>
+      <span id="peers-errors" class="label label-danger hide">You have errors your must correct</span>
 
       <button id="add-peer" type="button" class="btn btn-default"><span class="glyphicon glyphicon-plus"></span> Add Peer</button>
       <button id="save-peers" type="button" class="btn btn-default"><span class="glyphicon glyphicon-ok-sign"></span> Save Changes</button>

@@ -27,6 +27,8 @@ parser.add_argument("--verbose", default=False,dest="verbose",help="increase out
 parser.add_argument("--debug", default=False,dest="debug",help="increase output verbosity to an insane level",action="store_true")
 args = parser.parse_args()
 
+taco.constants.JSON_SETTINGS_FILENAME = args.configfile
+
 level = logging.ERROR
 if args.verbose == True: level = logging.INFO
 if args.debug == True: level = logging.DEBUG

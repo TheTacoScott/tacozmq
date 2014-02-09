@@ -1,6 +1,4 @@
 from socket import gethostname
-import struct
-import re
 
 APP_CODE_NAME = "Dirt Diver ZMQ"
 #Cool Breeze,Betty Blue, Hammerhead, Dirt Diver, Whiplash, Whipporwill,Dog Patch 06,Red Cap
@@ -13,7 +11,7 @@ APP_TAGLINE.append("You're going to say THAT about Swifty? To ME of all people? 
 APP_TAGLINE.append("Forget the search feature. Why would we spend time developing something nobody will use? --Scott")
 APP_TAGLINE.append("No is an acceptable answer. --Scott")
 
-APP_VERSION = 0.02
+APP_VERSION = 0.03
 APP_STAGE = "Pre-Alpha"
 APP_AUTHOR = ["Scott Powers"]
 
@@ -26,5 +24,6 @@ HOSTNAME = gethostname()
 CHUNK_SIZE = 1024 * 16
 
 JSON_SETTINGS_FILENAME = "settings.json"
+CERT_STORE_DIR = "certstore/"
 
 KEY_GENERATION_PREFIX = "taconet"

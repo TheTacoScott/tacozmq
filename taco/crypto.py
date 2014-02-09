@@ -11,8 +11,8 @@ def Init_Local_Crypto():
   logging.debug("Started")
   with taco.globals.settings_lock:
     workingdir = taco.globals.settings["TacoNET Certificates Store"]
-    privatedir = os.path.normpath(os.path.abspath(taco.globals.settings["TacoNET Certificates Store"] + "/private"))
-    publicdir = os.path.normpath(os.path.abspath(taco.globals.settings["TacoNET Certificates Store"] + "/public"))
+    privatedir = os.path.normpath(os.path.abspath(taco.globals.settings["TacoNET Certificates Store"] + "/" + taco.globals.settings["Local UUID"] + "/private/"))
+    publicdir  = os.path.normpath(os.path.abspath(taco.globals.settings["TacoNET Certificates Store"] + "/"  + taco.globals.settings["Local UUID"] + "/public/"))
   if not os.path.isdir(privatedir): os.makedirs(privatedir)
   if not os.path.isdir(publicdir): os.makedirs(publicdir)
 
@@ -37,9 +37,6 @@ def Init_Local_Crypto():
 
   logging.debug("Getting keys into globals")
 
-  with taco.globals.settings_lock:
-    workingdir = taco.globals.settings["TacoNET Certificates Store"]
-    privatedir = os.path.normpath(os.path.abspath(taco.globals.settings["TacoNET Certificates Store"] + "/private"))
   client_public_key = s = open(privatedir + "/" + taco.constants.KEY_GENERATION_PREFIX + "-client.key", 'r').read()
   server_public_key = s = open(privatedir + "/" + taco.constants.KEY_GENERATION_PREFIX + "-server.key", 'r').read()
   with taco.globals.public_keys_lock:

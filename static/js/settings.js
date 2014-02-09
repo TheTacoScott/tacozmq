@@ -2,8 +2,8 @@ var nick_pattern = new RegExp("^[a-zA-Z0-9\. ]{3,64}$");
 var ip_pattern = new RegExp("^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?).(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?).(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?).(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$");
 var port_pattern = new RegExp("^0*(?:6553[0-5]|655[0-2][0-9]|65[0-4][0-9]{2}|6[0-4][0-9]{3}|[1-5][0-9]{4}|[1-9][0-9]{1,3}|[0-9])$");
 var limit_pattern = new RegExp("^[1-9][0-9]+$");
-//var z85_pattern = new RegExp("^[A-Za-z0-9\.\-\:\+\=\^\!\/\*\?\&\<\>\(\)\[\]\{\}\@\%\$\#]{40}$");
 var z85_pattern = /^[\.:\+=\^!/\*\?&<>\(\)\[\]\{\}@%\$#a-zA-Z0-9-]{40}$/;
+var uuid_pattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 function Download_Browse()
 {
@@ -162,6 +162,9 @@ function Save_Peers()
 {
   var $api_action = {"action":"peersave","data":[]};
   $("span[id='peers-saving']").removeClass("hide"); 
+  $("span[id='peers-errors']").addClass("hide");
+  $("#peer-listing .peerblock .input-error").removeClass("input-error");
+  $("#peer-listing .peerblock .alert").addClass("hide");
   $("#peer-listing .peerblock").each(function() {
    $host = $(this).find(".peerhost").val();
    $port = $(this).find(".peerport").val();
@@ -172,32 +175,47 @@ function Save_Peers()
    $dynamic = $(this).find(".peerdynamic").is(":checked");
    $enabled = $(this).find(".peer-enabled-button span").hasClass("glyphicon-stop");
 
-   $api_action["data"].push([$host,$port,$nick,$uuid,$client,$server,$dynamic,$enabled]);
-   console.log($api_action);
-  });
-   $.ajax({url:"/api.post",type:"POST",data:JSON.stringify($api_action),contentType:"application/json; charset=utf-8",dataType:"json",success: function(data)
-   {
-    if (data==1) {
-      $("span[id='peers-unsaved']").addClass("hide");
-      $("span[id='peers-saving']").addClass("hide");
-      $("span[id='peers-saved']").hide().removeClass("hide").fadeIn();
-      setTimeout(function()
-        {
-          $("span[id='peers-saved']").fadeOut(1000,function()
-          {
-            $("button[id='save-peers']").prop("disabled",false);
-          });
-        },2000);
-    }
-  }
-  });
+   if ($host.length==0) { $(this).find(".peerhost").removeClass("input-changed").addClass("input-error"); $(this).find(".peerhostbad").removeClass("hide"); }
+   if (!port_pattern.test($port)) { $(this).find(".peerport").removeClass("input-changed").addClass("input-error"); $(this).find(".peerportbad").removeClass("hide"); }
+   if (!nick_pattern.test($nick) && $nick != "") { $(this).find(".peerlocalnick").removeClass("input-changed").addClass("input-error"); $(this).find(".peernickbad").removeClass("hide"); }
+   if (!uuid_pattern.test($uuid)) { $(this).find(".advanced-options").slideDown(); $(this).find(".peeruuid").removeClass("input-changed").addClass("input-error"); $(this).find(".peeruuidbad").removeClass("hide"); }
+   if (!z85_pattern.test($client)) { $(this).find(".advanced-options").slideDown(); $(this).find(".peerclient").removeClass("input-changed").addClass("input-error"); $(this).find(".peerclientbad").removeClass("hide"); }
+   if (!z85_pattern.test($server)) { $(this).find(".advanced-options").slideDown(); $(this).find(".peerserver").removeClass("input-changed").addClass("input-error"); $(this).find(".peerserverbad").removeClass("hide"); }
 
+   $api_action["data"].push([$host,$port,$nick,$uuid,$client,$server,$dynamic,$enabled]);
+  });
+  if ($("#peer-listing .input-error").length == 0)
+  {
+     $.ajax({url:"/api.post",type:"POST",data:JSON.stringify($api_action),contentType:"application/json; charset=utf-8",dataType:"json",success: function(data)
+     {
+      if (data==1) {
+        $("span[id='peers-unsaved']").addClass("hide");
+        $("span[id='peers-saving']").addClass("hide");
+        $("span[id='peers-saved']").hide().removeClass("hide").fadeIn();
+        $("#peer-listing .peerblock .input-changed").removeClass("input-changed");
+        setTimeout(function()
+          {
+            $("span[id='peers-saved']").fadeOut(1000,function()
+            {
+              $("button[id='save-peers']").prop("disabled",false);
+            });
+          },2000);
+      }
+    }
+    });
+  }
+  else
+  {
+    $("span[id='peers-saving']").addClass("hide");
+    $("span[id='peers-errors']").removeClass("hide");
+  }
 }
 function Save_Settings()
 {
   $("input[id^='setting-']").removeClass("input-error");
   $("input[id^='setting-']").removeClass("input-changed");
   $("div[id^='setting-']").addClass("hide");
+  $("span[id='settings-errors']").addClass("hide");
 
   $nickname = $("input[id='setting-nickname']").val();
   $download_location = $("input[id='setting-downloadlocation']").val();
@@ -252,6 +270,10 @@ function Save_Settings()
     });
 
   }
+  else
+  {
+    $("span[id='settings-errors']").removeClass("hide");
+  }
 
   
 }
@@ -262,23 +284,28 @@ function Confirm_Add_Peer()
   try
   {
     var $json_data  = JSON.parse($possible_json);
-    if ('hostname' in $json_data == false) { throw "No hostname field"; }
-    if ('port' in $json_data == false) { throw "No port field"; }
-    if ('serverkey' in $json_data == false) { throw "No serverkey field"; }
-    if ('clientkey' in $json_data == false) { throw "No clientkey field"; }
-    if (!port_pattern.test($json_data["port"])) { throw "Bad Port Format"; }
-    if (!z85_pattern.test($json_data["clientkey"])) { throw "Bad Clientkey Format"; }
-    if (!z85_pattern.test($json_data["serverkey"])) { throw "Bad Serverkey Format"; }
+    
+    if ('hostname' in $json_data == false) { throw "No hostname field, your peer probably did not enter in a hostname before sending you the \"Quick Connect String\"."; }
+    if ('port' in $json_data == false) { throw "No port field,your peer probably did not enter in a port before sending you the \"Quick Connect String\"."; }
+    if ('serverkey' in $json_data == false) { throw "No serverkey field, your peer probably needs to regenerate his public/private keys. You should probably not be seeing this error."; }
+    if ('clientkey' in $json_data == false) { throw "No clientkey field, your peer probably needs to regenerate his public/private keys. You should probably not be seeing this error."; }
+    if (!port_pattern.test($json_data["port"])) { throw "Bad Port Format, your peer provided you with what appears to either be an out-of-range port, or simply not a integer."; }
+    if (!z85_pattern.test($json_data["clientkey"])) { throw "Bad Clientkey Format, your peer has a bad clientkey format. You shouldn't see this error."; }
+    if (!z85_pattern.test($json_data["serverkey"])) { throw "Bad Serverkey Format, your peer has a bad serverkey format. You shouldn't see this error."; }
+    if (!uuid_pattern.test($json_data["uuid"])) { throw "Invalid UUID field, the UUID your peer provided doesn't appear to actually be a valid UUID."; }
+    if ($json_data["uuid"] == $("#addpeermyuuid").val()) { throw "Your peer cannot have the same UUID as yourself. Don't go copying and pasting things randomly. As you see here, this won't work."; }
+    if ($json_data["clientkey"] == $("#addpeermyclientpublic").val()) { throw "Cannot have a duplicate Client Key, you and your peer cannot share the same public keys."; }
+    if ($json_data["serverkey"] == $("#addpeermyserverpublic").val()) { throw "Cannot have a duplicate Server Key, you and your peer cannot share the same public keys."; }
 
     $("div[id='addapeerbelow']").addClass("hide");
-    $("div[id='peer-add-helper']").clone().removeAttr("id").removeClass("hide").attr("id","TEMPPEER").appendTo("div[id='peer-listing']"); 
+    $("div[id='peer-add-helper'] .peerblock").clone().removeAttr("id").removeClass("hide").attr("id","TEMPPEER").appendTo("div[id='peer-listing']"); 
     $("#TEMPPEER .peerhost").val($json_data["hostname"]);
     $("#TEMPPEER .peerport").val($json_data["port"]);
     $("#TEMPPEER .peerlocalnick").val("");
     $("#TEMPPEER .peeruuid").val($json_data["uuid"]);
     $("#TEMPPEER .peerclient").val($json_data["clientkey"]);
     $("#TEMPPEER .peerserver").val($json_data["serverkey"]);
-    $("#TEMPPEER").removeAttr("id").addClass("peerblock");
+    $("#TEMPPEER").removeAttr("id");
     $('#addPeerModal').modal('hide');
     $("span[id='peers-unsaved']").removeClass("hide"); 
     Set_Up_Peer_Buttons();
@@ -286,8 +313,7 @@ function Confirm_Add_Peer()
   }
   catch(err)
   {
-    $("#addPeerModal #bad-connect-string").removeClass("hide");
-    console.log(err);
+    $("#addPeerModal #bad-connect-string").removeClass("hide").find(".exact-error").html(err);
   }
 
 }
@@ -296,8 +322,8 @@ function Update_CopyPastePeerThing()
   var $jsonthing = {};
   $jsonthing["hostname"] = $("#addpeermyhostname").val();
   $jsonthing["port"] = $("#addpeermyport").val();
-  $jsonthing["serverkey"] = $("#addpeermyclientpublic").val();
-  $jsonthing["clientkey"] = $("#addpeermyserverpublic").val();
+  $jsonthing["serverkey"] = $("#addpeermyserverpublic").val();
+  $jsonthing["clientkey"] = $("#addpeermyclientpublic").val();
   $jsonthing["uuid"] = $("#addpeermyuuid").val();
   $("#peerneedsthis").html(JSON.stringify($jsonthing));
 
@@ -307,13 +333,13 @@ function Add_Peer()
   $('#addPeerModal button[id="addpeercancelbutton"]').unbind("click").click(function() {$('#addPeerModal').modal('hide'); } );
   $('#addPeerModal button[id="addpeerconfirmbutton"]').unbind("click").click(function() { Confirm_Add_Peer(); } );
   $('#addPeerModal #ineedthis').val("");
-  $('#addPeerModal').modal();  
+  $('#addPeerModal').modal();
   Update_CopyPastePeerThing();
 }
 function Delete_Peer($id)
 {
-  var $peername = $id.parent().parent().find(".peernick").html() +  " @ " + $id.parent().parent().find(".peerhost").val() +  ":" + $id.parent().parent().find(".peerport").val();
-  var $fadeoutdiv = $id.parent().parent().parent().parent();
+  var $peername = $id.closest(".peerblock").find(".peernick").html() +  " @ " + $id.closest(".peerblock").find(".peerhost").val() +  ":" + $id.closest(".peerblock").find(".peerport").val();
+  var $fadeoutdiv = $id.closest(".peerblock");
   $('#deletePeerModal .modal-body').html("<h5>Delete Peer: <b>"+$peername+"</b>?</h5>");
   $('#deletePeerModal').modal();
   $("button[id='deletepeerconfirmbutton']").unbind("click").click(function() { Confirm_Delete_Peer($peername,$fadeoutdiv); });
@@ -330,7 +356,7 @@ function Set_Up_Peer_Buttons()
 {
   $("button[class~='peer-enabled-button']").unbind("click").click(function() { 
       $(this).data("status",!$(this).data("status"));
-      $(this).parent().parent().parent().parent().toggleClass("green-bg").toggleClass("red-bg");
+      $(this).closest(".peerblock").toggleClass("green-bg").toggleClass("red-bg");
       if ($(this).find("span[class='peer-text']").html() == "Enable Peer") { $(this).find("span[class='peer-text']").html("Disable Peer");  } else { $(this).find("span[class='peer-text']").html("Enable Peer") }
       $(this).find("span[class~='glyphicon']").toggleClass("glyphicon-stop").toggleClass("glyphicon-play");
       $("#peers-unsaved").removeClass("hide");
@@ -346,7 +372,7 @@ function Set_Up_Peer_Buttons()
    $(this).find("span[class~='glyphicon']").toggleClass("glyphicon-wrench").toggleClass("glyphicon-hand-right");
    if ($(this).find('.advanced-text').html() == "Hide Advanced Settings") { $(this).find('.advanced-text').html("Show Advanced Settings"); } else { $(this).find('.advanced-text').html("Hide Advanced Settings"); }
    $button = $(this);
-   $(this).parent().parent().find(".advanced-options").slideToggle();
+   $(this).closest(".peerblock").find(".advanced-options").slideToggle();
 
  });
  $(".delete-peer").unbind("click").click(function() {
@@ -372,7 +398,7 @@ $( document ).ready(function() {
  $("button[id='save-peers']").prop("disabled",false).click(function() { Save_Peers(); });
 
  $('#addShareModal').on('shown.bs.modal', function () {$('#addsharename').focus();  });
- $('#addPeerModal').on('shown.bs.modal', function () {$('#addpeername').focus();  });
+ $('#addPeerModal').on('shown.bs.modal', function () {$('#addpeername').focus(); $("#addPeerModal span").popover();});
 
  $("button[class='close']").click(function() { $(this).parent().addClass("hide");});
  $("span").popover();
@@ -382,6 +408,11 @@ $( document ).ready(function() {
    $(this).addClass("input-changed");
    $("span[id='settings-unsaved']").removeClass("hide");
  });
+ $(".peerblock input").on("change keyup paste", function(){
+   $(this).addClass("input-changed");
+   $("span[id='peers-unsaved']").removeClass("hide");
+ });
+
  $('#addPeerModal #peerneedsthis').click(function() { $(this).select(); } );
  
  $("#addpeermyhostname").on("change keyup paste", function(){ Update_CopyPastePeerThing(); });
