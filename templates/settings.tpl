@@ -28,6 +28,7 @@
         <div class="input-group"><span class="input-group-addon">Your External Port: </span><input maxlength="32" id="addpeermyport" type="text" class="form-control" placeholder="Your External Port"></div>
         <div class="input-group hide"><span class="input-group-addon">Your Server Public Key: </span><input readonly="readonly" id="addpeermyserverpublic" type="text" class="form-control" value="{{local_keys_copy['server']}}"></div>
         <div class="input-group hide"><span class="input-group-addon">Your Client Public Key: </span><input readonly="readonly" id="addpeermyclientpublic" type="text" class="form-control" value="{{local_keys_copy['client']}}"></div>
+        <div class="input-group hide"><span class="input-group-addon">Your UUID: </span><input readonly="readonly" id="addpeermyuuid" type="text" class="form-control" value="{{local_settings_copy['Local UUID']}}"></div>
         <br>
         <h4>Below is the "Quick Connect String" your peer will need.</h4>
         <textarea id="peerneedsthis" readonly="readonly" class="form-control" rows="2"></textarea>

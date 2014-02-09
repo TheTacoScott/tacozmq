@@ -269,17 +269,18 @@ function Confirm_Add_Peer()
     if (!port_pattern.test($json_data["port"])) { throw "Bad Port Format"; }
     if (!z85_pattern.test($json_data["clientkey"])) { throw "Bad Clientkey Format"; }
     if (!z85_pattern.test($json_data["serverkey"])) { throw "Bad Serverkey Format"; }
-    $uuid = guid();
+
     $("div[id='addapeerbelow']").addClass("hide");
     $("div[id='peer-add-helper']").clone().removeAttr("id").removeClass("hide").attr("id","TEMPPEER").appendTo("div[id='peer-listing']"); 
     $("#TEMPPEER .peerhost").val($json_data["hostname"]);
     $("#TEMPPEER .peerport").val($json_data["port"]);
     $("#TEMPPEER .peerlocalnick").val("");
-    $("#TEMPPEER .peeruuid").val(guid());
+    $("#TEMPPEER .peeruuid").val($json_data["uuid"]);
     $("#TEMPPEER .peerclient").val($json_data["clientkey"]);
     $("#TEMPPEER .peerserver").val($json_data["serverkey"]);
     $("#TEMPPEER").removeAttr("id").addClass("peerblock");
-    $('#addPeerModal').modal('hide');  
+    $('#addPeerModal').modal('hide');
+    $("span[id='peers-unsaved']").removeClass("hide"); 
     Set_Up_Peer_Buttons();
     
   }
@@ -297,6 +298,7 @@ function Update_CopyPastePeerThing()
   $jsonthing["port"] = $("#addpeermyport").val();
   $jsonthing["serverkey"] = $("#addpeermyclientpublic").val();
   $jsonthing["clientkey"] = $("#addpeermyserverpublic").val();
+  $jsonthing["uuid"] = $("#addpeermyuuid").val();
   $("#peerneedsthis").html(JSON.stringify($jsonthing));
 
 }
