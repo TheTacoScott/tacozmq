@@ -73,3 +73,18 @@ margin-top: 0px;
 {
   display: none;
 }
+.glyph-big
+{
+ font-size:32px;
+}
+
+.green-bg
+{
+  color: rgb(60, 118, 61); 
+  background-color: rgb(223, 240, 216);
+}
+.red-bg
+{
+  color: rgb(169, 68, 66); 
+  background-color: rgb(242, 222, 222);
+}

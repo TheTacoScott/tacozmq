@@ -14,10 +14,10 @@ default_settings_kv["Local UUID"] = unicode(str(uuid.uuid4()))
 default_settings_kv["TacoNET Certificates Store"] = "certstore/"
 
 default_peers_kv = {}
-default_peers_kv["Enabled"] = False
-default_peers_kv["Hostname"] = "127.0.0.1"
-default_peers_kv["Port"] = "9001"
-default_peers_kv["Nickname Local"] = "Local Nickname"
-default_peers_kv["Nickname Remote"] = "Remote Nickname"
-default_peers_kv["Broadcast"] = True
-default_peers_kv["Dynamic"] = False
+default_peers_kv["enabled"] = False
+default_peers_kv["hostname"] = "127.0.0.1"
+default_peers_kv["port"] = "9001"
+default_peers_kv["localnick"] = "Local Nickname"
+default_peers_kv["dynamic"] = False
+default_peers_kv["clientkey"] = ""
+default_peers_kv["serverkey"] = ""

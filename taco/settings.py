@@ -38,10 +38,10 @@ def Load_Settings(needlock=True):
     save_after = True
 
   logging.debug("Verifying settings peer dict is in correct format")
-  for peer_uuid in taco.globals.settings["Peers"].keys():
-    for keyname in taco.defaults.default_peers_kv.keys():
-      taco.globals.settings["Peers"][peer_uuid][keyname] = taco.defaults.default_peers_kv[keyname]
-      save_after = True
+  #for peer_uuid in taco.globals.settings["Peers"].keys():
+  #  for keyname in taco.defaults.default_peers_kv.keys():
+  #    taco.globals.settings["Peers"][peer_uuid][keyname] = taco.defaults.default_peers_kv[keyname]
+  #    save_after = True
   
   if needlock: taco.globals.settings_lock.release()
 

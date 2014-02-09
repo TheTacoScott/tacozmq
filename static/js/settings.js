@@ -1,3 +1,10 @@
+var nick_pattern = new RegExp("^[a-zA-Z0-9\. ]{3,64}$");
+var ip_pattern = new RegExp("^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?).(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?).(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?).(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$");
+var port_pattern = new RegExp("^0*(?:6553[0-5]|655[0-2][0-9]|65[0-4][0-9]{2}|6[0-4][0-9]{3}|[1-5][0-9]{4}|[1-9][0-9]{1,3}|[0-9])$");
+var limit_pattern = new RegExp("^[1-9][0-9]+$");
+//var z85_pattern = new RegExp("^[A-Za-z0-9\.\-\:\+\=\^\!\/\*\?\&\<\>\(\)\[\]\{\}\@\%\$\#]{40}$");
+var z85_pattern = /^[\.:\+=\^!/\*\?&<>\(\)\[\]\{\}@%\$#a-zA-Z0-9-]{40}$/;
+
 function Download_Browse()
 {
   Share_Browse("/",$("#downloadlistdiv"),$("#downloadloc"))
@@ -127,7 +134,7 @@ function Save_Shares()
       $api_action["data"].push([$sharename,$sharelocation]);
     }
   });
-  $.ajax({url:"/api/share",type:"POST",data:JSON.stringify($api_action),contentType:"application/json; charset=utf-8",dataType:"json",success: function(data)
+  $.ajax({url:"/api.post",type:"POST",data:JSON.stringify($api_action),contentType:"application/json; charset=utf-8",dataType:"json",success: function(data)
   { 
     if (data==1) { 
       $("span[id='shares-unsaved']").addClass("hide");
@@ -151,14 +158,43 @@ function Set_Up_Delete_Share()
  $("button[data-type='share'][data-action='delete']").unbind("click").click(function() { Delete_Share($(this)); });
  $("button[data-type='share'][data-action='delete']").prop("disabled",false);
 }
+function Save_Peers()
+{
+  var $api_action = {"action":"peersave","data":[]};
+  $("span[id='peers-saving']").removeClass("hide"); 
+  $("#peer-listing .peerblock").each(function() {
+   $host = $(this).find(".peerhost").val();
+   $port = $(this).find(".peerport").val();
+   $nick = $(this).find(".peerlocalnick").val();
+   $uuid = $(this).find(".peeruuid").val();
+   $client = $(this).find(".peerclient").val();
+   $server = $(this).find(".peerserver").val();
+   $dynamic = $(this).find(".peerdynamic").is(":checked");
+   $enabled = $(this).find(".peer-enabled-button span").hasClass("glyphicon-stop");
 
+   $api_action["data"].push([$host,$port,$nick,$uuid,$client,$server,$dynamic,$enabled]);
+   console.log($api_action);
+  });
+   $.ajax({url:"/api.post",type:"POST",data:JSON.stringify($api_action),contentType:"application/json; charset=utf-8",dataType:"json",success: function(data)
+   {
+    if (data==1) {
+      $("span[id='peers-unsaved']").addClass("hide");
+      $("span[id='peers-saving']").addClass("hide");
+      $("span[id='peers-saved']").hide().removeClass("hide").fadeIn();
+      setTimeout(function()
+        {
+          $("span[id='peers-saved']").fadeOut(1000,function()
+          {
+            $("button[id='save-peers']").prop("disabled",false);
+          });
+        },2000);
+    }
+  }
+  });
+
+}
 function Save_Settings()
 {
-  var nick_pattern = new RegExp("^[a-zA-Z0-9\. ]{3,64}$");
-  var ip_pattern = new RegExp("^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?).(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?).(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?).(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$");
-  var port_pattern = new RegExp("^0*(?:6553[0-5]|655[0-2][0-9]|65[0-4][0-9]{2}|6[0-4][0-9]{3}|[1-5][0-9]{4}|[1-9][0-9]{1,3}|[0-9])$");
-  var limit_pattern = new RegExp("^[1-9][0-9]+$");
-
   $("input[id^='setting-']").removeClass("input-error");
   $("input[id^='setting-']").removeClass("input-changed");
   $("div[id^='setting-']").addClass("hide");
@@ -198,7 +234,7 @@ function Save_Settings()
     $api_action["data"].push(["Download Location",$download_location]);
     $api_action["data"].push(["TacoNET Certificates Store",$cert]);
     $("button[id='save-settings']").prop("disabled",true);
-    $.ajax({url:"/api/settings",type:"POST",data:JSON.stringify($api_action),contentType:"application/json; charset=utf-8",dataType:"json",success: function(data)
+    $.ajax({url:"/api.post",type:"POST",data:JSON.stringify($api_action),contentType:"application/json; charset=utf-8",dataType:"json",success: function(data)
       {
         if (data==1) {
           $("span[id='settings-unsaved']").addClass("hide");
@@ -226,11 +262,31 @@ function Confirm_Add_Peer()
   try
   {
     var $json_data  = JSON.parse($possible_json);
-    if(!'hostname' in $json_data) { throw "No hostname field"; }
+    if ('hostname' in $json_data == false) { throw "No hostname field"; }
+    if ('port' in $json_data == false) { throw "No port field"; }
+    if ('serverkey' in $json_data == false) { throw "No serverkey field"; }
+    if ('clientkey' in $json_data == false) { throw "No clientkey field"; }
+    if (!port_pattern.test($json_data["port"])) { throw "Bad Port Format"; }
+    if (!z85_pattern.test($json_data["clientkey"])) { throw "Bad Clientkey Format"; }
+    if (!z85_pattern.test($json_data["serverkey"])) { throw "Bad Serverkey Format"; }
+    $uuid = guid();
+    $("div[id='addapeerbelow']").addClass("hide");
+    $("div[id='peer-add-helper']").clone().removeAttr("id").removeClass("hide").attr("id","TEMPPEER").appendTo("div[id='peer-listing']"); 
+    $("#TEMPPEER .peerhost").val($json_data["hostname"]);
+    $("#TEMPPEER .peerport").val($json_data["port"]);
+    $("#TEMPPEER .peerlocalnick").val("");
+    $("#TEMPPEER .peeruuid").val(guid());
+    $("#TEMPPEER .peerclient").val($json_data["clientkey"]);
+    $("#TEMPPEER .peerserver").val($json_data["serverkey"]);
+    $("#TEMPPEER").removeAttr("id").addClass("peerblock");
+    $('#addPeerModal').modal('hide');  
+    Set_Up_Peer_Buttons();
+    
   }
   catch(err)
   {
     $("#addPeerModal #bad-connect-string").removeClass("hide");
+    console.log(err);
   }
 
 }
@@ -252,19 +308,33 @@ function Add_Peer()
   $('#addPeerModal').modal();  
   Update_CopyPastePeerThing();
 }
+function Delete_Peer($id)
+{
+  var $peername = $id.parent().parent().find(".peernick").html() +  " @ " + $id.parent().parent().find(".peerhost").val() +  ":" + $id.parent().parent().find(".peerport").val();
+  var $fadeoutdiv = $id.parent().parent().parent().parent();
+  $('#deletePeerModal .modal-body').html("<h5>Delete Peer: <b>"+$peername+"</b>?</h5>");
+  $('#deletePeerModal').modal();
+  $("button[id='deletepeerconfirmbutton']").unbind("click").click(function() { Confirm_Delete_Peer($peername,$fadeoutdiv); });
 
+}
+function Confirm_Delete_Peer($peer,$div)
+{
+  $('#deletePeerModal').modal('hide');
+  $div.fadeOut(1000,function() { $(this).remove(); if ($("div[id='peer-listing'] .peerblock").length == 0) { $("div[id='addapeerbelow']").removeClass("hide"); } });
+  $("span[id='peers-unsaved']").removeClass("hide");
+
+}
 function Set_Up_Peer_Buttons()
 {
   $("button[class~='peer-enabled-button']").unbind("click").click(function() { 
-    $(this).toggleClass("btn-success").toggleClass("btn-danger"); 
       $(this).data("status",!$(this).data("status"));
-      if ($(this).find("span[class='peer-text']").html() == "Peer Enabled") { $(this).find("span[class='peer-text']").html("Peer Disabled");  } else { $(this).find("span[class='peer-text']").html("Peer Enabled") }
+      $(this).parent().parent().parent().parent().toggleClass("green-bg").toggleClass("red-bg");
+      if ($(this).find("span[class='peer-text']").html() == "Enable Peer") { $(this).find("span[class='peer-text']").html("Disable Peer");  } else { $(this).find("span[class='peer-text']").html("Enable Peer") }
       $(this).find("span[class~='glyphicon']").toggleClass("glyphicon-stop").toggleClass("glyphicon-play");
       $("#peers-unsaved").removeClass("hide");
   });
 
   $("button[class~='peer-static-button']").unbind("click").click(function() {
-    $(this).toggleClass("btn-info").toggleClass("btn-warning");
       $(this).data("status",!$(this).data("status"));
       if ($(this).find("span[class='peer-text']").html() == "Dynamic Hostname/IP") { $(this).find("span[class='peer-text']").html("Static Hostname/IP");  } else { $(this).find("span[class='peer-text']").html("Dynamic Hostname/IP") }
       $(this).find("span[class~='glyphicon']").toggleClass("glyphicon-random").toggleClass("glyphicon-lock");
@@ -277,21 +347,27 @@ function Set_Up_Peer_Buttons()
    $(this).parent().parent().find(".advanced-options").slideToggle();
 
  });
+ $(".delete-peer").unbind("click").click(function() {
+   Delete_Peer($(this));
+   $(this).prop("disabled",false); 
+ });
 
   $("button").popover(); 
 }
 
 $( document ).ready(function() {
  Set_Up_Delete_Share();
- Set_Up_Peer_Buttons()
+ Set_Up_Peer_Buttons();
  $("button[id='add-share']").click(function() { Add_Share(); });
  
  $("button[id='browsedownload']").click(function() { Download_Browse(); });
  $("button[id='browsecert']").click(function() { Cert_Browse(); });
 
  $("button[id='add-peer']").click(function() { Add_Peer(); });
+
  $("button[id='save-shares']").prop("disabled",false).click(function() { Save_Shares(); });
  $("button[id='save-settings']").prop("disabled",false).click(function() { Save_Settings(); });
+ $("button[id='save-peers']").prop("disabled",false).click(function() { Save_Peers(); });
 
  $('#addShareModal').on('shown.bs.modal', function () {$('#addsharename').focus();  });
  $('#addPeerModal').on('shown.bs.modal', function () {$('#addpeername').focus();  });
