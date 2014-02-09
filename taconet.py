@@ -35,7 +35,7 @@ logging.basicConfig(level=level, format="[%(levelname)s]\t[%(asctime)s] [%(filen
 import taco.bottle
 import taco.routes
 import taco.server
-import taco.dispatch
+import taco.clients
 import taco.crypto
 import taco.settings
 
@@ -45,8 +45,11 @@ logging.info(taco.constants.APP_NAME + " v" + str(taco.constants.APP_VERSION) + 
 taco.settings.Load_Settings()
 taco.crypto.Init_Local_Crypto()
 
-taco.globals.dispatcher = taco.dispatch.TacoDispatch()
-taco.globals.dispatcher.start()
+taco.globals.server = taco.server.TacoServer()
+taco.globals.server.start()
+
+taco.globals.clients = taco.clients.TacoClients()
+taco.globals.clients.start()
 
 logging.info("Starting Local Webserver on " + taco.globals.settings["Web IP"] + ":" + str(taco.globals.settings["Web Port"]))
 logging.info("*** TacoNET Running ***")
