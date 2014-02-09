@@ -33,6 +33,11 @@
         <textarea id="peerneedsthis" readonly="readonly" class="form-control" rows="2"></textarea>
         <br>
         <h4>Paste the "Quick Connect String" you recieved from your peer below.</h4>
+        <div class="alert alert-warning alert-dismissable hide" id='bad-connect-string'>
+          <button type="button" class="close">&times;</button>
+          <strong>Warning!</strong> The text below does not appear to be a valid "Quick Connect String". Have your peer create a new one, and confirm you have pasted it correctly.
+        </div>
+
         <textarea id="ineedthis" class="form-control" rows="2"></textarea>
 
       </div>
@@ -128,7 +133,7 @@
 <div class="modal fade" id="deleteShareModal" tabindex="-1" role="dialog">
   <div class="modal-dialog">
     <div class="modal-content">
-      <div class="modal-header">
+      <div class="modal-header modal-titlebar">
         <h4 class="modal-title">Delete Share</h4>
       </div>
       <div class="modal-body">
@@ -152,38 +157,38 @@
       <div class="alert alert-warning alert-dismissable alert-tweak hide" id="setting-nickname-alert"><button type="button" class="close">&times;</button><strong>Warning!</strong> Nickname must be between 3 and 64 characters long, and must only contain alphanumeric characters, spaces, and periods. <span class="glyphicon glyphicon-hand-down"></span></div>
       <div class="input-group">
         <span class="error input-group-addon"><span data-trigger="hover" data-container="body" data-placement="right" data-content="A unique nickname that you wish to be identified as on your personal TacoNET" class="glyphicon glyphicon-info-sign"></span> Your Nickname</span>
-        <input id="setting-nickname" type="text" class="form-control" value="{{local_settings_copy["Nickname"]}}">
+        <input autocomplete="off" id="setting-nickname" type="text" class="form-control" value="{{local_settings_copy["Nickname"]}}">
       </div>
 
       <div class="input-group"><span class="input-group-addon"><span data-trigger="hover" data-container="body" data-placement="right" data-content="The location you want to save downloaded files" class="glyphicon glyphicon-info-sign"></span> Download Location</span>
-      <input id="setting-downloadlocation" readonly="readonly" type="text" class="form-control" value="{{os.path.normpath(os.path.abspath(local_settings_copy["Download Location"]))}}"><span class="input-group-btn"><button id="browsedownload" class="btn btn-default" type="button"><span class="glyphicon glyphicon-folder-open"></span>&nbsp Browse</button></span></div>
+      <input autocomplete="off" id="setting-downloadlocation" readonly="readonly" type="text" class="form-control" value="{{os.path.normpath(os.path.abspath(local_settings_copy["Download Location"]))}}"><span class="input-group-btn"><button id="browsedownload" class="btn btn-default" type="button"><span class="glyphicon glyphicon-folder-open"></span>&nbsp Browse</button></span></div>
 
       <div class="alert alert-warning alert-dismissable alert-tweak hide" id="setting-appip-alert"><button type="button" class="close">&times;</button><strong>Warning!</strong> You must specify the ip in numeric form only. <span class="glyphicon glyphicon-hand-down"></span></div>
       <div class="input-group"><span class="input-group-addon"><span data-trigger="hover" data-container="body" data-placement="right" data-content="The IP address that the TacoNET application server will bind to. If you are unaware of what that means, it is best to leave it as the default of '0.0.0.0'" class="glyphicon glyphicon-info-sign"></span> Application IP</span>
-      <input id="setting-appip" type="text" class="form-control" value="{{local_settings_copy["Application IP"]}}"></div>
+      <input autocomplete="off" id="setting-appip" type="text" class="form-control" value="{{local_settings_copy["Application IP"]}}"></div>
 
       <div class="alert alert-warning alert-dismissable alert-tweak hide" id="setting-appport-alert"><button type="button" class="close">&times;</button><strong>Warning!</strong> The application port must be a valid port number. <span class="glyphicon glyphicon-hand-down"></span></div>
       <div class="input-group"><span class="input-group-addon"><span data-trigger="hover" data-container="body" data-placement="right" data-content="The PORT that the TacoNET application server will bind to. If you are unaware of what that means, it is best to leave it as the default of '9001'. This port will need be public accessible by anyone on your personal TacoNET. Router configuration may be required." class="glyphicon glyphicon-info-sign"></span> Application Port</span>
-      <input id="setting-appport" type="text" class="form-control" value="{{local_settings_copy["Application Port"]}}"></div>
+      <input autocomplete="off" id="setting-appport" type="text" class="form-control" value="{{local_settings_copy["Application Port"]}}"></div>
 
       <div class="alert alert-warning alert-dismissable alert-tweak hide" id="setting-webip-alert"><button type="button" class="close">&times;</button><strong>Warning!</strong> You must specify the ip in numeric form only. <span class="glyphicon glyphicon-hand-down"></span></div>
       <div class="input-group"><span class="input-group-addon"><span data-trigger="hover" data-container="body" data-placement="right" data-content="The IP address that the TacoNET web interface will bind to. If you are running TacoNET on the same system you are accessing it's web interface from, it's best to leave this as the default of '127.0.0.1', otherwise it may be wise to use '0.0.0.0'. If you are unaware of what this is, leave it the default." class="glyphicon glyphicon-info-sign"></span> Web Interface IP</span>
-      <input id="setting-webip" type="text" class="form-control" value="{{local_settings_copy["Web IP"]}}"></div>
+      <input autocomplete="off" id="setting-webip" type="text" class="form-control" value="{{local_settings_copy["Web IP"]}}"></div>
 
       <div class="alert alert-warning alert-dismissable alert-tweak hide" id="setting-webport-alert"><button type="button" class="close">&times;</button><strong>Warning!</strong> The web server port must be a valid port number. <span class="glyphicon glyphicon-hand-down"></span></div>
       <div class="input-group"><span class="input-group-addon"><span data-trigger="hover" data-container="body" data-placement="right" data-content="The PORT that the TacoNET web server will bind to. If you are unaware of what that means, it is best to leave it as the default of '9002'. This port will typically NOT need be public accessible. This is the port you'll need to use to access TacoNET via your web browser." class="glyphicon glyphicon-info-sign"></span> Web Interface Port</span>
-      <input id="setting-webport" type="text" class="form-control" value="{{local_settings_copy["Web Port"]}}"></div>
+      <input autocomplete="off" id="setting-webport" type="text" class="form-control" value="{{local_settings_copy["Web Port"]}}"></div>
 
       <div class="alert alert-warning alert-dismissable alert-tweak hide" id="setting-down-alert"><button type="button" class="close">&times;</button><strong>Warning!</strong> The download limit must be expressed as a whole integer. It needs to be greater than 1. <span class="glyphicon glyphicon-hand-down"></span></div>
       <div class="input-group"><span class="input-group-addon"><span data-trigger="hover" data-container="body" data-placement="right" data-content="This is the limit TacoNET will attempt to respect when downloading content. Since ZeroMQ is a bit of socket magic, TacoNET will ATTEMPT to respect this limit." class="glyphicon glyphicon-info-sign"></span> Download Limit in KB/s</span>
-      <input id="setting-downlimit" type="text" class="form-control" value="{{local_settings_copy["Download Limit"]}}"></div>
+      <input autocomplete="off" id="setting-downlimit" type="text" class="form-control" value="{{local_settings_copy["Download Limit"]}}"></div>
 
       <div class="alert alert-warning alert-dismissable alert-tweak hide" id="setting-up-alert"><button type="button" class="close">&times;</button><strong>Warning!</strong> The upload limit must be expressed as a whole integer. It needs to be greater than 1. <span class="glyphicon glyphicon-hand-down"></span></div>
       <div class="input-group"><span class="input-group-addon"><span data-trigger="hover" data-container="body" data-placement="right" data-content="This is the limit TacoNET will attempt to respect when uploading content. Since ZeroMQ is a bit of socket magic, TacoNET will ATTEMPT to respect this limit." class="glyphicon glyphicon-info-sign"></span> Upload Limit in KB/s</span>
-      <input id="setting-uplimit" type="text" class="form-control" value="{{local_settings_copy["Upload Limit"]}}"></div>
+      <input autocomplete="off" id="setting-uplimit" type="text" class="form-control" value="{{local_settings_copy["Upload Limit"]}}"></div>
 
       <div class="input-group"><span class="input-group-addon"><span data-trigger="hover" data-container="body" data-placement="right" data-content="The location your want to store your public and private certificates for use with your personal TacoNET. If you are unaware of publickey cryptography concepts, it's best to just leave this the default." class="glyphicon glyphicon-info-sign"></span> TacoNET Certificate Store</span>
-      <input id="setting-certlocation" readonly="readonly" type="text" class="form-control" value="{{os.path.normpath(os.path.abspath(local_settings_copy["TacoNET Certificates Store"]))}}"><span class="input-group-btn"><button id="browsecert" class="btn btn-default" type="button"><span class="glyphicon glyphicon-folder-open"></span>&nbsp Browse</button></span></div>
+      <input autocomplete="off" id="setting-certlocation" readonly="readonly" type="text" class="form-control" value="{{os.path.normpath(os.path.abspath(local_settings_copy["TacoNET Certificates Store"]))}}"><span class="input-group-btn"><button id="browsecert" class="btn btn-default" type="button"><span class="glyphicon glyphicon-folder-open"></span>&nbsp Browse</button></span></div>
 
     </div>
     <div class="panel-footer text-right">
@@ -249,17 +254,27 @@
       <div id="peer-add-helper">
         <div class="panel panel-default panel-padding">
           <div class="panel-body">
-            <h4><span class="glyphicon glyphicon-user"></span> Peer Nickname <small>( Local Nickname )</small></h4>
             <div class="row">
-              <div class="col-md-10">
-                <div class="input-group"><span class="input-group-addon">Hostname</span><input type="text" class="form-control" value="External Hostname"></div>
-                <div class="input-group"><span class="input-group-addon">Port</span><input type="text" class="form-control" value="External Port"></div>
-                <div class="input-group"><span class="input-group-addon">Local Nickname</span><input type="text" class="form-control" value="Local Nickname"></div>
+              <div class="col-md-8">
+              <h4><span class="glyphicon glyphicon-user"></span> Peer Nickname <small>( Local Nickname )</small></h4>
+                <div class="input-group"><span class="input-group-addon">Hostname or IP</span><input autocomplete="off" type="text" class="form-control" placeholder="External Hostname" value=""></div>
+                <div class="input-group"><span class="input-group-addon">Port</span><input autocomplete="off" type="text" class="form-control" placeholder="External Port" value=""></div>
+                <div class="input-group"><span class="input-group-addon">Local Nickname</span><input autocomplete="off" type="text" class="form-control" placeholder="Local Nickname"></div>
+                <div class="advanced-options">
+                  <div class="input-group"><span class="input-group-addon">UUID</span><input autocomplete="off" type="text" class="form-control" placeholder="Local Nickname"></div>
+                  <div class="input-group"><span class="input-group-addon">Client Public</span><input autocomplete="off" type="text" class="form-control" placeholder="Local Nickname"></div>
+                  <div class="input-group"><span class="input-group-addon">Server Public</span><input autocomplete="off" type="text" class="form-control" placeholder="Local Nickname"></div>
+                </div>
               </div>
-              <div class="col-md-2 text-center">
-                <button type="button" class="btn btn-success peer-enabled-button" data-status=1 data-trigger="hover" data-container="body" data-placement="left" data-content="Click to toggle between enabled and disabled.">
-                <span class="glyphicon glyphicon-ok"></span><br><span class="peer-text">Peer is Enabled</span>
-                </button><hr>
+              <div class="col-md-4 text-center">
+                <button type="button" class="btn btn-danger peer-enabled-button">
+                <span class="glyphicon glyphicon-stop"></span><br><span class="peer-text">Peer Disabled</span>
+                </button>
+                <button type="button" class="btn btn-info peer-static-button">
+                <span class="glyphicon glyphicon-random"></span><br><span class="peer-text">Dynamic Hostname/IP</span>
+                </button>
+                <hr>
+                <button type="button" class="btn btn-default toggle-advanced-peer-options"><span class="glyphicon glyphicon-wrench"></span> <span class="advanced-text">Show Advanced Settings</span></button><hr>
                 <button type="button" class="btn btn-default"><span class="glyphicon glyphicon-remove"></span> Delete </button>
               </div>
             </div>
@@ -267,7 +282,7 @@
         </div>
     </div>
 
-    <div class="panel-body text-center">
+    <div id='peer-listing' class="panel-body text-center">
     %if len(local_settings_copy["Peers"].keys()) == 0:
      <div id="addapeerbelow">
     %else:

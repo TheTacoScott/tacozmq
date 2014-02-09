@@ -222,6 +222,17 @@ function Save_Settings()
 
 function Confirm_Add_Peer()
 {
+  var $possible_json = $('#addPeerModal #ineedthis').val();
+  try
+  {
+    var $json_data  = JSON.parse($possible_json);
+    if(!'hostname' in $json_data) { throw "No hostname field"; }
+  }
+  catch(err)
+  {
+    $("#addPeerModal #bad-connect-string").removeClass("hide");
+  }
+
 }
 function Update_CopyPastePeerThing()
 {
@@ -237,6 +248,7 @@ function Add_Peer()
 {
   $('#addPeerModal button[id="addpeercancelbutton"]').unbind("click").click(function() {$('#addPeerModal').modal('hide'); } );
   $('#addPeerModal button[id="addpeerconfirmbutton"]').unbind("click").click(function() { Confirm_Add_Peer(); } );
+  $('#addPeerModal #ineedthis').val("");
   $('#addPeerModal').modal();  
   Update_CopyPastePeerThing();
 }
@@ -246,12 +258,27 @@ function Set_Up_Peer_Buttons()
   $("button[class~='peer-enabled-button']").unbind("click").click(function() { 
     $(this).toggleClass("btn-success").toggleClass("btn-danger"); 
       $(this).data("status",!$(this).data("status"));
-      var $msg = "Peer is Enabled"; if (!$(this).data("status")) { $msg = "Peer is Disabled";  }
-      $(this).find("span[class='peer-text']").html($msg);
-      $(this).find("span[class~='glyphicon']").toggleClass("glyphicon-ok").toggleClass("glyphicon-remove");
+      if ($(this).find("span[class='peer-text']").html() == "Peer Enabled") { $(this).find("span[class='peer-text']").html("Peer Disabled");  } else { $(this).find("span[class='peer-text']").html("Peer Enabled") }
+      $(this).find("span[class~='glyphicon']").toggleClass("glyphicon-stop").toggleClass("glyphicon-play");
       $("#peers-unsaved").removeClass("hide");
   });
-  
+
+  $("button[class~='peer-static-button']").unbind("click").click(function() {
+    $(this).toggleClass("btn-info").toggleClass("btn-warning");
+      $(this).data("status",!$(this).data("status"));
+      if ($(this).find("span[class='peer-text']").html() == "Dynamic Hostname/IP") { $(this).find("span[class='peer-text']").html("Static Hostname/IP");  } else { $(this).find("span[class='peer-text']").html("Dynamic Hostname/IP") }
+      $(this).find("span[class~='glyphicon']").toggleClass("glyphicon-random").toggleClass("glyphicon-lock");
+      $("#peers-unsaved").removeClass("hide");
+  });
+ $(".toggle-advanced-peer-options").unbind("click").click(function() {
+   $(this).find("span[class~='glyphicon']").toggleClass("glyphicon-wrench").toggleClass("glyphicon-hand-right");
+   if ($(this).find('.advanced-text').html() == "Hide Advanced Settings") { $(this).find('.advanced-text').html("Show Advanced Settings"); } else { $(this).find('.advanced-text').html("Hide Advanced Settings"); }
+   $button = $(this);
+   $(this).parent().parent().find(".advanced-options").slideToggle();
+
+ });
+
+  $("button").popover(); 
 }
 
 $( document ).ready(function() {
@@ -277,7 +304,7 @@ $( document ).ready(function() {
    $(this).addClass("input-changed");
    $("span[id='settings-unsaved']").removeClass("hide");
  });
- $('#addPeerModal textarea').click(function() { $(this).select(); } );
+ $('#addPeerModal #peerneedsthis').click(function() { $(this).select(); } );
  
  $("#addpeermyhostname").on("change keyup paste", function(){ Update_CopyPastePeerThing(); });
  $("#addpeermyport").on("change keyup paste", function(){ Update_CopyPastePeerThing(); });

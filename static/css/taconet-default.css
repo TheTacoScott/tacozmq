@@ -44,13 +44,6 @@ body {
 {
 margin-top: 0px;
 }
-.panel-padding .btn-success,
-.panel-padding .btn-info,
-.panel-padding .btn-warning,
-.panel-padding .btn-danger
-{
-  width: 100%;
-}
 .panel-padding hr
 {
   margin-top:5px;
@@ -65,7 +58,7 @@ margin-top: 0px;
 }
 .modal-title
 {
-  text-shadow: 1px 1px 3px #000000;
+  text-shadow: 1px 1px 5px #000000;
 }
 .modal-footer
 {
@@ -75,4 +68,8 @@ margin-top: 0px;
 .modal-body .list-group
 {
   margin-bottom: 0px;
+}
+.advanced-options
+{
+  display: none;
 }
