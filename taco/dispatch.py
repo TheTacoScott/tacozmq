@@ -6,6 +6,7 @@ import taco.globals
 import taco.constants
 import os
 import socket
+import msgpack
 
 class TacoDispatch(threading.Thread):
   def __init__(self):
