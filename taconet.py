@@ -24,14 +24,12 @@ if sys.version_info < (2, 6, 5):
 parser = argparse.ArgumentParser(description='TacoNET: a darknet written in python and zeromq')
 parser.add_argument('--config', default=taco.constants.JSON_SETTINGS_FILENAME,dest='configfile',help='specify the location of the config json')
 parser.add_argument("--verbose", default=False,dest="verbose",help="increase output verbosity",action="store_true")
-parser.add_argument("--debug", default=False,dest="debug",help="increase output verbosity to an insane level",action="store_true")
 args = parser.parse_args()
 
 taco.constants.JSON_SETTINGS_FILENAME = args.configfile
 
-level = logging.ERROR
-if args.verbose == True: level = logging.INFO
-if args.debug == True: level = logging.DEBUG
+level = logging.INFO
+if args.verbose == True: level = logging.DEBUG
 logging.basicConfig(level=level, format="[%(levelname)s]\t[%(asctime)s] [%(filename)s:%(lineno)d] [%(funcName)s] %(message)s")
 
 import taco.bottle
@@ -47,5 +45,9 @@ logging.info(taco.constants.APP_NAME + " v" + str(taco.constants.APP_VERSION) + 
 taco.settings.Load_Settings()
 taco.crypto.Init_Local_Crypto()
 
+taco.globals.dispatcher = taco.dispatch.TacoDispatch()
+taco.globals.dispatcher.start()
+
 logging.info("Starting Local Webserver on " + taco.globals.settings["Web IP"] + ":" + str(taco.globals.settings["Web Port"]))
-taco.bottle.run(host=taco.globals.settings["Web IP"], port=int(taco.globals.settings["Web Port"]),reloader=False,quiet=False,debug=True,server="cherrypy")
+logging.info("*** TacoNET Running ***")
+taco.bottle.run(host=taco.globals.settings["Web IP"], port=int(taco.globals.settings["Web Port"]),reloader=False,quiet=True,debug=True,server="cherrypy")

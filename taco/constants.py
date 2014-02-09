@@ -27,3 +27,5 @@ JSON_SETTINGS_FILENAME = "settings.json"
 CERT_STORE_DIR = "certstore/"
 
 KEY_GENERATION_PREFIX = "taconet"
+
+CLIENT_RECONNECT = 60

@@ -15,17 +15,22 @@ public_keys_lock = threading.Lock()
 public_keys = {}
 
 def continue_running():
-    return_value = True
-    with taco.globals.continue_running_lock:
-        return_value = taco.globals.continue_running_value
-    return return_value
+  return_value = True
+  with taco.globals.continue_running_lock:
+    return_value = taco.globals.continue_running_value
+  return return_value
     
 def stop_running():
-    with taco.globals.continue_running_lock:
-        taco.globals.continue_running_value = False
+  with taco.globals.continue_running_lock:
+    taco.globals.continue_running_value = False
 
 def properexit(signum, frame):
   logging.warning("SIGINT Detected, stopping TacoNET")
   stop_running()
+  logging.info("Stopping Dispatcher")
+  dispatcher.stop_running()
+  dispatcher.join()
+  logging.info("Dispatcher Stopped Successfully")
+  logging.info("Clean Exit")
   os._exit(3)
 
