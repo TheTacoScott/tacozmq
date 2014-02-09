@@ -12,7 +12,9 @@ def Init_Local_Crypto():
   with taco.globals.settings_lock:
     workingdir = taco.globals.settings["TacoNET Certificates Store"]
     privatedir = os.path.normpath(os.path.abspath(taco.globals.settings["TacoNET Certificates Store"] + "/private"))
+    publicdir = os.path.normpath(os.path.abspath(taco.globals.settings["TacoNET Certificates Store"] + "/public"))
   if not os.path.isdir(privatedir): os.makedirs(privatedir)
+  if not os.path.isdir(publicdir): os.makedirs(publicdir)
 
   server_generate = False
   if not os.path.isfile(os.path.abspath(os.path.normpath(os.path.join(privatedir,taco.constants.KEY_GENERATION_PREFIX + "-server.key")))) or not os.path.isfile(os.path.abspath(os.path.normpath(os.path.join(privatedir,taco.constants.KEY_GENERATION_PREFIX + "-server.key_secret")))): 
