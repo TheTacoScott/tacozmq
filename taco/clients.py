@@ -4,6 +4,7 @@ import time
 import zmq
 import taco.globals
 import taco.constants
+import taco.commands
 import os
 import socket
 import random
@@ -21,7 +22,23 @@ class TacoClients(threading.Thread):
     self.status_time = -1
 
     self.clients = {}
+    self.next_rollcall = {}
+    self.last_rollcall = {}
+    self.client_connect_time = -1
+  
+    self.client_last_reply_time = {}
+    self.client_last_reply_time_lock = threading.Lock()
+  
+  def set_client_last_reply(self,peer_uuid):
+    with self.client_last_reply_time_lock:
+      self.client_last_reply_time[peer_uuid] = time.time()
 
+  def get_client_last_reply(self,peer_uuid):
+    with self.client_last_reply_time_lock:
+      if self.client_last_reply_time.has_key(peer_uuid):
+        return self.client_last_reply_time[peer_uuid]
+    return -1
+  
   def set_status(self,text,level=0):
     if   level==0: logging.info(text)
     elif level==1: logging.debug(text)
@@ -59,14 +76,52 @@ class TacoClients(threading.Thread):
 
     self.set_status("Configuring Curve to use publickey dir:" + publicdir)
     clientauth.configure_curve(domain='*', location=publicdir)
-
+    
+    poller = zmq.Poller()
 
     while self.continue_running():
       if not self.continue_running(): break
       time.sleep(0.5)
+
+      if self.client_connect_time < time.time():
+        self.set_status("Checking if dispatch needs to connect to clients")
+        self.client_connect_time = time.time() + taco.constants.CLIENT_RECONNECT
+        with taco.globals.settings_lock:
+          for peer_uuid in taco.globals.settings["Peers"].keys():
+            if taco.globals.settings["Peers"][peer_uuid]["enabled"]:
+              if peer_uuid not in self.clients:
+                self.set_status("Doing DNS lookup on: " + taco.globals.settings["Peers"][peer_uuid]["hostname"])
+                ip_of_client = socket.gethostbyname(taco.globals.settings["Peers"][peer_uuid]["hostname"])
+                self.set_status("Creating client zmq context for: " + peer_uuid)
+                self.clients[peer_uuid] = clientctx.socket(zmq.REQ)
+                self.clients[peer_uuid].setsockopt(zmq.LINGER, 0)
+                client_public, client_secret = zmq.auth.load_certificate(os.path.normpath(os.path.abspath(privatedir + "/" + taco.constants.KEY_GENERATION_PREFIX +"-client.key_secret")))
+                self.clients[peer_uuid].curve_secretkey = client_secret
+                self.clients[peer_uuid].curve_publickey = client_public
+                self.clients[peer_uuid].curve_serverkey = str(taco.globals.settings["Peers"][peer_uuid]["serverkey"])
+                self.set_status("Attempt to connect to client: " + peer_uuid + " @ tcp://" + ip_of_client + ":" + str(taco.globals.settings["Peers"][peer_uuid]["port"]))
+                self.clients[peer_uuid].connect("tcp://" + ip_of_client + ":" + str(taco.globals.settings["Peers"][peer_uuid]["port"]))
+                self.next_rollcall[peer_uuid] = time.time()
+                poller.register(self.clients[peer_uuid],zmq.POLLIN|zmq.POLLOUT)
+
+      socks = dict(poller.poll(50))
+      for peer_uuid in self.clients.keys():
+        if self.next_rollcall[peer_uuid] < time.time():
+          if self.clients[peer_uuid] in socks and socks[self.clients[peer_uuid]] == zmq.POLLOUT:
+            logging.debug("Requesting Rollcall from: " + peer_uuid)
+            self.clients[peer_uuid].send(taco.commands.Request_Rollcall())
+            self.next_rollcall[peer_uuid] = time.time() + random.randint(taco.constants.ROLLCALL_MIN,taco.constants.ROLLCALL_MAX)
+        if self.clients[peer_uuid] in socks and socks[self.clients[peer_uuid]] == zmq.POLLIN:
+          data = self.clients[peer_uuid].recv()
+          self.set_client_last_reply(peer_uuid)
+          #logging.debug("GOT DATA from: " + peer_uuid + " " + str(msgpack.unpackb(data)))
+            
+          
+
         
-
-
+    self.set_status("Terminating Clients")
+    for peer_uuid in self.clients.keys():
+      self.clients[peer_uuid].close(0)
     self.set_status("Stopping zmq ThreadedAuthenticator")
     clientauth.stop() 
     clientctx.term()

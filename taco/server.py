@@ -4,6 +4,7 @@ import time
 import zmq
 import taco.globals
 import taco.constants
+import taco.commands
 import os
 import socket
 import random
@@ -84,12 +85,7 @@ class TacoServer(threading.Thread):
       if server in socks and socks[server] == zmq.POLLIN:
         logging.debug("Getting Request")
         data = server.recv()
-        try:
-          msgpack_data = msgpack.unpackb(data)
-          logging.debug(str(msgpack_data)) 
-          reply = msgpack.packb(["ok"])
-        except:
-          pass
+        reply = taco.commands.Proccess_Request(data)
       if server in socks and socks[server] == zmq.POLLOUT:
         logging.debug("Replying")
         server.send(reply)
