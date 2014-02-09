@@ -57,6 +57,13 @@ def index():
             taco.globals.settings["Shares"].append([sharename,sharelocation])
           taco.settings.Save_Settings(False)
           return "1"
+  if bottle.request.json[u"action"] == u"sendchat":
+    if type(bottle.request.json[u"data"]) == type([]):
+      if len(bottle.request.json[u"data"]) > 0:
+        with taco.globals.chat_log_lock:
+          taco.globals.chat_log.append(bottle.request.json[u"data"]) 
+          if len(taco.globals.chat_log) > taco.constants.CHAT_LOG_MAXSIZE:
+            taco.globals.chat_log = taco.globals.chat_log[1:]
   if bottle.request.json[u"action"] == u"peersave":
     if type(bottle.request.json[u"data"]) == type([]):
       if len(bottle.request.json[u"data"]) >= 0:
@@ -66,7 +73,15 @@ def index():
           for (hostname,port,localnick,peeruuid,clientpub,serverpub,dynamic,enabled) in bottle.request.json[u"data"]:
             taco.globals.settings["Peers"][unicode(peeruuid)] = {"hostname":hostname,"port": int(port),"localnick":localnick,"dynamic":int(dynamic),"enabled":int(enabled),"clientkey":clientpub,"serverkey":serverpub}
           taco.settings.Save_Settings(False)
-          return "1"
+        taco.globals.server.stop_running()
+        taco.globals.clients.stop_running()
+        taco.globals.server.join()
+        taco.globals.clients.join()
+        taco.globals.server = taco.server.TacoServer()
+        taco.globals.clients = taco.clients.TacoClients()
+        taco.globals.server.start()
+        taco.globals.clients.start()
+        return "1"
 
 
 

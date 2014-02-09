@@ -64,7 +64,7 @@ class TacoServer(threading.Thread):
 
     self.set_status("Creating Server Context",1)
     server = serverctx.socket(zmq.REP)
-    server.setsockopt(zmq.LINGER, 1)
+    server.setsockopt(zmq.LINGER, 0)
 
     self.set_status("Loading Server Certs",1)
     server_public, server_secret = zmq.auth.load_certificate(os.path.normpath(os.path.abspath(privatedir + "/" + taco.constants.KEY_GENERATION_PREFIX +"-server.key_secret")))

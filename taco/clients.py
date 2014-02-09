@@ -61,10 +61,8 @@ class TacoClients(threading.Thread):
 
   def run(self):
     self.set_status("Client Startup")
-    
     self.set_status("Creating zmq Contexts",1)
     clientctx = zmq.Context() 
-    
     self.set_status("Starting zmq ThreadedAuthenticator",1)
     clientauth = zmq.auth.ThreadedAuthenticator(clientctx)
     clientauth.start()
@@ -81,7 +79,6 @@ class TacoClients(threading.Thread):
 
     while self.continue_running():
       if not self.continue_running(): break
-      time.sleep(0.5)
 
       if self.client_connect_time < time.time():
         self.set_status("Checking if dispatch needs to connect to clients")
@@ -92,6 +89,7 @@ class TacoClients(threading.Thread):
               if peer_uuid not in self.clients:
                 self.set_status("Doing DNS lookup on: " + taco.globals.settings["Peers"][peer_uuid]["hostname"])
                 ip_of_client = socket.gethostbyname(taco.globals.settings["Peers"][peer_uuid]["hostname"])
+
                 self.set_status("Creating client zmq context for: " + peer_uuid)
                 self.clients[peer_uuid] = clientctx.socket(zmq.REQ)
                 self.clients[peer_uuid].setsockopt(zmq.LINGER, 0)
@@ -99,12 +97,14 @@ class TacoClients(threading.Thread):
                 self.clients[peer_uuid].curve_secretkey = client_secret
                 self.clients[peer_uuid].curve_publickey = client_public
                 self.clients[peer_uuid].curve_serverkey = str(taco.globals.settings["Peers"][peer_uuid]["serverkey"])
+
                 self.set_status("Attempt to connect to client: " + peer_uuid + " @ tcp://" + ip_of_client + ":" + str(taco.globals.settings["Peers"][peer_uuid]["port"]))
                 self.clients[peer_uuid].connect("tcp://" + ip_of_client + ":" + str(taco.globals.settings["Peers"][peer_uuid]["port"]))
                 self.next_rollcall[peer_uuid] = time.time()
+                self.set_client_last_reply(peer_uuid)
                 poller.register(self.clients[peer_uuid],zmq.POLLIN|zmq.POLLOUT)
 
-      socks = dict(poller.poll(50))
+      socks = dict(poller.poll(500))
       for peer_uuid in self.clients.keys():
         if self.next_rollcall[peer_uuid] < time.time():
           if self.clients[peer_uuid] in socks and socks[self.clients[peer_uuid]] == zmq.POLLOUT:
@@ -114,7 +114,11 @@ class TacoClients(threading.Thread):
         if self.clients[peer_uuid] in socks and socks[self.clients[peer_uuid]] == zmq.POLLIN:
           data = self.clients[peer_uuid].recv()
           self.set_client_last_reply(peer_uuid)
-          #logging.debug("GOT DATA from: " + peer_uuid + " " + str(msgpack.unpackb(data)))
+          logging.debug("GOT DATA from: " + peer_uuid + " " + str(msgpack.unpackb(data)))
+        if abs(self.get_client_last_reply(peer_uuid) - time.time()) > taco.constants.ROLLCALL_TIMEOUT:
+          logging.debug("Stopping client since I havn't heard from: " + peer_uuid)
+          self.clients[peer_uuid].close(0)
+          del self.clients[peer_uuid]          
             
           
 
