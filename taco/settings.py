@@ -68,6 +68,7 @@ def Disable_Keys(keys_to_keep,needlock=True):
   if needlock: taco.globals.settings_lock.acquire()
   publicdir = os.path.normpath(os.path.abspath(taco.globals.settings["TacoNET Certificates Store"] + "/"  + taco.globals.settings["Local UUID"] + "/public/"))
   if needlock: taco.globals.settings_lock.release()
+  if not os.path.exists(publicdir): os.makedirs(publicdir)
   filelisting = os.listdir(os.path.normpath(os.path.abspath(publicdir)))
   delete_files = []
   logging.debug("Keys that will be kept: " +str(keys_to_keep))

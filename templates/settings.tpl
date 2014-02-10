@@ -321,7 +321,7 @@
           <div class="panel-body">
             <div class="row">
               <div class="col-md-8">
-                <h4><span class="glyphicon glyphicon-user"></span> <span class="peernick">Peer Nickname</span></h4>
+                <h4><span class="glyphicon glyphicon-user"></span> <span class="peernick">{{local_settings_copy["Peers"][p_uuid]["nickname"] if local_settings_copy["Peers"][p_uuid].has_key("nickname") else "Peer Nickname"}}</span></h4>
 
                 <div class="alert alert-warning alert-dismissable alert-tweak hide peerhostbad"><button type="button" class="close">&times;</button><strong>Warning!</strong> The hostname you have specified is invalid.<span class="glyphicon glyphicon-hand-down"></span></div>
                 <div class="input-group"><span class="input-group-addon">Hostname or IP</span><input autocomplete="off" type="text" class="form-control peerhost" placeholder="External Hostname" value="{{local_settings_copy["Peers"][p_uuid]["hostname"]}}"><span class="input-group-addon">Dynamic? <input class='peerdynamic' type="checkbox" {{"checked='yes'" if local_settings_copy["Peers"][p_uuid]["dynamic"] else ""}}></input></span></div>

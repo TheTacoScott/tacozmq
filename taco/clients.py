@@ -20,6 +20,7 @@ class TacoClients(threading.Thread):
     self.status_lock = threading.Lock()
     self.status = ""
     self.status_time = -1
+    self.next_request = ""
 
     self.clients = {}
     self.next_rollcall = {}
@@ -106,6 +107,10 @@ class TacoClients(threading.Thread):
 
       socks = dict(poller.poll(500))
       for peer_uuid in self.clients.keys():
+        if self.next_request != "":
+          if self.clients[peer_uuid] in socks and socks[self.clients[peer_uuid]] == zmq.POLLOUT:
+            self.clients[peer_uuid].send(self.next_request)
+
         if self.next_rollcall[peer_uuid] < time.time():
           if self.clients[peer_uuid] in socks and socks[self.clients[peer_uuid]] == zmq.POLLOUT:
             logging.debug("Requesting Rollcall from: " + peer_uuid)
@@ -114,7 +119,8 @@ class TacoClients(threading.Thread):
         if self.clients[peer_uuid] in socks and socks[self.clients[peer_uuid]] == zmq.POLLIN:
           data = self.clients[peer_uuid].recv()
           self.set_client_last_reply(peer_uuid)
-          logging.debug("GOT DATA from: " + peer_uuid + " " + str(msgpack.unpackb(data)))
+          self.next_request = taco.commands.Process_Reply(peer_uuid,data)
+
         if abs(self.get_client_last_reply(peer_uuid) - time.time()) > taco.constants.ROLLCALL_TIMEOUT:
           logging.debug("Stopping client since I havn't heard from: " + peer_uuid)
           self.clients[peer_uuid].close(0)
