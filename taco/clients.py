@@ -88,6 +88,7 @@ class TacoClients(threading.Thread):
     poller = zmq.Poller()
 
     while self.continue_running():
+      logging.debug("client")
       if not self.continue_running(): break
 
       if self.client_connect_time < time.time():
@@ -117,12 +118,15 @@ class TacoClients(threading.Thread):
                 poller.register(self.clients[peer_uuid],zmq.POLLIN|zmq.POLLOUT)
 
       socks = dict(poller.poll(500))
+      if len(self.clients.keys()) == 0: time.sleep(0.5)
+      self.did_something = 0
       for peer_uuid in self.clients.keys():
 
         #SEND BLOCK 
         if self.clients[peer_uuid] in socks and socks[self.clients[peer_uuid]] == zmq.POLLOUT:
           if self.next_request != "":
             self.clients[peer_uuid].send(self.next_request)
+            self.did_something = 1
             self.next_request = ""
             continue
           
@@ -131,11 +135,13 @@ class TacoClients(threading.Thread):
               data = msgpack.unpackb(self.output_queues[peer_uuid].get())
               logging.debug("output q not empty:" + peer_uuid + " : " + str(data))
               self.clients[peer_uuid].send(msgpack.packb(data))
+              self.did_something = 1
               continue
 
           if self.next_rollcall[peer_uuid] < time.time():
             logging.debug("Requesting Rollcall from: " + peer_uuid)
             self.clients[peer_uuid].send(taco.commands.Request_Rollcall())
+            self.did_something = 1
             self.next_rollcall[peer_uuid] = time.time() + random.randint(taco.constants.ROLLCALL_MIN,taco.constants.ROLLCALL_MAX)
             continue
 
@@ -143,14 +149,26 @@ class TacoClients(threading.Thread):
         if self.clients[peer_uuid] in socks and socks[self.clients[peer_uuid]] == zmq.POLLIN:
           data = self.clients[peer_uuid].recv()
           self.set_client_last_reply(peer_uuid)
+          self.did_something = 1
           self.next_request = taco.commands.Process_Reply(peer_uuid,data)
 
-        if abs(self.get_client_last_reply(peer_uuid) - time.time()) > taco.constants.ROLLCALL_TIMEOUT:
-          logging.debug("Stopping client since I havn't heard from: " + peer_uuid)
+        #cleanup block
+        if self.clients[peer_uuid] in socks and socks[self.clients[peer_uuid]] == zmq.POLLERR:
+          logging.debug("got a socket error for:" + peer_uuid)
+          poller.unregister(self.clients[peer_uuid])
           self.clients[peer_uuid].close(0)
           del self.clients[peer_uuid]          
           with self.output_queues_lock:
             del self.output_queues[peer_uuid]
+          
+        if abs(self.get_client_last_reply(peer_uuid) - time.time()) > taco.constants.ROLLCALL_TIMEOUT:
+          logging.debug("Stopping client since I havn't heard from: " + peer_uuid)
+          poller.unregister(self.clients[peer_uuid])
+          self.clients[peer_uuid].close(0)
+          del self.clients[peer_uuid]          
+          with self.output_queues_lock:
+            del self.output_queues[peer_uuid]
+      if not self.did_something: time.sleep(0.2)
             
           
 
