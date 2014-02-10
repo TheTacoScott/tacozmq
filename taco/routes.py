@@ -3,6 +3,7 @@ import taco.settings
 import taco.globals
 import taco.constants
 import taco.filesystem
+import taco.commands
 import urllib
 import re
 import os,uuid
@@ -38,6 +39,7 @@ def index():
     return "0"
   if not bottle.request.json.has_key("action"): return "0"
   if not bottle.request.json.has_key("data"): return "0"
+
   if bottle.request.json[u"action"] == u"settingssave":
     if type(bottle.request.json[u"data"]) == type([]):
       if len(bottle.request.json[u"data"]) >= 0:
@@ -47,6 +49,7 @@ def index():
             taco.globals.settings[keyname] = value
           taco.settings.Save_Settings(False)
           return "1"
+
   if bottle.request.json[u"action"] == u"sharesave":
     if type(bottle.request.json[u"data"]) == type([]):
       if len(bottle.request.json[u"data"]) >= 0:
@@ -57,13 +60,35 @@ def index():
             taco.globals.settings["Shares"].append([sharename,sharelocation])
           taco.settings.Save_Settings(False)
           return "1"
+
+  if bottle.request.json[u"action"] == u"getchat":
+    output_chat = []
+    with taco.globals.settings_lock:
+      localuuid  = taco.globals.settings["Local UUID"]
+      with taco.globals.chat_log_lock:
+        for [puuid,thetime,msg] in taco.globals.chat_log:
+          if taco.globals.settings["Peers"].has_key(puuid) and taco.globals.settings["Peers"][puuid].has_key("nickname"):
+            nickname = taco.globals.settings["Peers"][puuid]["nickname"]
+          elif taco.globals.settings["Local UUID"] == puuid:
+            nickname = taco.globals.settings["Nickname"]
+          else:
+            nickname = puuid
+          if puuid==localuuid: 
+            output_chat.append([0,nickname,puuid,thetime,msg])
+          else:
+            output_chat.append([1,nickname,puuid,thetime,msg])
+    return json.dumps(output_chat)
+
   if bottle.request.json[u"action"] == u"sendchat":
-    if type(bottle.request.json[u"data"]) == type([]):
+    if type(bottle.request.json[u"data"]) == type(u""):
       if len(bottle.request.json[u"data"]) > 0:
-        with taco.globals.chat_log_lock:
-          taco.globals.chat_log.append(bottle.request.json[u"data"]) 
-          if len(taco.globals.chat_log) > taco.constants.CHAT_LOG_MAXSIZE:
-            taco.globals.chat_log = taco.globals.chat_log[1:]
+        taco.commands.Request_Chat(bottle.request.json[u"data"])
+        return "1"
+  
+  if bottle.request.json[u"action"] == u"chatuuid":
+    with taco.globals.chat_uuid_lock:
+      return json.dumps([taco.globals.chat_uuid])
+   
   if bottle.request.json[u"action"] == u"peersave":
     if type(bottle.request.json[u"data"]) == type([]):
       if len(bottle.request.json[u"data"]) >= 0:

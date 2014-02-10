@@ -1,5 +1,5 @@
 from socket import gethostname
-
+import re
 APP_CODE_NAME = "Dirt Diver ZMQ"
 #Cool Breeze,Betty Blue, Hammerhead, Dirt Diver, Whiplash, Whipporwill,Dog Patch 06,Red Cap
 APP_NAME = "TacoNET"
@@ -19,7 +19,8 @@ KB = 2 ** 10
 MB = 2 ** 20
 GB = 2 ** 30
 TB = 2 ** 40
-
+MAX_NICKNAME_LENGTH = 48
+MAX_CHAT_MESSAGE_LENGTH = 512
 CHAT_LOG_MAXSIZE = 128
 
 HOSTNAME = gethostname()
@@ -46,3 +47,20 @@ NET_REPLY_ROLLCALL   = "A"
 
 NET_REQUEST_CERTS    = "b"
 NET_REPLY_CERTS      = "B"
+
+NET_REQUEST_CHAT     = "c"
+NET_REPLY_CHAT       = "C"
+
+
+RE_UUID_CHECKER = "[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}"
+RE_NICKNAME_CHECKER = "^[\w\.\-\(\) ]{3,"+str(MAX_NICKNAME_LENGTH)+"}$"
+RE_PORT_CHECKER = "^0*(?:6553[0-5]|655[0-2][0-9]|65[0-4][0-9]{2}|6[0-4][0-9]{3}|[1-5][0-9]{4}|[1-9][0-9]{1,3}|[0-9])$"
+RE_HOST_CHECKER = "^(?:(?:(?:(?:[a-zA-Z0-9][-a-zA-Z0-9]{0,61})?[a-zA-Z0-9])[.])*(?:[a-zA-Z][-a-zA-Z0-9]{0,61}[a-zA-Z0-9]|[a-zA-Z])[.]?)$"
+RE_CHAT_CHECKER = "^[!-~ ]{1,"+str(MAX_CHAT_MESSAGE_LENGTH)+"}$"
+RE_IP_CHECKER = "^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$"
+
+UUID_CHECKER = re.compile(RE_UUID_CHECKER,re.UNICODE)
+NICKNAME_CHECKER = re.compile(RE_NICKNAME_CHECKER,re.UNICODE)
+CHAT_CHECKER = re.compile(RE_CHAT_CHECKER,re.UNICODE)
+SHARE_NAME_CHECKER = re.compile(u"^\w[\w \-\.]{1,126}\w$",re.UNICODE)
+DIR_NAME_CHECKER = re.compile(u"^\w[\w \-\.]{1,126}\w$",re.UNICODE)

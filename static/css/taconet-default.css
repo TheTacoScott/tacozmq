@@ -88,3 +88,41 @@ margin-top: 0px;
   color: rgb(169, 68, 66); 
   background-color: rgb(242, 222, 222);
 }
+
+#chatlog
+{
+   min-height: 350px;
+   max-height: 550px;
+   overflow-y: auto;
+
+}
+#chatlog #ajaxloader
+{
+  margin-top: 120px;
+}
+#chatlog hr
+{
+  margin-top: 3px;
+  margin-bottom: 3px;
+
+}
+#chatlog .thetime
+{
+  font-size: 10px;
+}
+#chatlog .nick
+{
+  font-size: 22px;
+  font-weight: bold;
+  text-shadow: 1px 1px 1px #ffffff;
+}
+#chatlog .themsg
+{
+  font-size: 16px;
+}
+#chatlog .alert
+{
+  box-shadow: 1px 1px 2px #000000;
+  margin-bottom: 15px;
+
+}

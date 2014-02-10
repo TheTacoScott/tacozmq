@@ -4,6 +4,7 @@ import taco.settings
 import msgpack
 import logging
 import time
+import uuid
 
 def Proccess_Request(packed):
   response = {taco.constants.NET_GARBAGE:taco.constants.NET_GARBAGE,taco.constants.NET_DATABLOCK:""}
@@ -11,13 +12,14 @@ def Proccess_Request(packed):
     unpacked = msgpack.unpackb(packed)
     assert unpacked.has_key(taco.constants.NET_DATABLOCK)
   except:
-    return response
+    return msgpack.packb(response)
   logging.info("NET_REQUEST: " + str(unpacked))
   if unpacked.has_key(taco.constants.NET_REQUEST):
     if unpacked[taco.constants.NET_REQUEST] == taco.constants.NET_REQUEST_ROLLCALL: return Reply_Rollcall()
     if unpacked[taco.constants.NET_REQUEST] == taco.constants.NET_REQUEST_CERTS: return Reply_Certs(unpacked[taco.constants.NET_DATABLOCK])
+    if unpacked[taco.constants.NET_REQUEST] == taco.constants.NET_REQUEST_CHAT: return Reply_Chat(unpacked[taco.constants.NET_DATABLOCK])
   
-  return response
+  return msgpack.packb(response)
 
 def Process_Reply(peer_uuid,packed):
   response = ""
@@ -32,6 +34,31 @@ def Process_Reply(peer_uuid,packed):
     if unpacked[taco.constants.NET_REPLY] == taco.constants.NET_REPLY_CERTS: return Process_Reply_Certs(peer_uuid,unpacked[taco.constants.NET_DATABLOCK])
 
   return response
+
+def Request_Chat(chatmsg):
+  with taco.globals.settings_lock:
+    output_block = {taco.constants.NET_REQUEST:taco.constants.NET_REQUEST_CHAT,taco.constants.NET_DATABLOCK:[]}
+    output_block[taco.constants.NET_DATABLOCK] = [taco.globals.settings["Local UUID"],time.time(),chatmsg]
+  with taco.globals.chat_log_lock:
+    taco.globals.chat_log.append([taco.globals.settings["Local UUID"],time.time(),chatmsg])
+    with taco.globals.chat_uuid_lock:
+      taco.globals.chat_uuid = str(uuid.uuid4())
+    if len(taco.globals.chat_log) > taco.constants.CHAT_LOG_MAXSIZE:
+      taco.globals.chat_log = taco.globals.chat_log[1:]
+
+  taco.globals.clients.Add_To_All_Output_Queues(msgpack.packb(output_block))
+
+def Reply_Chat(datablock):
+  logging.debug(str(datablock))
+  with taco.globals.chat_log_lock:
+    taco.globals.chat_log.append(datablock)
+    with taco.globals.chat_uuid_lock:
+      taco.globals.chat_uuid = str(uuid.uuid4())
+    if len(taco.globals.chat_log) > taco.constants.CHAT_LOG_MAXSIZE:
+      taco.globals.chat_log = taco.globals.chat_log[1:]
+
+  response = {taco.constants.NET_REPLY:taco.constants.NET_REPLY_CHAT,taco.constants.NET_DATABLOCK:{}}
+  return msgpack.packb(response)
 
 def Request_Rollcall():
   request = {taco.constants.NET_REQUEST:taco.constants.NET_REQUEST_ROLLCALL,taco.constants.NET_DATABLOCK:""}
@@ -53,12 +80,15 @@ def Process_Reply_Rollcall(peer_uuid,unpacked):
     if taco.globals.settings["Peers"].has_key(peer_uuid):
       if taco.globals.settings["Peers"][peer_uuid].has_key("nickname"):
         if taco.globals.settings["Peers"][peer_uuid]["nickname"]!= new_nickname:
-          taco.globals.settings["Peers"][peer_uuid]["nickname"] = new_nickname
+          if taco.constants.NICKNAME_CHECKER.match(new_nickname):
+            taco.globals.settings["Peers"][peer_uuid]["nickname"] = new_nickname
       else:
-        taco.globals.settings["Peers"][peer_uuid]["nickname"] = new_nickname
+        if taco.constants.NICKNAME_CHECKER.match(new_nickname):
+          taco.globals.settings["Peers"][peer_uuid]["nickname"] = new_nickname
     for peerid in unpacked[1:]:
-      if peerid not in taco.globals.settings["Peers"].keys() and peerid != taco.globals.settings["Local UUID"]:
-        requested_peers.append(peerid)
+      if taco.constants.UUID_CHECKER.match(peerid):
+        if peerid not in taco.globals.settings["Peers"].keys() and peerid != taco.globals.settings["Local UUID"]:
+          requested_peers.append(peerid)
   if len(requested_peers) > 0:
     return Request_Certs(requested_peers)
   return ""
