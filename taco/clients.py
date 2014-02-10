@@ -24,8 +24,10 @@ class TacoClients(threading.Thread):
     self.next_request = ""
 
     self.clients = {}
+    self.long_clients = {}
+    self.short_clients = {}
+
     self.next_rollcall = {}
-    self.last_rollcall = {}
     self.client_connect_time = -1
     
     self.output_queues = {}
