@@ -88,7 +88,7 @@ class TacoClients(threading.Thread):
     poller = zmq.Poller()
 
     while self.continue_running():
-      logging.debug("client")
+      #logging.debug("client")
       if not self.continue_running(): break
 
       if self.client_connect_time < time.time():
