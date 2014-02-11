@@ -4,9 +4,9 @@ import taco.constants
 default_settings_kv = {}
 default_settings_kv["Download Location"] = "downloads/"
 default_settings_kv["Nickname"] = "Your Nickname Here"
-default_settings_kv["Application Port"] = 9001
+default_settings_kv["Application Port"] = 5440
 default_settings_kv["Application IP"] = "0.0.0.0"
-default_settings_kv["Web Port"] = 9002
+default_settings_kv["Web Port"] = 5340
 default_settings_kv["Web IP"] = "127.0.0.1"
 default_settings_kv["Download Limit"] = 50
 default_settings_kv["Upload Limit"] = 50
