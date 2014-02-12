@@ -126,3 +126,31 @@ margin-top: 0px;
   margin-bottom: 15px;
 
 }
+
+.green-td
+{
+  vertical-align:middle;
+  color: rgb(60, 118, 61); 
+  background-color: rgb(223, 240, 216);
+}
+.red-td
+{
+  vertical-align:middle;
+  color: rgb(169, 68, 66); 
+  background-color: rgb(242, 222, 222);
+}
+.yellow-td
+{
+  vertical-align:middle;
+  color: rgb(138, 109, 59);
+  background-color: rgb(252, 248, 227);
+}
+.middle-align-td
+{
+  vertical-align:middle;
+}
+.tablenick
+{
+  font-weight: bold;
+  font-size: 18px;
+}

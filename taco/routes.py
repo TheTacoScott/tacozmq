@@ -5,7 +5,7 @@ import taco.constants
 import taco.filesystem
 import taco.commands
 import urllib
-import re
+import re,time
 import os,uuid
 import logging
 import json
@@ -39,6 +39,16 @@ def index():
     return "0"
   if not bottle.request.json.has_key("action"): return "0"
   if not bottle.request.json.has_key("data"): return "0"
+
+  if bottle.request.json[u"action"] == u"peerstatus":
+    if type(bottle.request.json[u"data"]) == type(u""):
+      if len(bottle.request.json[u"data"]) >= 0:
+        peer_uuid = bottle.request.json[u"data"]
+        incoming = taco.globals.server.get_client_last_request(peer_uuid)
+        outgoing = taco.globals.clients.get_client_last_reply(peer_uuid)
+        timediffinc = abs(time.time()-incoming)
+        timediffout = abs(time.time()-outgoing)
+        return json.dumps([incoming,outgoing,timediffinc,timediffout])
 
   if bottle.request.json[u"action"] == u"settingssave":
     if type(bottle.request.json[u"data"]) == type([]):

@@ -10,34 +10,28 @@
   <div class="col-md-12">
     <div class="panel panel-info">
       <div class="panel-heading"><h3 class="panel-title">Peer Status</h3></div>
-        <table class="table table-bordered table-hover">
+        <table class="table">
           <thead>
             <tr>
               <th style="width: 10%;" class="text-center">Incoming</th>
               <th style="width: 10%;" class="text-center">Outgoing</th>
               <th>Nickname</th>
-              <th>Last Update</th>
             </tr>
           </thead>
           <tbody>
-            <tr>
-              <td style="vertical-align:middle;color: rgb(60, 118, 61); background-color: rgb(223, 240, 216);" class="text-center"><span style="font-size:32px;" class="glyphicon glyphicon-ok-sign"></span></td>
-              <td style="vertical-align:middle;color: rgb(169, 68, 66); background-color: rgb(242, 222, 222);" class="text-center"><span style="font-size:32px;" class="glyphicon glyphicon-minus-sign"></span></td>
-              <td style="vertical-align:middle">NICKNAME 1</td>
-              <td style="vertical-align:middle">timestamp</td>
-            </tr>
-            <tr>
-              <td style="vertical-align:middle;color: rgb(60, 118, 61); background-color: rgb(223, 240, 216);" class="text-center"><span style="font-size:32px;" class="glyphicon glyphicon-ok-sign"></span></td>
-              <td style="vertical-align:middle;color: rgb(138, 109, 59);background-color: rgb(252, 248, 227);" class="text-center"><span style="font-size:32px;" class="glyphicon glyphicon-question-sign"></span></td>
-              <td style="vertical-align:middle">NICKNAME 2</td>
-              <td style="vertical-align:middle">timestamp</td>
-            </tr>
-            <tr>
-              <td style="vertical-align:middle;color: rgb(60, 118, 61); background-color: rgb(223, 240, 216);" class="text-center"><span style="font-size:32px;" class="glyphicon glyphicon-ok-sign"></span></td>
-              <td style="vertical-align:middle;color: rgb(169, 68, 66); background-color: rgb(242, 222, 222);" class="text-center"><span style="font-size:32px;" class="glyphicon glyphicon-minus-sign"></span></td>
-              <td style="vertical-align:middle">NICKNAME 3</td>
-              <td style="vertical-align:middle">timestamp</td>
-            </tr>
+            %for peer_uuid in local_settings_copy["Peers"].keys():
+              %if local_settings_copy["Peers"][peer_uuid]["enabled"]:
+                <tr class="peerstatusrow" data-uuid="{{peer_uuid}}">
+                  <td class="text-center yellow-td incomingstatus"><span style="font-size:32px;" class="glyphicon glyphicon-question-sign"></span></td>
+                  <td class="text-center yellow-td outgoingstatus"><span style="font-size:32px;" class="glyphicon glyphicon-question-sign"></span></td>
+                  <td class="middle-align-td"><span class="tablenick">{{local_settings_copy["Peers"][peer_uuid]["nickname"] if local_settings_copy["Peers"][peer_uuid].has_key("nickname") else "Unknown Nick"}}</span>
+                  %if local_settings_copy["Peers"][peer_uuid].has_key("localnick") and len(local_settings_copy["Peers"][peer_uuid]["localnick"]) > 0:
+                  <span class="glyphicon glyphicon-info-sign" data-content="Local Nickname: {{local_settings_copy["Peers"][peer_uuid]["localnick"]}}" data-placement="right" data-container="body" data-trigger="hover" data-original-title="" title=""></span>
+                  %end
+                  </td>
+                </tr>
+              %end
+            %end
           </tbody>
         </table>
     </div>
