@@ -45,9 +45,23 @@ class TacoClients(threading.Thread):
     self.client_last_reply_time_lock = threading.Lock()
 
     self.client_timeout = {}
+  def Add_To_Output_Queue(self,peer_uuid,msg,priority=3):
+    logging.debug("Add to output q @ " + str(priority))
+    if priority==1:
+      with self.high_priority_output_queue_lock:
+        if self.high_priority_output_queue.has_key(peer_uuid):
+          self.high_priority_output_queue[peer_uuid].put(msg)
+    elif priority==2:
+      with self.medium_priority_output_queue_lock:
+        if self.medium_priority_output_queue.has_key(peer_uuid):
+          self.medium_priority_output_queue[peer_uuid].put(msg)
+    else:
+      with self.low_priority_output_queue_lock:
+        if self.low_priority_output_queue.has_key(peer_uuid):
+          self.low_priority_output_queue[peer_uuid].put(msg)
 
   def Add_To_All_Output_Queues(self,msg,priority=3):
-    logging.debug("Add to output q @ " + str(priority))
+    logging.debug("Add to ALL output q @ " + str(priority))
     if priority==1:
       with self.high_priority_output_queue_lock:
         for keyname in self.high_priority_output_queue.keys():
@@ -57,8 +71,8 @@ class TacoClients(threading.Thread):
         for keyname in self.medium_priority_output_queue.keys():
           self.medium_priority_output_queue[keyname].put(msg)
     else:
-      with self.high_priority_output_queue_lock:
-        for keyname in self.high_priority_output_queue.keys():
+      with self.low_priority_output_queue_lock:
+        for keyname in self.low_priority_output_queue.keys():
           self.low_priority_output_queue[keyname].put(msg)
 
     logging.debug("DONE Add to output q @ " + str(priority))

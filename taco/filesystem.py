@@ -4,6 +4,7 @@ import time
 import threading
 import Queue
 import taco.constants
+import taco.globals
 
 if os.name=='nt':
   import ctypes
@@ -49,7 +50,7 @@ class TacoFilesystemManager(threading.Thread):
 
     self.listings_lock = threading.Lock()
     self.listings = {}
-
+    
   def add_listing(self,thetime,directory,dirs,files):
     with self.listings_lock:
       self.listings[directory] = [thetime,dirs,files]
@@ -62,6 +63,9 @@ class TacoFilesystemManager(threading.Thread):
     with self.status_lock:
       self.status = text
       self.status_time = time.time()
+
+  def send_results(self,directory,peer_uuid):
+    pass
 
   def get_status(self):
     with self.status_lock:
