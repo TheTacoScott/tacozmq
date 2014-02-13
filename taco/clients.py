@@ -46,7 +46,7 @@ class TacoClients(threading.Thread):
 
     self.client_timeout = {}
   def Add_To_Output_Queue(self,peer_uuid,msg,priority=3):
-    logging.debug("Add to output q @ " + str(priority))
+    logging.debug("Add to "+ peer_uuid+" output q @ " + str(priority))
     if priority==1:
       with self.high_priority_output_queue_lock:
         if self.high_priority_output_queue.has_key(peer_uuid):
