@@ -57,9 +57,7 @@ def Process_Reply(peer_uuid,packed):
   return response
 
 def Request_Chat(chatmsg):
-  with taco.globals.settings_lock:
-    output_block = Create_Request(taco.constants.NET_REQUEST_CHAT,[])
-    output_block[taco.constants.NET_DATABLOCK] = [time.time(),chatmsg]
+  output_block = Create_Request(taco.constants.NET_REQUEST_CHAT,[time.time(),chatmsg])
   with taco.globals.chat_log_lock:
     taco.globals.chat_log.append([taco.globals.settings["Local UUID"],time.time(),chatmsg])
     with taco.globals.chat_uuid_lock:
