@@ -163,3 +163,13 @@ margin-top: 0px;
   width: 200px;
   display:inline-block;
 }
+.filelistingpanel
+{
+  min-height: 200px;
+
+}
+#nopeers
+{
+  margin-top: 50px;
+
+}
