@@ -2,7 +2,7 @@ function Update_Chat_Log()
 {
   $("#ajaxloader").removeClass('hide');
   var $api_action = {"action":"getchat","data":""};
-  $.ajax({url:"/api.post",type:"POST",data:JSON.stringify($api_action),contentType:"application/json; charset=utf-8",dataType:"json",success: function(data)
+  $.ajax({url:"/api.post",type:"POST",data:JSON.stringify($api_action),contentType:"application/json; charset=utf-8",dataType:"json",error: API_Alert,success: function(data)
   {
     $("#chatlog").html("");
     for (var i = 0; i < data.length; i++) 
@@ -41,7 +41,7 @@ function Update_Chat_Log()
 function Send_Chat_Msg(msg)
 {
   var $api_action = {"action":"sendchat","data":msg};
-  $.ajax({url:"/api.post",type:"POST",data:JSON.stringify($api_action),contentType:"application/json; charset=utf-8",dataType:"json",success: function(data)
+  $.ajax({url:"/api.post",type:"POST",data:JSON.stringify($api_action),contentType:"application/json; charset=utf-8",dataType:"json",error: API_Alert,success: function(data)
   {
     if (data==1)
     {
@@ -56,7 +56,7 @@ function Update_On_Change()
 {
   console.log("Update On Change");
   var $api_action = {"action":"chatuuid","data":""};
-  $something = $.ajax({url:"/api.post",type:"POST",data:JSON.stringify($api_action),contentType:"application/json; charset=utf-8",dataType:"json",success: function(data)
+  $something = $.ajax({url:"/api.post",type:"POST",data:JSON.stringify($api_action),contentType:"application/json; charset=utf-8",dataType:"json",error: API_Alert,success: function(data)
   {
     if (data[0] != $("#chatbox").data("uuid")) { $("#chatbox").data("uuid",data); Update_Chat_Log(); }
     setTimeout(function() { Update_On_Change(); },1000);

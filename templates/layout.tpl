@@ -61,6 +61,7 @@
     </div>
 
     <div class="container">
+    <div id="apialert" class="alert alert-danger hide"><strong>Error!</strong> The backend TacoNET process does not appear to be running. Please restart it and then <a href="#" onclick="location.reload();">refresh this page</a>.</div>
     %include
     </div>
   </body>

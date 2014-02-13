@@ -134,7 +134,7 @@ function Save_Shares()
       $api_action["data"].push([$sharename,$sharelocation]);
     }
   });
-  $.ajax({url:"/api.post",type:"POST",data:JSON.stringify($api_action),contentType:"application/json; charset=utf-8",dataType:"json",success: function(data)
+  $.ajax({url:"/api.post",type:"POST",data:JSON.stringify($api_action),contentType:"application/json; charset=utf-8",dataType:"json",error: API_Alert,success: function(data)
   { 
     if (data==1) { 
       $("span[id='shares-unsaved']").addClass("hide");
@@ -186,7 +186,7 @@ function Save_Peers()
   });
   if ($("#peer-listing .input-error").length == 0)
   {
-     $.ajax({url:"/api.post",type:"POST",data:JSON.stringify($api_action),contentType:"application/json; charset=utf-8",dataType:"json",success: function(data)
+     $.ajax({url:"/api.post",type:"POST",data:JSON.stringify($api_action),contentType:"application/json; charset=utf-8",dataType:"json",error: API_Alert,success: function(data)
      {
       if (data==1) {
         $("span[id='peers-unsaved']").addClass("hide");
@@ -252,7 +252,7 @@ function Save_Settings()
     $api_action["data"].push(["Download Location",$download_location]);
     $api_action["data"].push(["TacoNET Certificates Store",$cert]);
     $("button[id='save-settings']").prop("disabled",true);
-    $.ajax({url:"/api.post",type:"POST",data:JSON.stringify($api_action),contentType:"application/json; charset=utf-8",dataType:"json",success: function(data)
+    $.ajax({url:"/api.post",type:"POST",data:JSON.stringify($api_action),contentType:"application/json; charset=utf-8",dataType:"json",error: API_Alert,success: function(data)
       {
         if (data==1) {
           $("span[id='settings-unsaved']").addClass("hide");
@@ -382,10 +382,20 @@ function Set_Up_Peer_Buttons()
 
   $("button").popover(); 
 }
+function Check_For_API_Errors()
+{
+  var $api_action = {"action":"apistatus","data":""};
+  $.ajax({url:"/api.post",type:"POST",data:JSON.stringify($api_action),contentType:"application/json; charset=utf-8",dataType:"json",error: API_Alert,success: function(data)
+  {
+    setTimeout(Check_For_API_Errors,1000);
+  }
+  });
+}
 
 $( document ).ready(function() {
  Set_Up_Delete_Share();
  Set_Up_Peer_Buttons();
+ Check_For_API_Errors();
  $("button[id='add-share']").click(function() { Add_Share(); });
  
  $("button[id='browsedownload']").click(function() { Download_Browse(); });

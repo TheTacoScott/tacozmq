@@ -2,7 +2,7 @@ function Update_Peer_Status()
 {
     var $api_action = {"action":"peerstatus","data":""};
     
-    $.ajax({url:"/api.post",type:"POST",data:JSON.stringify($api_action),contentType:"application/json; charset=utf-8",dataType:"json",success: function(data)
+    $.ajax({url:"/api.post",type:"POST",data:JSON.stringify($api_action),contentType:"application/json; charset=utf-8",dataType:"json",error: API_Alert,success: function(data)
       {
         //console.log(data);
         $("#peerstatustable .loadingthing").addClass("hide");

@@ -8,3 +8,8 @@ function guid() {
   return s4() + s4() + '-' + s4() + '-' + s4() + '-' +
          s4() + '-' + s4() + s4() + s4();
 }
+
+function API_Alert()
+{
+  $("#apialert").removeClass("hide");
+}

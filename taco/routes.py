@@ -39,7 +39,8 @@ def index():
     return "0"
   if not bottle.request.json.has_key("action"): return "0"
   if not bottle.request.json.has_key("data"): return "0"
-
+  if bottle.request.json[u"action"] == u"apistatus":
+    return json.dumps({"status":1})
   if bottle.request.json[u"action"] == u"threadstatus":
     output = {}
     output["threads"] = {}
