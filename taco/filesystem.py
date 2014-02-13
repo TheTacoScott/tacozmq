@@ -2,6 +2,8 @@ import os
 import logging
 import time
 import threading
+import Queue
+import taco.constants
 
 if os.name=='nt':
   import ctypes
@@ -45,6 +47,13 @@ class TacoFilesystemManager(threading.Thread):
     self.workers = []
     self.last_purge = time.time()
 
+    self.listings_lock = threading.Lock()
+    self.listings = {}
+
+  def add_listing(self,thetime,directory,dirs,files):
+    with self.listings_lock:
+      self.listings[directory] = [thetime,dirs,files]
+
   def set_status(self,text,level=0):
     if   level==1: logging.info(text)
     elif level==0: logging.debug(text)
@@ -69,7 +78,7 @@ class TacoFilesystemManager(threading.Thread):
         
   def run(self):
     self.set_status("Starting Up Filesystem Manager")
-    for i in range(5):
+    for i in range(taco.constants.FILESYSTEM_WORKER_COUNT):
       self.workers.append(TacoFilesystemWorker(i))
     for i in self.workers:
       i.start()
@@ -79,9 +88,22 @@ class TacoFilesystemManager(threading.Thread):
 
       if not self.continue_running(): break
       
-      if abs(time.time() - self.last_purge) > 30:
+      if abs(time.time() - self.last_purge) > taco.constants.FILESYSTEM_CACHE_PURGE:
         self.set_status("Purging old filesystem results")
         self.last_purge = time.time()
+        with self.listings_lock:
+          for directory in self.listings.keys():
+            [thetime,dirs,files] = self.listings[directory]
+            if abs(time.time() - thetime) > taco.constants.FILESYSTEM_CACHE_TIMEOUT:
+              self.set_status("Purging Filesystem cache for directory: " + directory)
+              del self.listings[directory]
+
+
+      for xi in self.workers:
+        while not xi.results_queue.empty():
+          self.set_status("Processing Results from Filesystem Worker #" + str(xi.worker_id))
+          (success,thetime,directory,dirs,files) = xi.results_queue.get()
+          self.add_listing(thetime,directory,dirs,files)
       
       if not self.continue_running(): break
     self.set_status("Exiting")
@@ -103,7 +125,8 @@ class TacoFilesystemWorker(threading.Thread):
     self.status = ""
     self.status_time = -1
 
-    self.workers = []
+    self.work_queue = Queue.Queue()
+    self.results_queue = Queue.Queue()
 
   def set_status(self,text,level=0):
     if   level==1: logging.info(text)
@@ -126,7 +149,35 @@ class TacoFilesystemWorker(threading.Thread):
     with self.stop_lock:
       continue_run = not self.stop
     return continue_run
+  
+  def get_directory_listing(self,directory):
+    directory = unicode(directory)
+    dirs = []
+    files = []
+    try:
+      dirlist = os.listdir(directory)
+    except:
+      results = [0,time.time(),directory,[],[]]
 
+    try:
+      for fileobject in dirlist:
+        joined = os.path.normpath(os.path.join(ps.path.normpath(directory),fileobject))
+        if os.path.isfile(joined):
+          filemod = os.stat(joined).st_mtime
+          filesize = os.path.getsize(joined)
+          files.append(fileobject,filesize,filemod)
+        elif os.path.isdir(joined):
+          dirs.append(fileobject)
+      dirs.sort()
+      files.sort()
+      results = [1,time.time(),directory,dirs,files]
+    except:
+      results = [0,time.time(),directory,[],[]]
+    
+    self.results_queue.put(results)
+      
+
+  
   def run(self):
     self.set_status("Starting Filesystem Worker #" + str(self.worker_id))
     while self.continue_running():
