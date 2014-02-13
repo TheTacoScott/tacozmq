@@ -158,3 +158,8 @@ margin-top: 0px;
 {
   padding-left:20px;
 }
+.iga-fixed-width
+{
+  width: 200px;
+  display:inline-block;
+}
