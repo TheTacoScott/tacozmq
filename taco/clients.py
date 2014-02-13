@@ -28,8 +28,9 @@ class TacoClients(threading.Thread):
     self.short_clients = {}
 
     self.next_rollcall = {}
-    self.client_connect_time = -1
-    
+    self.client_connect_time = {}
+    self.client_reconnect_mod = {}
+ 
     self.high_priority_output_queue = {}
     self.high_priority_output_queue_lock = threading.Lock()
 
@@ -42,6 +43,8 @@ class TacoClients(threading.Thread):
  
     self.client_last_reply_time = {}
     self.client_last_reply_time_lock = threading.Lock()
+
+    self.client_timeout = {}
 
   def Add_To_All_Output_Queues(self,msg,priority=3):
     logging.debug("Add to output q @ " + str(priority))
@@ -61,6 +64,9 @@ class TacoClients(threading.Thread):
     logging.debug("DONE Add to output q @ " + str(priority))
   
   def set_client_last_reply(self,peer_uuid):
+    logging.debug("Got Reply from: " + peer_uuid)
+    self.client_reconnect_mod[peer_uuid] = taco.constants.CLIENT_RECONNECT_MIN
+    self.client_timeout[peer_uuid] = time.time() + taco.constants.ROLLCALL_TIMEOUT
     with self.client_last_reply_time_lock:
       self.client_last_reply_time[peer_uuid] = time.time()
 
@@ -71,8 +77,10 @@ class TacoClients(threading.Thread):
     return -1
   
   def set_status(self,text,level=0):
-    if   level==0: logging.info(text)
-    elif level==1: logging.debug(text)
+    if   level==1: logging.info(text)
+    elif level==0: logging.debug(text)
+    elif level==2: logging.warning(text)
+    elif level==3: logging.error(text)
     with self.status_lock:
       self.status = text
       self.status_time = time.time()
@@ -112,13 +120,17 @@ class TacoClients(threading.Thread):
       #logging.debug("client")
       if not self.continue_running(): break
 
-      if self.client_connect_time < time.time():
-        self.set_status("Checking if dispatch needs to connect to clients")
-        self.client_connect_time = time.time() + taco.constants.CLIENT_RECONNECT
-        with taco.globals.settings_lock:
-          for peer_uuid in taco.globals.settings["Peers"].keys():
-            if taco.globals.settings["Peers"][peer_uuid]["enabled"]:
-              if peer_uuid not in self.clients:
+      with taco.globals.settings_lock:
+        for peer_uuid in taco.globals.settings["Peers"].keys():
+          if taco.globals.settings["Peers"][peer_uuid]["enabled"]:
+            #init some defaults
+            if not self.client_reconnect_mod.has_key(peer_uuid): self.client_reconnect_mod[peer_uuid] = taco.constants.CLIENT_RECONNECT_MIN
+            if not self.client_connect_time.has_key(peer_uuid): self.client_connect_time[peer_uuid] = time.time() + self.client_reconnect_mod[peer_uuid]
+            if not self.client_timeout.has_key(peer_uuid): self.client_timeout[peer_uuid] = time.time() + taco.constants.ROLLCALL_TIMEOUT
+
+            if time.time() >= self.client_connect_time[peer_uuid]:
+              if peer_uuid not in self.clients.keys():
+                self.set_status("Starting Client for: " + peer_uuid)
                 self.set_status("Doing DNS lookup on: " + taco.globals.settings["Peers"][peer_uuid]["hostname"])
                 ip_of_client = socket.gethostbyname(taco.globals.settings["Peers"][peer_uuid]["hostname"])
 
@@ -130,7 +142,7 @@ class TacoClients(threading.Thread):
                 self.clients[peer_uuid].curve_publickey = client_public
                 self.clients[peer_uuid].curve_serverkey = str(taco.globals.settings["Peers"][peer_uuid]["serverkey"])
 
-                self.set_status("Attempt to connect to client: " + peer_uuid + " @ tcp://" + ip_of_client + ":" + str(taco.globals.settings["Peers"][peer_uuid]["port"]))
+                self.set_status("Attempt to connect to: " + peer_uuid + " @ tcp://" + ip_of_client + ":" + str(taco.globals.settings["Peers"][peer_uuid]["port"]))
                 self.clients[peer_uuid].connect("tcp://" + ip_of_client + ":" + str(taco.globals.settings["Peers"][peer_uuid]["port"]))
                 self.next_rollcall[peer_uuid] = time.time()
 
@@ -138,7 +150,6 @@ class TacoClients(threading.Thread):
                 with self.medium_priority_output_queue_lock: self.medium_priority_output_queue[peer_uuid] = Queue.Queue()
                 with self.low_priority_output_queue_lock: self.low_priority_output_queue[peer_uuid] = Queue.Queue()
 
-                self.set_client_last_reply(peer_uuid)
                 poller.register(self.clients[peer_uuid],zmq.POLLIN|zmq.POLLOUT)
 
       socks = dict(poller.poll(500))
@@ -153,7 +164,7 @@ class TacoClients(threading.Thread):
           with self.high_priority_output_queue_lock:
             if not self.high_priority_output_queue[peer_uuid].empty():
               data = self.high_priority_output_queue[peer_uuid].get()
-              logging.debug("high priority output q not empty:" + peer_uuid)
+              self.set_status("high priority output q not empty:" + peer_uuid)
               self.clients[peer_uuid].send(data)
               self.did_something = 1
               continue
@@ -162,7 +173,7 @@ class TacoClients(threading.Thread):
           with self.medium_priority_output_queue_lock:
             if not self.medium_priority_output_queue[peer_uuid].empty():
               data = self.medium_priority_output_queue[peer_uuid].get()
-              logging.debug("medium priority output q not empty:" + peer_uuid)
+              self.set_status("medium priority output q not empty:" + peer_uuid)
               self.clients[peer_uuid].send(data)
               self.did_something = 1
               continue
@@ -171,14 +182,14 @@ class TacoClients(threading.Thread):
           with self.low_priority_output_queue_lock:
             if not self.low_priority_output_queue[peer_uuid].empty():
               data = self.low_priority_output_queue[peer_uuid].get()
-              logging.debug("low priority output q not empty:" + peer_uuid)
+              self.set_status("low priority output q not empty:" + peer_uuid)
               self.clients[peer_uuid].send(data)
               self.did_something = 1
               continue
 
           #rollcall special case
           if self.next_rollcall[peer_uuid] < time.time():
-            logging.debug("Requesting Rollcall from: " + peer_uuid)
+            self.set_status("Requesting Rollcall from: " + peer_uuid)
             self.clients[peer_uuid].send(taco.commands.Request_Rollcall())
             self.did_something = 1
             self.next_rollcall[peer_uuid] = time.time() + random.randint(taco.constants.ROLLCALL_MIN,taco.constants.ROLLCALL_MAX)
@@ -195,23 +206,22 @@ class TacoClients(threading.Thread):
               self.medium_priority_output_queue[peer_uuid].put(self.next_request)
 
         #cleanup block
-        if self.clients[peer_uuid] in socks and socks[self.clients[peer_uuid]] == zmq.POLLERR:
-          logging.debug("got a socket error for:" + peer_uuid)
-          poller.unregister(self.clients[peer_uuid])
-          self.clients[peer_uuid].close(0)
-          del self.clients[peer_uuid]
-          with self.high_priority_output_queue_lock: del self.high_priority_output_queue[peer_uuid]
-          with self.medium_priority_output_queue_lock: del self.medium_priority_output_queue[peer_uuid]
-          with self.low_priority_output_queue_lock: del self.low_priority_output_queue[peer_uuid]
-          
-        if abs(self.get_client_last_reply(peer_uuid) - time.time()) > taco.constants.ROLLCALL_TIMEOUT:
-          logging.debug("Stopping client since I havn't heard from: " + peer_uuid)
+        self.error_msg = []
+        if self.clients[peer_uuid] in socks and socks[self.clients[peer_uuid]] == zmq.POLLERR: self.error_msg.append("got a socket error")
+        if abs(self.client_timeout[peer_uuid] - time.time()) > taco.constants.ROLLCALL_TIMEOUT: self.error_msg.append("havn't seen communications")
+
+        if len(self.error_msg) > 0:
+          self.set_status("Stopping client: " + peer_uuid + " -- " + " and ".join(self.error_msg),2)
           poller.unregister(self.clients[peer_uuid])
           self.clients[peer_uuid].close(0)
           del self.clients[peer_uuid]          
+          del self.client_timeout[peer_uuid]
           with self.high_priority_output_queue_lock: del self.high_priority_output_queue[peer_uuid]
           with self.medium_priority_output_queue_lock: del self.medium_priority_output_queue[peer_uuid]
           with self.low_priority_output_queue_lock: del self.low_priority_output_queue[peer_uuid]
+          self.client_reconnect_mod[peer_uuid] = min(self.client_reconnect_mod[peer_uuid] + taco.constants.CLIENT_RECONNECT_MOD,taco.constants.CLIENT_RECONNECT_MAX)
+          self.client_connect_time[peer_uuid] = time.time() + self.client_reconnect_mod[peer_uuid]
+          
 
       if not self.did_something: time.sleep(0.2)
             

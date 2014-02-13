@@ -25,7 +25,7 @@ class TacoServer(threading.Thread):
     self.client_last_request_time_lock = threading.Lock()
 
   def set_client_last_request(self,peer_uuid):
-    logging.debug("Server has heard from:" + peer_uuid)
+    self.set_status("Server has serviced a request from:" + peer_uuid)
     with self.client_last_request_time_lock:
       self.client_last_request_time[peer_uuid] = time.time()
 
@@ -97,12 +97,12 @@ class TacoServer(threading.Thread):
       if not self.continue_running(): break
       socks = dict(poller.poll(500))
       if server in socks and socks[server] == zmq.POLLIN:
-        logging.debug("Getting Request")
+        self.set_status("Getting a request")
         data = server.recv()
         (client_uuid,reply) = taco.commands.Proccess_Request(data)
         if client_uuid!="0": self.set_client_last_request(client_uuid)
       if server in socks and socks[server] == zmq.POLLOUT:
-        logging.debug("Replying")
+        self.set_status("Replying to a request")
         server.send(reply)
 
         
