@@ -1,11 +1,43 @@
 var $stage=1;
-
-function Show_Peer_Shares(peer_uuid)
+var $failcount = 0;
+function Get_Share_Listing_Results(browse_uuid)
 {
-  console.log("Show_Peer_Shares: " + peer_uuid);
-  $stage=2;
-}
+  console.log("Get_Share_Listing_Results:" + browse_uuid);
+  $failcount++;
+  if ($failcount > 30) 
+  {
+     $("#loaderthing").addClass("hide");
+     $("#timedout").fadeIn();
+  }
+  else
+  {
+    setTimeout(function() { Get_Share_Listing_Results(browse_uuid) },100);
+  }
 
+}
+function Show_Peer_Shares(nickname,localnick,peer_uuid)
+{
+  $stage=2;
+  console.log("Show_Peer_Shares: " + peer_uuid);
+  $crumbs = [];
+  $crumbs.push('<li><a href="/browse.taco">Peer Listing</a></li>');
+  if (localnick != "") {
+    $crumbs.push('<li>'+nickname+' ('+localnick+')</li>');
+  } else {
+    $crumbs.push('<li>'+nickname+'</li>');
+  }
+  $("#peercrumb").html('<ol class="breadcrumb">'+$crumbs.join("")+'</ol>');
+  $("#peerlisting").addClass("hide");
+  $("#loaderthing").removeClass("hide");
+  $("#peercrumb").slideDown();
+
+  var $api_action = {"action":"browse","data":{"uuid":peer_uuid,"share":"/","dir":"/"}};
+  $.ajax({url:"/api.post",type:"POST",data:JSON.stringify($api_action),contentType:"application/json; charset=utf-8",dataType:"json",error: API_Alert,success: function(data)
+    {
+      setTimeout(function() { Get_Share_Listing_Results(data["result"]) },100);
+    }
+  });
+}
 function Set_Up_Root_Peer_Names()
 {
   if ($stage != 1) { return; }
@@ -31,31 +63,35 @@ function Set_Up_Root_Peer_Names()
             listing.push(thestring);
           }
       }
+      
       if (listing.length > 0)
       {
         $("#loaderthing").addClass("hide");
         $("#nopeers").fadeOut(function() 
         {
-          if ($("#filelisting").html() != listing.join("")) 
+          if ($("#peerlisting").html() != listing.join("")) 
           { 
-            $("#filelisting").fadeOut(function() 
+            $("#peerlisting").fadeOut(function() 
             { 
-              $(this).html(listing.join(""))
+              $(this).html(listing.join(""));
               $(".peerclick").unbind("click").click(function()
               {
-                Show_Peer_Shares($(this).data("uuid"));
+                Show_Peer_Shares(nick,localnick,$(this).data("uuid"));
               });
-              $(this).fadeIn();
+              $(this).fadeIn(function() { setTimeout(Set_Up_Root_Peer_Names,1000) });
             });
+          }
+          else
+          {
+            setTimeout(Set_Up_Root_Peer_Names,1000);
           }
         });
       }
       else
       {
         $("#loaderthing").addClass("hide");
-        $("#filelisting").fadeOut(function() { $("#nopeers").fadeIn() });
+        $("#peerlisting").fadeOut(function() { $fadedef = $("#nopeers").fadeIn(function() { setTimeout(Set_Up_Root_Peer_Names,1000) }) });
       }
-      setTimeout(Set_Up_Root_Peer_Names,1000);
 
     }
   });

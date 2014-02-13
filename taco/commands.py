@@ -149,25 +149,27 @@ def Process_Reply_Certs(peer_uuid,unpacked):
   return response
  
 
-def Request_Share_Listing(peer_uuid,sharename,sharepath="/"):
-  share_listing_uuid = str(uuid.uuid4())
+def Request_Share_Listing(peer_uuid,sharename,sharepath="/",share_listing_uuid):
   with taco.globals.share_listings_i_care_about_lock:
     share_listings_i_care_about[peer_uuid] = [time.time(),sharename,sharepath,share_listing_uuid]
-  request =  Create_Request(taco.constants.NET_REQUEST_CERTS,{"name":sharename,"path":sharepath,"results_uuid":share_listing_uuid})
+  request =  Create_Request(taco.constants.NET_REQUEST_CERTS,{"sharename":sharename,"path":sharepath,"results_uuid":share_listing_uuid})
   return msgpack.packb(request)
 
 def Reply_Share_Listing(peer_uuid,datablock):
   reply = Create_Reply(taco.constants.NET_REPLY_SHARE_LISTING,1)
   try:
-    assert datablock.has_key("name")
-    assert datablock.has_key("path")
-    assert datablock.has_key("results_uuid")
+    sharename = datablock["sharename"]
+    sharepath = datablock["sharepath"]
+    shareuuid = datablock["results_uuid"]
   except:
     reply[taco.constants.NET_DATABLOCK] = 0
+    return msgpack.packb(reply)
+
   logging.debug("Got a share listing request from: " + peer_uuid + " for: " + sharename + " / " + sharepath)
   with taco.globals.share_listing_requests_lock:
     if not taco.globals.share_listing_requests.has_key(peer_uuid): taco.globals.share_listing_requests[peer_uuid] = Queue.Queue()
-    taco.globals.share_listing_requests[peer_uuid].put((datablock["name"],datablock["path"],datablock["results_uuid"]))
+    taco.globals.share_listing_requests[peer_uuid].put(sharename,sharepath,shareuuid))
+
   return msgpack.packb(reply)
 
  

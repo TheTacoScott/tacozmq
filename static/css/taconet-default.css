@@ -165,10 +165,10 @@ margin-top: 0px;
 }
 .filelistingpanel
 {
-  min-height: 200px;
+  min-height: 300px;
 
 }
-#nopeers
+#nopeers,#timedout
 {
   margin-top: 50px;
 

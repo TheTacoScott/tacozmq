@@ -72,9 +72,6 @@ class TacoFilesystemManager(threading.Thread):
       self.status = text
       self.status_time = time.time()
 
-  def send_listing_results(self,directory,peer_uuid):
-    pass
-  
   def close_file_w(self,filename):
     self.set_status("Closing File for writing: " + filename)
     with self.files_open_for_w_lock:
@@ -140,6 +137,12 @@ class TacoFilesystemManager(threading.Thread):
             if abs(time.time() - thetime) > taco.constants.FILESYSTEM_CACHE_TIMEOUT:
               self.set_status("Purging Filesystem cache for directory: " + directory)
               del self.listings[directory]
+
+      with taco.globals.share_listing_requests_lock:
+        for peer_uuid in taco.globals.share_listing_requests.keys():
+          while not taco.globals.share_listing_requests[peer_uuid].empty():
+            (sharename,sharepath,shareuuid) = taco.globals.share_listing_requests[peer_uuid].get()
+
       with self.files_open_for_r_lock:
         files_to_close = []
         for filename in self.files_open_for_r.keys():
@@ -147,6 +150,7 @@ class TacoFilesystemManager(threading.Thread):
             files_to_close.append(filename)
       for filename in files_to_close:
         self.close_file_r(filename)
+
       with self.files_open_for_w_lock:
         files_to_close = []
         for filename in self.files_open_for_w.keys():

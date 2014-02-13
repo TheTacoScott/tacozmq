@@ -56,7 +56,22 @@ def index():
     output["threads"]["server"]["lastupdate"] = abs(time.time() - float(output["threads"]["server"]["lastupdate"]))
 
     return json.dumps(output)
+  if bottle.request.json[u"action"] == u"browseresult":
+    if type(bottle.request.json[u"data"]) == type({}):
+      if bottle.request.json[u"data"].has_key(u"uuid"):
+        pass
 
+  if bottle.request.json[u"action"] == u"browse":
+    if type(bottle.request.json[u"data"]) == type({}):
+      if bottle.request.json[u"data"].has_key(u"uuid") and bottle.request.json[u"data"].has_key(u"share") and bottle.request.json[u"data"].has_key(u"dir"):
+        peer_uuid = bottle.request.json[u"data"][u"uuid"]
+        share = bottle.request.json[u"data"][u"share"]
+        directory = bottle.request.json[u"data"][u"dir"]
+        browse_result_uuid = str(uuid.uuid4())
+        logging.critical("Getting Directory Listing from: " + peer_uuid + " for share: " + share + " -- " + directory)
+        return json.dumps({"result":browse_result_uuid})
+        
+        
   if bottle.request.json[u"action"] == u"peerstatus":
     output = {}
     with taco.globals.settings_lock:
