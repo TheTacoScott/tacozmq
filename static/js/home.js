@@ -26,13 +26,14 @@ function Update_Peer_Status()
           outdiff = data[$uuid][3];
           nick = data[$uuid][4];
           localnick = data[$uuid][5];
+          if (indiff  < 10000000) { $inmsg = indiff.toFixed(2) + " second(s) ago" } else { $inmsg = "Never" }
+          if (outdiff < 10000000) { $outmsg = outdiff.toFixed(2) + " second(s) ago" } else { $outmsg = "Never" }
+          if (localnick != "") { $localnickmsg = "<br>(" + localnick + ")" } else { $localnickmsg = "" }
           if ($("#" + $uuid).length == 1) 
           { 
             $tr = $("#" + $uuid); 
             if ($tr.find(".tablenick").html() != nick) { $tr.find(".tablenick").html(nick); }
-            if ($tr.find(".localnick").html() != localnick) { $tr.find(".localnick").html(localnick); }
-            if (indiff  < 10000000) { $inmsg = indiff.toFixed(2) + " second(s) ago" } else { $inmsg = "Never" }
-            if (outdiff < 10000000) { $outmsg = outdiff.toFixed(2) + " second(s) ago" } else { $outmsg = "Never" }
+            if ($tr.find(".localnick").html() != $localnickmsg) { $tr.find(".localnick").html($localnickmsg); }
             if ($tr.find(".lastincoming").html() != $inmsg) { $tr.find(".lastincoming").html($inmsg); }
             if ($tr.find(".lastoutgoing").html() != $outmsg) { $tr.find(".lastoutgoing").html($outmsg); }
           } else {
@@ -40,9 +41,7 @@ function Update_Peer_Status()
             $tr.clone().removeClass("hide").addClass("peerstatusrow").removeAttr("id").attr("id",$uuid).appendTo("#peerstatustbody");
             $tr = $("#" + $uuid);
             if ($tr.find(".tablenick").html() != nick) { $tr.find(".tablenick").html(nick); }
-            if ($tr.find(".localnick").html() != localnick) { $tr.find(".localnick").html(localnick); }
-            if (indiff  < 10000000) { $inmsg = indiff.toFixed(2) + " second(s) ago" } else { $inmsg = "Never" }
-            if (outdiff < 10000000) { $outmsg = outdiff.toFixed(2) + " second(s) ago" } else { $outmsg = "Never" }
+            if ($tr.find(".localnick").html() != $localnickmsg) { $tr.find(".localnick").html($localnickmsg); }
             if ($tr.find(".lastincoming").html() != $inmsg) { $tr.find(".lastincoming").html($inmsg); }
             if ($tr.find(".lastoutgoing").html() != $outmsg) { $tr.find(".lastoutgoing").html($outmsg); }
 

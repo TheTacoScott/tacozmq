@@ -15,7 +15,7 @@
             <tr>
               <th style="width: 10%;" class="text-center">Incoming</th>
               <th style="width: 10%;" class="text-center">Outgoing</th>
-              <th>Nickname</th>
+              <th style="width: 40%;">Nickname</th>
               <th>Last Communication</th>
             </tr>
           </thead>
@@ -24,7 +24,7 @@
                 <tr id="peerstatusrowhelper" class="hide">
                   <td class="middle-align-td text-center yellow-td incomingstatus"><span style="font-size:32px;" class="glyphicon glyphicon-question-sign"></span></td>
                   <td class="middle-align-td text-center yellow-td outgoingstatus"><span style="font-size:32px;" class="glyphicon glyphicon-question-sign"></span></td>
-                  <td class="middle-align-td"><span class="tablenick"></span> <span class="localnick"></span></td>
+                  <td class="middle-align-td"><span class="tablenick"></span><span class="localnick"></span></td>
                   <td class="middle-align-td"><strong>Incoming:</strong> <span class="lastincoming"></span><br><strong>Outgoing:</strong> <span class="lastoutgoing"></span></td>
                 </tr>
           </tbody>
