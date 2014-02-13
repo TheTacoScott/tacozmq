@@ -3,6 +3,7 @@ import taco.constants
 import logging
 import os
 import uuid
+import Queue
 
 settings_lock  = threading.Lock()
 settings = {}
@@ -18,6 +19,15 @@ continue_running_value = True
 
 public_keys_lock = threading.Lock()
 public_keys = {}
+
+share_listings_i_care_about = {}
+share_listings_i_care_about_lock = threading.Lock()
+
+share_listing_requests_lock = threading.Lock()
+share_listing_requests = {}
+
+share_listings = {}
+share_listings_lock = threading.Lock()
 
 def continue_running():
   return_value = True
@@ -36,8 +46,11 @@ def properexit(signum, frame):
   server.stop_running()
   logging.info("Stopping Clients")
   clients.stop_running()
+  logging.info("Stopping Filesystem Workers")
+  filesys.stop_running()
   server.join()
   clients.join()
+  filesys.join()
   logging.info("Dispatcher Stopped Successfully")
   logging.info("Clean Exit")
   os._exit(3)
