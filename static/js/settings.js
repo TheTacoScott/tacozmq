@@ -382,15 +382,6 @@ function Set_Up_Peer_Buttons()
 
   $("button").popover(); 
 }
-function Check_For_API_Errors()
-{
-  var $api_action = {"action":"apistatus","data":""};
-  $.ajax({url:"/api.post",type:"POST",data:JSON.stringify($api_action),contentType:"application/json; charset=utf-8",dataType:"json",error: API_Alert,success: function(data)
-  {
-    setTimeout(Check_For_API_Errors,1000);
-  }
-  });
-}
 
 $( document ).ready(function() {
  Set_Up_Delete_Share();

@@ -158,10 +158,45 @@ margin-top: 0px;
 {
   padding-left:20px;
 }
+#peerlisting ul
+{
+  padding-left: 0px;
+}
+#peerlisting button
+{
+  font-size: 18px;
+}
+#peerlisting li:hover
+{
+  background-color: #f7f7f7;
+}
+#peerlisting .list-group-item
+{
+  cursor: pointer;
+}
+.sharelistingbuttonblock
+{
+  display:inline-block;
+  width: 60px;
+  margin-left:-7px;
+  margin-top:-5px;
+  margin-bottom:-5px;
+}
+.sharelistingbuttonblock button span
+{
+  font-size: 18px;
+}
+
 .iga-fixed-width
 {
   width: 200px;
   display:inline-block;
+}
+#peer-listing .iga-fixed-width
+{
+  width: 140px;
+  display:inline-block;
+
 }
 .filelistingpanel
 {

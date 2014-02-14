@@ -57,23 +57,35 @@ function Set_Up_Root_Peer_Names()
           localnick = data[$uuid][5];
           if (indiff < 6.0 && indiff >= 0.0 && outdiff < 6.0 && outdiff >= 0.0)
           {
-            thestring = '<a data-uuid="'+$uuid+'" class="peerclick list-group-item" href="#"><span class="glyphicon glyphicon-user"></span> <strong>'+nick+'</strong>';
+            thestring = '<li data-uuid="'+$uuid+'" class="peerclick list-group-item">';
+            thestring += '<span class="sharelistingbuttonblock hide">';
+            thestring += '<button class="btn btn-info" type="button"><span class="glyphicon glyphicon-download"></span></button> ';
+            thestring += '</span>';
+            thestring += '<span class="glyphicon glyphicon-user"></span> <strong>'+nick+'</strong>';
             if (localnick != "") { thestring += ' ('+localnick+')'; }
-            thestring += "</a>";
+            thestring += '</li>';
             listing.push(thestring);
           }
       }
+     
       
       if (listing.length > 0)
       {
         $("#loaderthing").addClass("hide");
         $("#nopeers").fadeOut(function() 
         {
-          if ($("#peerlisting").html() != listing.join("")) 
+          $outputhtml  = '';
+          $outputhtml += '<ul class="list-group">';
+          $outputhtml += listing.join("");
+          $outputhtml += '</ul>';
+          
+          if ($("#peerlisting").html() != $outputhtml) 
           { 
             $("#peerlisting").fadeOut(function() 
-            { 
-              $(this).html(listing.join(""));
+            {
+              $(this).html($outputhtml);
+              $(".peerclick button .glyphicon-download").parent().unbind("click").click(function(event) { event.stopPropagation(); });
+              $(".peerclick button .glyphicon-bookmark").parent().unbind("click").click(function(event) { event.stopPropagation(); });
               $(".peerclick").unbind("click").click(function()
               {
                 Show_Peer_Shares(nick,localnick,$(this).data("uuid"));
@@ -101,5 +113,6 @@ function Set_Up_Root_Peer_Names()
 
 $( document ).ready(function() {
   Set_Up_Root_Peer_Names();
-
+  Check_For_API_Errors();
+  
 });
