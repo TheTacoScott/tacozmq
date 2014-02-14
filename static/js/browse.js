@@ -59,7 +59,9 @@ function Set_Up_Root_Peer_Names()
           {
             thestring = '<li data-uuid="'+$uuid+'" class="peerclick list-group-item">';
             thestring += '<span class="sharelistingbuttonblock hide">';
-            thestring += '<button class="btn btn-info" type="button"><span class="glyphicon glyphicon-download"></span></button> ';
+            //thestring += '<button class="btn btn-info" type="button"><span class="glyphicon glyphicon-download"></span></button> ';
+            thestring += '<div class="btn-group"> <button type="button" class="btn btn-default btn-xs"><span class="glyphicon glyphicon-plus"></span></button>';
+            thestring += '<button type="button" class="btn btn-default btn-xs"><span class="glyphicon glyphicon-bookmark"></span></button></div>';
             thestring += '</span>';
             thestring += '<span class="glyphicon glyphicon-user"></span> <strong>'+nick+'</strong>';
             if (localnick != "") { thestring += ' ('+localnick+')'; }

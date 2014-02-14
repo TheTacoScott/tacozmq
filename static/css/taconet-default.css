@@ -177,14 +177,14 @@ margin-top: 0px;
 .sharelistingbuttonblock
 {
   display:inline-block;
-  width: 60px;
+  width: 70px;
   margin-left:-7px;
   margin-top:-5px;
   margin-bottom:-5px;
 }
 .sharelistingbuttonblock button span
 {
-  font-size: 18px;
+  font-size: 14px;
 }
 
 .iga-fixed-width
