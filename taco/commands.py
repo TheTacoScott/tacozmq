@@ -62,7 +62,7 @@ def Request_Chat(chatmsg):
     if len(taco.globals.chat_log) > taco.constants.CHAT_LOG_MAXSIZE:
       taco.globals.chat_log = taco.globals.chat_log[1:]
 
-  taco.globals.clients.Add_To_All_Output_Queues(msgpack.packb(output_block))
+  taco.globals.Add_To_All_Output_Queues(msgpack.packb(output_block))
 
 def Reply_Chat(peer_uuid,datablock):
   logging.debug(str(datablock))
@@ -151,7 +151,7 @@ def Process_Reply_Certs(peer_uuid,unpacked):
 
 def Request_Share_Listing(peer_uuid,sharename,sharepath,share_listing_uuid):
   with taco.globals.share_listings_i_care_about_lock:
-    share_listings_i_care_about[peer_uuid] = [time.time(),sharename,sharepath,share_listing_uuid]
+    share_listings_i_care_about[peer_uuid] = [time.time(),sharename,sharepath,share_listing_uuid] #TODO: need some mechanims to purge results that are N time old
   request =  Create_Request(taco.constants.NET_REQUEST_CERTS,{"sharename":sharename,"path":sharepath,"results_uuid":share_listing_uuid})
   return msgpack.packb(request)
 

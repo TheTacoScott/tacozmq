@@ -69,6 +69,8 @@ def index():
         directory = bottle.request.json[u"data"][u"dir"]
         browse_result_uuid = str(uuid.uuid4())
         logging.critical("Getting Directory Listing from: " + peer_uuid + " for share: " + share + " -- " + directory)
+        request = taco.commands.Request_Share_Listing(peer_uuid,share,directory,browse_result_uuid)
+        taco.globals.Add_To_Output_Queue(peer_uuid,request,2)
         return json.dumps({"result":browse_result_uuid})
         
         

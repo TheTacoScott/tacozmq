@@ -29,6 +29,46 @@ share_listing_requests = {}
 share_listings = {}
 share_listings_lock = threading.Lock()
 
+high_priority_output_queue_lock = threading.Lock()
+medium_priority_output_queue_lock = threading.Lock()
+low_priority_output_queue_lock = threading.Lock()
+
+high_priority_output_queue = {}
+medium_priority_output_queue = {}
+low_priority_output_queue = {}
+
+def Add_To_Output_Queue(peer_uuid,msg,priority=3):
+  logging.debug("Add to "+ peer_uuid+" output q @ " + str(priority))
+  if priority==1:
+    with high_priority_output_queue_lock:
+      if high_priority_output_queue.has_key(peer_uuid):
+        high_priority_output_queue[peer_uuid].put(msg)
+  elif priority==2:
+    with medium_priority_output_queue_lock:
+      if medium_priority_output_queue.has_key(peer_uuid):
+        medium_priority_output_queue[peer_uuid].put(msg)
+  else:
+    with low_priority_output_queue_lock:
+      if low_priority_output_queue.has_key(peer_uuid):
+        low_priority_output_queue[peer_uuid].put(msg)
+
+def Add_To_All_Output_Queues(msg,priority=3):
+  logging.debug("Add to ALL output q @ " + str(priority))
+  if priority==1:
+    with high_priority_output_queue_lock:
+      for keyname in high_priority_output_queue.keys():
+        high_priority_output_queue[keyname].put(msg)
+  elif priority==2:
+    with medium_priority_output_queue_lock:
+      for keyname in medium_priority_output_queue.keys():
+        medium_priority_output_queue[keyname].put(msg)
+  else:
+    with low_priority_output_queue_lock:
+      for keyname in low_priority_output_queue.keys():
+        low_priority_output_queue[keyname].put(msg)
+
+
+
 def continue_running():
   return_value = True
   with taco.globals.continue_running_lock:

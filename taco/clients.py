@@ -31,51 +31,10 @@ class TacoClients(threading.Thread):
     self.client_connect_time = {}
     self.client_reconnect_mod = {}
  
-    self.high_priority_output_queue = {}
-    self.high_priority_output_queue_lock = threading.Lock()
-
-    self.medium_priority_output_queue = {}
-    self.medium_priority_output_queue_lock = threading.Lock()
-
-    self.low_priority_output_queue = {}
-    self.low_priority_output_queue_lock = threading.Lock()
- 
- 
     self.client_last_reply_time = {}
     self.client_last_reply_time_lock = threading.Lock()
 
     self.client_timeout = {}
-  def Add_To_Output_Queue(self,peer_uuid,msg,priority=3):
-    logging.debug("Add to "+ peer_uuid+" output q @ " + str(priority))
-    if priority==1:
-      with self.high_priority_output_queue_lock:
-        if self.high_priority_output_queue.has_key(peer_uuid):
-          self.high_priority_output_queue[peer_uuid].put(msg)
-    elif priority==2:
-      with self.medium_priority_output_queue_lock:
-        if self.medium_priority_output_queue.has_key(peer_uuid):
-          self.medium_priority_output_queue[peer_uuid].put(msg)
-    else:
-      with self.low_priority_output_queue_lock:
-        if self.low_priority_output_queue.has_key(peer_uuid):
-          self.low_priority_output_queue[peer_uuid].put(msg)
-
-  def Add_To_All_Output_Queues(self,msg,priority=3):
-    logging.debug("Add to ALL output q @ " + str(priority))
-    if priority==1:
-      with self.high_priority_output_queue_lock:
-        for keyname in self.high_priority_output_queue.keys():
-          self.high_priority_output_queue[keyname].put(msg)
-    elif priority==2:
-      with self.medium_priority_output_queue_lock:
-        for keyname in self.medium_priority_output_queue.keys():
-          self.medium_priority_output_queue[keyname].put(msg)
-    else:
-      with self.low_priority_output_queue_lock:
-        for keyname in self.low_priority_output_queue.keys():
-          self.low_priority_output_queue[keyname].put(msg)
-
-    logging.debug("DONE Add to output q @ " + str(priority))
   
   def set_client_last_reply(self,peer_uuid):
     logging.debug("Got Reply from: " + peer_uuid)
@@ -160,9 +119,9 @@ class TacoClients(threading.Thread):
                 self.clients[peer_uuid].connect("tcp://" + ip_of_client + ":" + str(taco.globals.settings["Peers"][peer_uuid]["port"]))
                 self.next_rollcall[peer_uuid] = time.time()
 
-                with self.high_priority_output_queue_lock: self.high_priority_output_queue[peer_uuid] = Queue.Queue()
-                with self.medium_priority_output_queue_lock: self.medium_priority_output_queue[peer_uuid] = Queue.Queue()
-                with self.low_priority_output_queue_lock: self.low_priority_output_queue[peer_uuid] = Queue.Queue()
+                with taco.globals.high_priority_output_queue_lock:   taco.globals.high_priority_output_queue[peer_uuid]   = Queue.Queue()
+                with taco.globals.medium_priority_output_queue_lock: taco.globals.medium_priority_output_queue[peer_uuid] = Queue.Queue()
+                with taco.globals.low_priority_output_queue_lock:    taco.globals.low_priority_output_queue[peer_uuid]    = Queue.Queue()
 
                 poller.register(self.clients[peer_uuid],zmq.POLLIN|zmq.POLLOUT)
 
@@ -175,27 +134,27 @@ class TacoClients(threading.Thread):
         if self.clients[peer_uuid] in socks and socks[self.clients[peer_uuid]] == zmq.POLLOUT:
           
           #high priority queue processing
-          with self.high_priority_output_queue_lock:
-            if not self.high_priority_output_queue[peer_uuid].empty():
-              data = self.high_priority_output_queue[peer_uuid].get()
+          with taco.globals.high_priority_output_queue_lock:
+            if not taco.globals.high_priority_output_queue[peer_uuid].empty():
+              data = taco.globals.high_priority_output_queue[peer_uuid].get()
               self.set_status("high priority output q not empty:" + peer_uuid)
               self.clients[peer_uuid].send(data)
               self.did_something = 1
               continue
 
           #medium priority queue processing
-          with self.medium_priority_output_queue_lock:
-            if not self.medium_priority_output_queue[peer_uuid].empty():
-              data = self.medium_priority_output_queue[peer_uuid].get()
+          with taco.globals.medium_priority_output_queue_lock:
+            if not taco.globals.medium_priority_output_queue[peer_uuid].empty():
+              data = taco.globals.medium_priority_output_queue[peer_uuid].get()
               self.set_status("medium priority output q not empty:" + peer_uuid)
               self.clients[peer_uuid].send(data)
               self.did_something = 1
               continue
 
           #low priority queue processing
-          with self.low_priority_output_queue_lock:
-            if not self.low_priority_output_queue[peer_uuid].empty():
-              data = self.low_priority_output_queue[peer_uuid].get()
+          with taco.globals.low_priority_output_queue_lock:
+            if not taco.globals.low_priority_output_queue[peer_uuid].empty():
+              data = taco.globals.low_priority_output_queue[peer_uuid].get()
               self.set_status("low priority output q not empty:" + peer_uuid)
               self.clients[peer_uuid].send(data)
               self.did_something = 1
@@ -216,8 +175,8 @@ class TacoClients(threading.Thread):
           self.did_something = 1
           self.next_request = taco.commands.Process_Reply(peer_uuid,data)
           if self.next_request != "":
-            with self.medium_priority_output_queue_lock:
-              self.medium_priority_output_queue[peer_uuid].put(self.next_request)
+            with taco.globals.medium_priority_output_queue_lock:
+              taco.globals.medium_priority_output_queue[peer_uuid].put(self.next_request)
 
         #cleanup block
         self.error_msg = []
@@ -230,9 +189,9 @@ class TacoClients(threading.Thread):
           self.clients[peer_uuid].close(0)
           del self.clients[peer_uuid]          
           del self.client_timeout[peer_uuid]
-          with self.high_priority_output_queue_lock: del self.high_priority_output_queue[peer_uuid]
-          with self.medium_priority_output_queue_lock: del self.medium_priority_output_queue[peer_uuid]
-          with self.low_priority_output_queue_lock: del self.low_priority_output_queue[peer_uuid]
+          with taco.globals.high_priority_output_queue_lock:    del taco.globals.high_priority_output_queue[peer_uuid]
+          with taco.globals.medium_priority_output_queue_lock:  del taco.globals.medium_priority_output_queue[peer_uuid]
+          with taco.globals.low_priority_output_queue_lock:     del taco.globals.low_priority_output_queue[peer_uuid]
           self.client_reconnect_mod[peer_uuid] = min(self.client_reconnect_mod[peer_uuid] + taco.constants.CLIENT_RECONNECT_MOD,taco.constants.CLIENT_RECONNECT_MAX)
           self.client_connect_time[peer_uuid] = time.time() + self.client_reconnect_mod[peer_uuid]
           

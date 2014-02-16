@@ -45,6 +45,7 @@ class TacoFilesystemManager(threading.Thread):
     self.status_lock = threading.Lock()
     self.status = ""
     self.status_time = -1
+
     self.workers = []
     self.last_purge = time.time()
 
@@ -58,6 +59,9 @@ class TacoFilesystemManager(threading.Thread):
     self.files_open_for_r_lock = threading.Lock()
     self.files_open_for_r = {}
     self.files_open_for_r_time = {}
+
+    self.listing_work_queue = Queue.Queue()
+    self.results_queue = Queue.Queue()
  
   def add_listing(self,thetime,directory,dirs,files):
     with self.listings_lock:
@@ -71,6 +75,9 @@ class TacoFilesystemManager(threading.Thread):
     with self.status_lock:
       self.status = text
       self.status_time = time.time()
+
+  def get_directory_listing(self,directory):
+    self.listing_work_queue.put(unicode(directory))
 
   def close_file_w(self,filename):
     self.set_status("Closing File for writing: " + filename)
@@ -159,11 +166,9 @@ class TacoFilesystemManager(threading.Thread):
       for filename in files_to_close:
         self.close_file_w(filename)
 
-      for xi in self.workers:
-        while not xi.results_queue.empty():
-          self.set_status("Processing Results from Filesystem Worker #" + str(xi.worker_id))
-          (success,thetime,directory,dirs,files) = xi.results_queue.get()
-          self.add_listing(thetime,directory,dirs,files)
+      while not self.results_queue.empty():
+        (success,thetime,directory,dirs,files) = self.results_queue.get()
+        self.add_listing(thetime,directory,dirs,files)
       
       if not self.continue_running(): break
     self.set_status("Exiting")
@@ -193,9 +198,6 @@ class TacoFilesystemWorker(threading.Thread):
     self.status = ""
     self.status_time = -1
 
-    self.work_queue = Queue.Queue()
-    self.results_queue = Queue.Queue()
-
   def set_status(self,text,level=0):
     if   level==1: logging.info(text)
     elif level==0: logging.debug(text)
@@ -218,40 +220,39 @@ class TacoFilesystemWorker(threading.Thread):
       continue_run = not self.stop
     return continue_run
   
-  def get_directory_listing(self,directory):
-    self.work_queue.put(unicode(directory))
-  
   def run(self):
     self.set_status("Starting Filesystem Worker #" + str(self.worker_id))
     while self.continue_running():
-      time.sleep(0.01)
-      if not self.work_queue.empty():
-        directory = self.work_queue.get()
-        self.set_status("Filesystem Worker #" + str(self.worker_id) + " -- Get Directory Listing for: " + directory)
-        dirs = []
-        files = []
-        try:
-          dirlist = os.listdir(directory)
-        except:
-          results = [0,time.time(),directory,[],[]]
-
-        try:
-          for fileobject in dirlist:
-            joined = os.path.normpath(os.path.join(ps.path.normpath(directory),fileobject))
-            if os.path.isfile(joined):
-              filemod = os.stat(joined).st_mtime
-              filesize = os.path.getsize(joined)
-              files.append(fileobject,filesize,filemod)
-            elif os.path.isdir(joined):
-              dirs.append(fileobject)
-          dirs.sort()
-          files.sort()
-          results = [1,time.time(),directory,dirs,files]
-        except:
-          results = [0,time.time(),directory,[],[]]
-
-        self.results_queue.put(results)
-
       if not self.continue_running(): break
+      try:
+        directory = taco.globals.filesys.listing_work_queue.get(1,0.1)
+      except:
+        continue
+      self.set_status("Filesystem Worker #" + str(self.worker_id) + " -- Get Directory Listing for: " + directory)
+
+      dirs = []
+      files = []
+      try:
+        dirlist = os.listdir(directory)
+      except:
+        results = [0,time.time(),directory,[],[]]
+
+      try:
+        for fileobject in dirlist:
+          joined = os.path.normpath(os.path.join(ps.path.normpath(directory),fileobject))
+          if os.path.isfile(joined):
+            filemod = os.stat(joined).st_mtime
+            filesize = os.path.getsize(joined)
+            files.append(fileobject,filesize,filemod)
+          elif os.path.isdir(joined):
+            dirs.append(fileobject)
+        dirs.sort()
+        files.sort()
+        results = [1,time.time(),directory,dirs,files]
+      except:
+        results = [0,time.time(),directory,[],[]]
+
+      taco.globals.filesys.results_queue.put(results)
+
     self.set_status("Exiting Filesystem Worker #" + str(self.worker_id))
 
