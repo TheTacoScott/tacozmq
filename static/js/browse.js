@@ -20,7 +20,7 @@ function Get_Share_Listing_Results(peer_uuid,sharename,sharepath)
       
           for (var i = 0; i < data["result"][1].length; i++) 
           {
-            thestring = '<li data-sharename="'+data["result"][1][i]+'" class="shareclick list-group-item">';
+            thestring = '<li data-uuid="'+peer_uuid+'" data-sharename="'+data["result"][1][i]+'" class="shareclick list-group-item">';
             thestring += '<span class="glyphicon glyphicon-book"></span> <strong>'+data["result"][1][i]+'</strong>';
             thestring += '</li>';
             sharelisting.push(thestring);
@@ -64,7 +64,7 @@ function Show_Peer_Shares(nickname,localnick,peer_uuid)
   $crumbs = [];
   $crumbs.push('<li><a href="/browse.taco">Peer Listing</a></li>');
   if (localnick != "") {
-    $crumbs.push('<li data-uuid="'+peer_uuid+'">'+nickname+' ('+localnick+')</li>');
+    $crumbs.push('<li>'+nickname+' ('+localnick+')</li>');
   } else {
     $crumbs.push('<li>'+nickname+'</li>');
   }
