@@ -71,13 +71,12 @@ function Show_Peer_Shares(nickname,localnick,peer_uuid)
   $("#peercrumb").html('<ol class="breadcrumb">'+$crumbs.join("")+'</ol>');
   $("#peerlisting").addClass("hide");
   $("#loaderthing").removeClass("hide");
-  $("#peercrumb").slideDown(function() { 
-    var $api_action = {"action":"browse","data":{"uuid":peer_uuid,"share":"/","dir":"/"}};
-    $.ajax({url:"/api.post",type:"POST",data:JSON.stringify($api_action),contentType:"application/json; charset=utf-8",dataType:"json",error: API_Alert,success: function(data)
-      {
-        setTimeout(function() { Get_Share_Listing_Results(peer_uuid,data["sharename"],data["sharepath"]) },100);
-      }
-    });
+  $("#peercrumb").slideDown(150);
+  var $api_action = {"action":"browse","data":{"uuid":peer_uuid,"share":"/","dir":"/"}};
+  $.ajax({url:"/api.post",type:"POST",data:JSON.stringify($api_action),contentType:"application/json; charset=utf-8",dataType:"json",error: API_Alert,success: function(data)
+    {
+      setTimeout(function() { Get_Share_Listing_Results(peer_uuid,data["sharename"],data["sharepath"]) },100);
+    }
   });
 }
 function Set_Up_Root_Peer_Names()
