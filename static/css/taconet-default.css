@@ -158,7 +158,7 @@ margin-top: 0px;
 {
   padding-left:20px;
 }
-#peerlisting ul
+#peerlisting ul,#sharelisting ul
 {
   padding-left: 0px;
 }
@@ -166,14 +166,18 @@ margin-top: 0px;
 {
   font-size: 18px;
 }
-#peerlisting li:hover
+
+#peerlisting li:hover,#sharelisting li:hover
 {
   background-color: #f7f7f7;
 }
-#peerlisting .list-group-item
+
+
+#peerlisting .list-group-item,#sharelisting .list-group-item
 {
   cursor: pointer;
 }
+
 .sharelistingbuttonblock
 {
   display:inline-block;

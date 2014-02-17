@@ -92,7 +92,7 @@ function Set_Up_Root_Peer_Names()
           localnick = data[$uuid][5];
           if (indiff < 6.0 && indiff >= 0.0 && outdiff < 6.0 && outdiff >= 0.0)
           {
-            thestring = '<li data-uuid="'+$uuid+'" class="peerclick list-group-item">';
+            thestring = '<li data-nick="'+nick+'" data-localnick="'+localnick+'" data-uuid="'+$uuid+'" class="peerclick list-group-item">';
             thestring += '<span class="sharelistingbuttonblock hide">';
             //thestring += '<button class="btn btn-info" type="button"><span class="glyphicon glyphicon-download"></span></button> ';
             thestring += '<div class="btn-group"> <button type="button" class="btn btn-default btn-xs"><span class="glyphicon glyphicon-plus"></span></button>';
@@ -121,11 +121,11 @@ function Set_Up_Root_Peer_Names()
             $("#peerlisting").fadeOut(function() 
             {
               $(this).html($outputhtml);
-              $(".peerclick button .glyphicon-download").parent().unbind("click").click(function(event) { event.stopPropagation(); });
-              $(".peerclick button .glyphicon-bookmark").parent().unbind("click").click(function(event) { event.stopPropagation(); });
+              //$(".peerclick button .glyphicon-download").parent().unbind("click").click(function(event) { event.stopPropagation(); });
+              //$(".peerclick button .glyphicon-bookmark").parent().unbind("click").click(function(event) { event.stopPropagation(); });
               $(".peerclick").unbind("click").click(function()
               {
-                Show_Peer_Shares(nick,localnick,$(this).data("uuid"));
+                Show_Peer_Shares($(this).data("nick"),$(this).data("localnick"),$(this).data("uuid"));
               });
               $(this).fadeIn(function() { setTimeout(Set_Up_Root_Peer_Names,1000) });
             });
