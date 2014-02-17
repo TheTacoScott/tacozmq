@@ -3,7 +3,9 @@ var $failcount = 0;
 function Get_Share_Listing_Results(peer_uuid,sharename,sharepath)
 {
   console.log("Get_Share_Listing_Results: " + sharename + " " + sharepath);
-  if ($failcount > 30) 
+  $("#sharelisting").html("");
+  $("#loaderthing").removeClass("hide");
+  if ($failcount > 5) 
   {
      $("#loaderthing").addClass("hide");
      $("#timedout").fadeIn();
@@ -20,7 +22,7 @@ function Get_Share_Listing_Results(peer_uuid,sharename,sharepath)
       
           for (var i = 0; i < data["result"][1].length; i++) 
           {
-            thestring = '<li data-uuid="'+peer_uuid+'" data-sharename="'+data["result"][1][i]+'" class="shareclick list-group-item">';
+            thestring = '<li data-uuid="'+peer_uuid+'" data-sharename="'+data["result"][1][i]+'" data-sharepath="'+sharepath+'" class="shareclick list-group-item">';
             thestring += '<span class="glyphicon glyphicon-book"></span> <strong>'+data["result"][1][i]+'</strong>';
             thestring += '</li>';
             sharelisting.push(thestring);
@@ -37,6 +39,18 @@ function Get_Share_Listing_Results(peer_uuid,sharename,sharepath)
               $("#sharelisting").fadeOut(function()
               {
                 $(this).html($outputhtml);
+                $(".shareclick").unbind("click").click(function() 
+                { 
+                  l_uuid = $(this).data("uuid");
+                  l_share = $(this).data("sharename");
+                  l_dir = $(this).data("sharepath");
+                  var $api_action = {"action":"browse","data":{"uuid":$(this).data("uuid"),"share":$(this).data("sharename"),"dir":$(this).data("sharepath")}};
+                  $.ajax({url:"/api.post",type:"POST",data:JSON.stringify($api_action),contentType:"application/json; charset=utf-8",dataType:"json",error: API_Alert,success: function(data)
+                    {
+                      Get_Share_Listing_Results(l_uuid,l_share,l_dir);
+                    }
+                  });
+                });
                 $(this).fadeIn();
               });
             }

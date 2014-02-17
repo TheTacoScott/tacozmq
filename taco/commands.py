@@ -190,7 +190,7 @@ def Reply_Share_Listing_Result(peer_uuid,datablock):
     reply = Create_Reply(taco.constants.NET_REPLY_SHARE_LISTING_RESULTS,0)
     return msgpack.packb(reply)
   
-  logging.debug("Got share listing RESULTS from: " + peer_uuid + " for: " + sharename + " / " + sharepath)
+  logging.debug("Got share listing RESULTS from: " + peer_uuid + " for: " + sharename + " " + sharepath)
   with taco.globals.share_listings_lock:
     taco.globals.share_listings[(peer_uuid,sharename,sharepath)] = results
   with taco.globals.share_listings_i_care_about_lock:
