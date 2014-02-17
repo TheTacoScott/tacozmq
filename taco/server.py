@@ -97,12 +97,12 @@ class TacoServer(threading.Thread):
       if not self.continue_running(): break
       socks = dict(poller.poll(500))
       if server in socks and socks[server] == zmq.POLLIN:
-        self.set_status("Getting a request")
+        #self.set_status("Getting a request")
         data = server.recv()
         (client_uuid,reply) = taco.commands.Proccess_Request(data)
         if client_uuid!="0": self.set_client_last_request(client_uuid)
       if server in socks and socks[server] == zmq.POLLOUT:
-        self.set_status("Replying to a request")
+        #self.set_status("Replying to a request")
         server.send(reply)
 
         

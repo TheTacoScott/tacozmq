@@ -31,10 +31,11 @@ def Proccess_Request(packed):
   if unpacked.has_key(taco.constants.NET_REQUEST):
     logging.info("NET_REQUEST: " + str(unpacked))
 
-    if unpacked[taco.constants.NET_REQUEST] == taco.constants.NET_REQUEST_ROLLCALL:       return (unpacked[taco.constants.NET_IDENT],Reply_Rollcall())
-    if unpacked[taco.constants.NET_REQUEST] == taco.constants.NET_REQUEST_CERTS:          return (unpacked[taco.constants.NET_IDENT],Reply_Certs(unpacked[taco.constants.NET_IDENT],unpacked[taco.constants.NET_DATABLOCK]))
-    if unpacked[taco.constants.NET_REQUEST] == taco.constants.NET_REQUEST_CHAT:           return (unpacked[taco.constants.NET_IDENT],Reply_Chat(unpacked[taco.constants.NET_IDENT],unpacked[taco.constants.NET_DATABLOCK]))
-    if unpacked[taco.constants.NET_REQUEST] == taco.constants.NET_REQUEST_SHARE_LISTING:  return (unpacked[taco.constants.NET_IDENT],Reply_Share_Listing(unpacked[taco.constants.NET_IDENT],unpacked[taco.constants.NET_DATABLOCK]))
+    if unpacked[taco.constants.NET_REQUEST] == taco.constants.NET_REQUEST_ROLLCALL:               return (unpacked[taco.constants.NET_IDENT],Reply_Rollcall())
+    if unpacked[taco.constants.NET_REQUEST] == taco.constants.NET_REQUEST_CERTS:                  return (unpacked[taco.constants.NET_IDENT],Reply_Certs(unpacked[taco.constants.NET_IDENT],unpacked[taco.constants.NET_DATABLOCK]))
+    if unpacked[taco.constants.NET_REQUEST] == taco.constants.NET_REQUEST_CHAT:                   return (unpacked[taco.constants.NET_IDENT],Reply_Chat(unpacked[taco.constants.NET_IDENT],unpacked[taco.constants.NET_DATABLOCK]))
+    if unpacked[taco.constants.NET_REQUEST] == taco.constants.NET_REQUEST_SHARE_LISTING:          return (unpacked[taco.constants.NET_IDENT],Reply_Share_Listing(unpacked[taco.constants.NET_IDENT],unpacked[taco.constants.NET_DATABLOCK]))
+    if unpacked[taco.constants.NET_REQUEST] == taco.constants.NET_REQUEST_SHARE_LISTING_RESULTS:  return (unpacked[taco.constants.NET_IDENT],Reply_Share_Listing_Result(unpacked[taco.constants.NET_IDENT],unpacked[taco.constants.NET_DATABLOCK]))
   
   return msgpack.packb(reply)
 
@@ -151,15 +152,15 @@ def Process_Reply_Certs(peer_uuid,unpacked):
 
 def Request_Share_Listing(peer_uuid,sharename,sharepath,share_listing_uuid):
   with taco.globals.share_listings_i_care_about_lock:
-    share_listings_i_care_about[peer_uuid] = [time.time(),sharename,sharepath,share_listing_uuid] #TODO: need some mechanims to purge results that are N time old
-  request =  Create_Request(taco.constants.NET_REQUEST_CERTS,{"sharename":sharename,"path":sharepath,"results_uuid":share_listing_uuid})
+    taco.globals.share_listings_i_care_about[share_listing_uuid] = time.time()
+  request =  Create_Request(taco.constants.NET_REQUEST_SHARE_LISTING,{"sharename":sharename,"path":sharepath,"results_uuid":share_listing_uuid})
   return msgpack.packb(request)
 
 def Reply_Share_Listing(peer_uuid,datablock):
   reply = Create_Reply(taco.constants.NET_REPLY_SHARE_LISTING,1)
   try:
     sharename = datablock["sharename"]
-    sharepath = datablock["sharepath"]
+    sharepath = datablock["path"]
     shareuuid = datablock["results_uuid"]
   except:
     reply[taco.constants.NET_DATABLOCK] = 0
@@ -172,4 +173,28 @@ def Reply_Share_Listing(peer_uuid,datablock):
 
   return msgpack.packb(reply)
 
- 
+def Request_Share_Listing_Results(sharename,sharepath,results_uuid,results):
+  request =  Create_Request(taco.constants.NET_REQUEST_SHARE_LISTING_RESULTS,{"sharename":sharename,"path":sharepath,"results_uuid":results_uuid,"results":results}) 
+  return msgpack.packb(request)
+
+def Reply_Share_Listing_Result(peer_uuid,datablock):
+  reply = Create_Reply(taco.constants.NET_REPLY_SHARE_LISTING_RESULTS,1)
+  try:
+    sharename = datablock["sharename"]
+    sharepath = datablock["path"]
+    shareuuid = datablock["results_uuid"]
+    results   = datablock["results"]
+    with taco.globals.share_listings_i_care_about_lock:
+      assert shareuuid in taco.globals.share_listings_i_care_about
+  except:
+    reply = Create_Reply(taco.constants.NET_REPLY_SHARE_LISTING_RESULTS,0)
+    return msgpack.packb(reply)
+  
+  logging.debug("Got share listing RESULTS from: " + peer_uuid + " for: " + sharename + " / " + sharepath)
+  with taco.globals.share_listings_lock:
+    taco.globals.share_listings[(sharename,sharepath)] = results
+  with taco.globals.share_listings_i_care_about_lock:
+    del taco.globals.share_listings_i_care_about[shareuuid]
+
+  return msgpack.packb(reply)
+

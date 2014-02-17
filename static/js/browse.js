@@ -1,9 +1,8 @@
 var $stage=1;
 var $failcount = 0;
-function Get_Share_Listing_Results(browse_uuid)
+function Get_Share_Listing_Results(sharename,sharepath)
 {
-  console.log("Get_Share_Listing_Results:" + browse_uuid);
-  $failcount++;
+  console.log("Get_Share_Listing_Results: " + sharename + " " + sharepath);
   if ($failcount > 30) 
   {
      $("#loaderthing").addClass("hide");
@@ -11,7 +10,43 @@ function Get_Share_Listing_Results(browse_uuid)
   }
   else
   {
-    setTimeout(function() { Get_Share_Listing_Results(browse_uuid) },100);
+    var $api_action = {"action":"browseresult","data":{"sharepath":sharepath,"sharename":sharename}};
+    $.ajax({url:"/api.post",type:"POST",data:JSON.stringify($api_action),contentType:"application/json; charset=utf-8",dataType:"json",error: API_Alert,success: function(data)
+      {
+        if ("result" in data) 
+        { 
+          $("#loaderthing").addClass("hide");
+          sharelisting = [];
+      
+          for (var i = 0; i < data["result"][1].length; i++) 
+          {
+            thestring = '<li data-sharename="'+data["result"][1][i]+'" class="shareclick list-group-item">';
+            thestring += '<span class="glyphicon glyphicon-book"></span> <strong>'+data["result"][1][i]+'</strong>';
+            thestring += '</li>';
+            sharelisting.push(thestring);
+          }
+          
+          $outputhtml  = '';
+          $outputhtml += '<ul class="list-group">';
+          $outputhtml += sharelisting.join("");
+          $outputhtml += '</ul>';
+          if ($("#sharelisting").html() != $outputhtml)
+          {
+            $("#sharelisting").fadeOut(function()
+            {
+              $(this).html($outputhtml);
+              $(this).fadeIn();
+            });
+          }
+
+        } 
+        else 
+        { 
+          $failcount++; 
+          setTimeout(function() { Get_Share_Listing_Results(sharename,sharepath) },200);
+        }
+      }
+    });
   }
 
 }
@@ -22,7 +57,7 @@ function Show_Peer_Shares(nickname,localnick,peer_uuid)
   $crumbs = [];
   $crumbs.push('<li><a href="/browse.taco">Peer Listing</a></li>');
   if (localnick != "") {
-    $crumbs.push('<li>'+nickname+' ('+localnick+')</li>');
+    $crumbs.push('<li data-uuid="'+peer_uuid+'">'+nickname+' ('+localnick+')</li>');
   } else {
     $crumbs.push('<li>'+nickname+'</li>');
   }
@@ -34,7 +69,7 @@ function Show_Peer_Shares(nickname,localnick,peer_uuid)
   var $api_action = {"action":"browse","data":{"uuid":peer_uuid,"share":"/","dir":"/"}};
   $.ajax({url:"/api.post",type:"POST",data:JSON.stringify($api_action),contentType:"application/json; charset=utf-8",dataType:"json",error: API_Alert,success: function(data)
     {
-      setTimeout(function() { Get_Share_Listing_Results(data["result"]) },100);
+      setTimeout(function() { Get_Share_Listing_Results(data["sharename"],data["sharepath"]) },100);
     }
   });
 }
