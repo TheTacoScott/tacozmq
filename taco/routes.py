@@ -59,10 +59,10 @@ def index():
   if bottle.request.json[u"action"] == u"browseresult":
     output = {}
     if type(bottle.request.json[u"data"]) == type({}):
-      if bottle.request.json[u"data"].has_key(u"sharename") and bottle.request.json[u"data"].has_key(u"sharepath"):
+      if bottle.request.json[u"data"].has_key(u"sharename") and bottle.request.json[u"data"].has_key(u"sharepath") and bottle.request.json[u"data"].has_key(u"uuid"):
         with taco.globals.share_listings_lock:
-          if taco.globals.share_listings.has_key((bottle.request.json[u"data"][u"sharename"],bottle.request.json[u"data"][u"sharepath"])):
-            output = {"result":taco.globals.share_listings[(bottle.request.json[u"data"][u"sharename"],bottle.request.json[u"data"][u"sharepath"])]}
+          if taco.globals.share_listings.has_key((bottle.request.json[u"data"][u"uuid"],bottle.request.json[u"data"][u"sharename"],bottle.request.json[u"data"][u"sharepath"])):
+            output = {"result":taco.globals.share_listings[(bottle.request.json[u"data"][u"uuid"],bottle.request.json[u"data"][u"sharename"],bottle.request.json[u"data"][u"sharepath"])]}
     return json.dumps(output)
 
   if bottle.request.json[u"action"] == u"browse":

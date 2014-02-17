@@ -192,7 +192,7 @@ def Reply_Share_Listing_Result(peer_uuid,datablock):
   
   logging.debug("Got share listing RESULTS from: " + peer_uuid + " for: " + sharename + " / " + sharepath)
   with taco.globals.share_listings_lock:
-    taco.globals.share_listings[(sharename,sharepath)] = results
+    taco.globals.share_listings[(peer_uuid,sharename,sharepath)] = results
   with taco.globals.share_listings_i_care_about_lock:
     del taco.globals.share_listings_i_care_about[shareuuid]
 

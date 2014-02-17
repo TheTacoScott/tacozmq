@@ -1,6 +1,6 @@
 var $stage=1;
 var $failcount = 0;
-function Get_Share_Listing_Results(sharename,sharepath)
+function Get_Share_Listing_Results(peer_uuid,sharename,sharepath)
 {
   console.log("Get_Share_Listing_Results: " + sharename + " " + sharepath);
   if ($failcount > 30) 
@@ -10,7 +10,7 @@ function Get_Share_Listing_Results(sharename,sharepath)
   }
   else
   {
-    var $api_action = {"action":"browseresult","data":{"sharepath":sharepath,"sharename":sharename}};
+    var $api_action = {"action":"browseresult","data":{"uuid":peer_uuid,"sharepath":sharepath,"sharename":sharename}};
     $.ajax({url:"/api.post",type:"POST",data:JSON.stringify($api_action),contentType:"application/json; charset=utf-8",dataType:"json",error: API_Alert,success: function(data)
       {
         if ("result" in data) 
@@ -30,20 +30,27 @@ function Get_Share_Listing_Results(sharename,sharepath)
           $outputhtml += '<ul class="list-group">';
           $outputhtml += sharelisting.join("");
           $outputhtml += '</ul>';
-          if ($("#sharelisting").html() != $outputhtml)
+          if (sharelisting.length > 0)
           {
-            $("#sharelisting").fadeOut(function()
+            if ($("#sharelisting").html() != $outputhtml)
             {
-              $(this).html($outputhtml);
-              $(this).fadeIn();
-            });
+              $("#sharelisting").fadeOut(function()
+              {
+                $(this).html($outputhtml);
+                $(this).fadeIn();
+              });
+            }
+          }
+          else
+          {
+            $("#noshares").fadeIn();
           }
 
         } 
         else 
         { 
           $failcount++; 
-          setTimeout(function() { Get_Share_Listing_Results(sharename,sharepath) },200);
+          setTimeout(function() { Get_Share_Listing_Results(peer_uuid,sharename,sharepath) },200);
         }
       }
     });
@@ -64,13 +71,13 @@ function Show_Peer_Shares(nickname,localnick,peer_uuid)
   $("#peercrumb").html('<ol class="breadcrumb">'+$crumbs.join("")+'</ol>');
   $("#peerlisting").addClass("hide");
   $("#loaderthing").removeClass("hide");
-  $("#peercrumb").slideDown();
-
-  var $api_action = {"action":"browse","data":{"uuid":peer_uuid,"share":"/","dir":"/"}};
-  $.ajax({url:"/api.post",type:"POST",data:JSON.stringify($api_action),contentType:"application/json; charset=utf-8",dataType:"json",error: API_Alert,success: function(data)
-    {
-      setTimeout(function() { Get_Share_Listing_Results(data["sharename"],data["sharepath"]) },100);
-    }
+  $("#peercrumb").slideDown(function() { 
+    var $api_action = {"action":"browse","data":{"uuid":peer_uuid,"share":"/","dir":"/"}};
+    $.ajax({url:"/api.post",type:"POST",data:JSON.stringify($api_action),contentType:"application/json; charset=utf-8",dataType:"json",error: API_Alert,success: function(data)
+      {
+        setTimeout(function() { Get_Share_Listing_Results(peer_uuid,data["sharename"],data["sharepath"]) },100);
+      }
+    });
   });
 }
 function Set_Up_Root_Peer_Names()
