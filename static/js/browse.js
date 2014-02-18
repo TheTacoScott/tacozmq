@@ -5,7 +5,7 @@ function Get_Share_Listing_Results(peer_uuid,sharedir)
   console.log("Get_Share_Listing_Results: " + sharedir);
   $("#sharelisting").html("");
   $("#loaderthing").removeClass("hide");
-  if ($failcount > 10) 
+  if ($failcount > 31) 
   {
      $("#loaderthing").addClass("hide");
      $("#timedout").fadeIn();
@@ -39,6 +39,10 @@ function Get_Share_Listing_Results(peer_uuid,sharedir)
             }
             else {
               thestring = '<li data-uuid="'+peer_uuid+'" data-sharedir="'+sharedir+"/"+data["result"][1][i]+'" class="shareclick list-group-item">';
+              thestring += '<span class="sharelistingbuttonblock"><div class="btn-group btn-group-xs">';
+              thestring += '<button type="button" class="btn btn-default diraddtoq"><span class="glyphicon glyphicon-plus"></span></button>';
+              thestring += '<button type="button" class="btn btn-default dirsubscribe"><span class="glyphicon glyphicon-tag"></span></button>';
+              thestring += '</div></span>';
               thestring += '<span class="glyphicon glyphicon-folder-open"></span> <strong>'+data["result"][1][i]+'</strong>';
             }
             thestring += '</li>';
@@ -48,6 +52,9 @@ function Get_Share_Listing_Results(peer_uuid,sharedir)
           for (var i = 0; i < data["result"][2].length; i++)
           {
             thestring  = '<li data-uuid="'+peer_uuid+'" data-sharedir="'+sharedir+'" data-filename="" class="fileclick list-group-item">';
+            thestring += '<span class="sharelistingbuttonblock"><div class="btn-group btn-group-xs">';
+            thestring += '<button type="button" class="btn btn-default fileaddtoq"><span class="glyphicon glyphicon-plus"></span></button>';
+            thestring += '</div></span>';
             thestring += '<span class="glyphicon glyphicon-file"></span> <strong>'+data["result"][2][i][0]+'</strong> <span style="float:right">'+commify(data["result"][2][i][1])+' bytes</span>';
             thestring += '</li>';
             sharelisting.push(thestring);
