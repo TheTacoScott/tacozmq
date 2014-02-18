@@ -59,23 +59,23 @@ def index():
   if bottle.request.json[u"action"] == u"browseresult":
     output = {}
     if type(bottle.request.json[u"data"]) == type({}):
-      if bottle.request.json[u"data"].has_key(u"sharename") and bottle.request.json[u"data"].has_key(u"sharepath") and bottle.request.json[u"data"].has_key(u"uuid"):
+      if bottle.request.json[u"data"].has_key(u"sharedir") and bottle.request.json[u"data"].has_key(u"uuid"):
         with taco.globals.share_listings_lock:
-          if taco.globals.share_listings.has_key((bottle.request.json[u"data"][u"uuid"],bottle.request.json[u"data"][u"sharename"],bottle.request.json[u"data"][u"sharepath"])):
-            output = {"result":taco.globals.share_listings[(bottle.request.json[u"data"][u"uuid"],bottle.request.json[u"data"][u"sharename"],bottle.request.json[u"data"][u"sharepath"])]}
+          if taco.globals.share_listings.has_key((bottle.request.json[u"data"][u"uuid"],bottle.request.json[u"data"][u"sharedir"])):
+            output = {"result":taco.globals.share_listings[(bottle.request.json[u"data"][u"uuid"],bottle.request.json[u"data"][u"sharedir"])]}
+            del taco.globals.share_listings[(bottle.request.json[u"data"][u"uuid"],bottle.request.json[u"data"][u"sharedir"])] #TODO this datastructure local cachable
     return json.dumps(output)
 
   if bottle.request.json[u"action"] == u"browse":
     if type(bottle.request.json[u"data"]) == type({}):
-      if bottle.request.json[u"data"].has_key(u"uuid") and bottle.request.json[u"data"].has_key(u"share") and bottle.request.json[u"data"].has_key(u"dir"):
+      if bottle.request.json[u"data"].has_key(u"uuid") and bottle.request.json[u"data"].has_key(u"sharedir"):
         peer_uuid = bottle.request.json[u"data"][u"uuid"]
-        share = bottle.request.json[u"data"][u"share"]
-        directory = bottle.request.json[u"data"][u"dir"]
+        sharedir = bottle.request.json[u"data"][u"sharedir"]
         browse_result_uuid = str(uuid.uuid4())
-        logging.critical("Getting Directory Listing from: " + peer_uuid + " for share: " + share + " -- " + directory)
-        request = taco.commands.Request_Share_Listing(peer_uuid,share,directory,browse_result_uuid)
+        logging.critical("Getting Directory Listing from: " + peer_uuid + " for share: " + sharedir)
+        request = taco.commands.Request_Share_Listing(peer_uuid,sharedir,browse_result_uuid)
         taco.globals.Add_To_Output_Queue(peer_uuid,request,2)
-        return json.dumps({"sharename":share,"sharepath":directory,"result":browse_result_uuid})
+        return json.dumps({"sharedir":sharedir,"result":browse_result_uuid})
         
   if bottle.request.json[u"action"] == u"peerstatus":
     output = {}

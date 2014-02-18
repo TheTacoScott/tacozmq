@@ -76,9 +76,9 @@ class TacoFilesystemManager(threading.Thread):
   
     self.results_to_return = []
  
-  def add_listing(self,thetime,sharepeer,sharename,sharepath,dirs,files):
+  def add_listing(self,thetime,sharedir,dirs,files):
     with self.listings_lock:
-      self.listings[(sharepeer,sharename,sharepath)] = [thetime,dirs,files]
+      self.listings[sharedir] = [thetime,dirs,files]
 
   def set_status(self,text,level=0):
     if   level==1: logging.info(text)
@@ -148,12 +148,12 @@ class TacoFilesystemManager(threading.Thread):
       if len(self.results_to_return) > 0:
         self.set_status("There are results that need to be sent once they are ready")
         with self.listings_lock:
-          for [peer_uuid,sharename,sharepath,shareuuid] in self.results_to_return:
-            if (peer_uuid,sharename,sharepath) in self.listings:
-              self.set_status("RESULTS ready to send:" + str((sharename,sharepath,shareuuid))) 
-              request = taco.commands.Request_Share_Listing_Results(sharename,sharepath,shareuuid,self.listings[(peer_uuid,sharename,sharepath)])
+          for [peer_uuid,sharedir,shareuuid] in self.results_to_return:
+            if sharedir in self.listings.keys():
+              self.set_status("RESULTS ready to send:" + str((sharedir,shareuuid))) 
+              request = taco.commands.Request_Share_Listing_Results(sharedir,shareuuid,self.listings[sharedir])
               taco.globals.Add_To_Output_Queue(peer_uuid,request,2)
-              self.results_to_return.remove([peer_uuid,sharename,sharepath,shareuuid])
+              self.results_to_return.remove([peer_uuid,sharedir,shareuuid])
               
                  
       if abs(time.time() - self.last_purge) > taco.constants.FILESYSTEM_CACHE_PURGE:
@@ -161,11 +161,11 @@ class TacoFilesystemManager(threading.Thread):
         self.last_purge = time.time()
 
         with self.listings_lock:
-          for (sharepeer,sharename,sharepath) in self.listings.keys():
-            [thetime,dirs,files] = self.listings[(sharepeer,sharename,sharepath)]
+          for sharedir in self.listings.keys():
+            [thetime,dirs,files] = self.listings[sharedir]
             if abs(time.time() - thetime) > taco.constants.FILESYSTEM_CACHE_TIMEOUT:
-              self.set_status("Purging Filesystem cache for share: " + sharename + " -- sharepath: " + sharepath)
-              del self.listings[(sharepeer,sharename,sharepath)]
+              self.set_status("Purging Filesystem cache for share: " + sharedir)
+              del self.listings[sharedir]
 
         with taco.globals.share_listings_i_care_about_lock:
           for share_listing_uuid in taco.globals.share_listings_i_care_about.keys():
@@ -177,10 +177,10 @@ class TacoFilesystemManager(threading.Thread):
       with taco.globals.share_listing_requests_lock:
         for peer_uuid in taco.globals.share_listing_requests.keys():
           while not taco.globals.share_listing_requests[peer_uuid].empty():
-            (sharename,sharepath,shareuuid) = taco.globals.share_listing_requests[peer_uuid].get()
-            self.set_status("Filesystem thread has a pending share listing request: " + str((sharename,sharepath,shareuuid)))
-            self.listing_work_queue.put((peer_uuid,sharename,sharepath))
-            self.results_to_return.append([peer_uuid,sharename,sharepath,shareuuid])
+            (sharedir,shareuuid) = taco.globals.share_listing_requests[peer_uuid].get()
+            self.set_status("Filesystem thread has a pending share listing request: " + str((sharedir,shareuuid)))
+            self.listing_work_queue.put(sharedir)
+            self.results_to_return.append([peer_uuid,sharedir,shareuuid])
 
       with self.files_open_for_r_lock:
         files_to_close = []
@@ -199,10 +199,10 @@ class TacoFilesystemManager(threading.Thread):
         self.close_file_w(filename)
 
       while not self.listing_results_queue.empty():
-        (success,thetime,sharepeer,sharename,sharepath,dirs,files) = self.listing_results_queue.get()
+        (success,thetime,sharedir,dirs,files) = self.listing_results_queue.get()
         #self.set_status("Processing a worker result: " + str((success,thetime,sharename,sharepath,dirs,files)))
-        self.set_status("Processing a worker result: " + sharename + " " + sharepath)
-        self.add_listing(thetime,sharepeer,sharename,sharepath,dirs,files)
+        self.set_status("Processing a worker result: " + sharedir)
+        self.add_listing(thetime,sharedir,dirs,files)
       
       if not self.continue_running(): break
     self.set_status("Exiting")
@@ -259,18 +259,23 @@ class TacoFilesystemWorker(threading.Thread):
     while self.continue_running():
       if not self.continue_running(): break
       try:
-        (peer_uuid,rootsharename,rootpath) = taco.globals.filesys.listing_work_queue.get(1,0.1)
-        self.set_status(str(self.worker_id) + " -- " + str((peer_uuid,rootsharename,rootpath)))
+        rootsharedir = taco.globals.filesys.listing_work_queue.get(1,0.1)
+        self.set_status(str(self.worker_id) + " -- " + str(rootsharedir))
+        rootsharedir = os.path.normpath(rootsharedir)
+        logging.debug("rootsharedir: " + rootsharedir + " -- " + os.path.normpath(rootsharedir))
+        rootsharename = rootsharedir.split(u"/")[1]
+        rootpath = os.path.normpath(u"/" + u"/".join(rootsharedir.split(u"/")[2:]) + u"/")
+        logging.debug("rootsharename:" + rootsharename) 
+        logging.debug("rootpath:" + rootpath) 
         directory = os.path.normpath(Convert_Share_To_Path(rootsharename) + u"/" + rootpath)
-        logging.debug(directory)
-        if rootsharename == u"/" and rootpath == u"/":
+        if rootsharedir == u"/":
           self.set_status("Root share listing request")
           share_listing = []
           with taco.globals.settings_lock:
             for [sharename,sharepath] in taco.globals.settings["Shares"]:
               share_listing.append(sharename)
           share_listing.sort()
-          results = [1,time.time(),peer_uuid,rootsharename,rootpath,share_listing,[]]
+          results = [1,time.time(),rootsharedir,share_listing,[]]
           taco.globals.filesys.listing_results_queue.put(results)
           continue  
         assert Is_Path_Under_A_Share(directory)
@@ -284,7 +289,7 @@ class TacoFilesystemWorker(threading.Thread):
       try:
         dirlist = os.listdir(directory)
       except:
-        results = [0,time.time(),peer_uuid,rootsharename,rootpath,[],[]]
+        results = [0,time.time(),rootsharedir,[],[]]
 
       try:
         for fileobject in dirlist:
@@ -297,10 +302,10 @@ class TacoFilesystemWorker(threading.Thread):
             dirs.append(fileobject)
         dirs.sort()
         files.sort()
-        results = [1,time.time(),peer_uuid,rootsharename,rootpath,dirs,files]
+        results = [1,time.time(),rootsharedir,dirs,files]
       except Exception,e:
         print str(e)
-        results = [0,time.time(),peer_uuid,rootsharename,rootpath,[],[]]
+        results = [0,time.time(),rootsharedir,[],[]]
 
       taco.globals.filesys.listing_results_queue.put(results)
 

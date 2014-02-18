@@ -24,3 +24,14 @@ function Check_For_API_Errors()
   });
 }
 
+
+function commify(num)
+{
+  num = num.toString();
+  checker = /([0-9]+)([0-9]{3})/;
+  while (checker.test(num)) 
+  {
+    num = num.replace(checker, '$1'+','+'$2');
+  }
+  return num;
+}
