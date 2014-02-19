@@ -179,7 +179,7 @@ class TacoFilesystemManager(threading.Thread):
           while not taco.globals.share_listing_requests[peer_uuid].empty():
             (sharedir,shareuuid) = taco.globals.share_listing_requests[peer_uuid].get()
             self.set_status("Filesystem thread has a pending share listing request: " + str((sharedir,shareuuid)))
-            self.listing_work_queue.put(sharedir)
+            self.listing_work_queue.put(sharedir) #TODO check to make sure valid dir here.
             self.results_to_return.append([peer_uuid,sharedir,shareuuid])
 
       with self.files_open_for_r_lock:
