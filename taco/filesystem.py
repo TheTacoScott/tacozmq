@@ -3,6 +3,7 @@ import logging
 import time
 import threading
 import Queue
+import random
 import taco.constants
 import taco.globals
 
@@ -141,7 +142,7 @@ class TacoFilesystemManager(threading.Thread):
       i.start()
 
     while self.continue_running():
-      time.sleep(0.01)
+      time.sleep(0.01 + random.uniform(0.01, 0.05))
 
       if not self.continue_running(): break
 
@@ -257,9 +258,10 @@ class TacoFilesystemWorker(threading.Thread):
   def run(self):
     self.set_status("Starting Filesystem Worker #" + str(self.worker_id))
     while self.continue_running():
+      time.sleep(random.uniform(0.01, 0.05))
       if not self.continue_running(): break
       try:
-        rootsharedir = taco.globals.filesys.listing_work_queue.get(1,0.1)
+        rootsharedir = taco.globals.filesys.listing_work_queue.get(True,0.25)
         self.set_status(str(self.worker_id) + " -- " + str(rootsharedir))
         rootsharedir = os.path.normpath(rootsharedir)
         logging.debug("rootsharedir: " + rootsharedir + " -- " + os.path.normpath(rootsharedir))
