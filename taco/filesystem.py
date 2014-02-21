@@ -180,8 +180,15 @@ class TacoFilesystemManager(threading.Thread):
           while not taco.globals.share_listing_requests[peer_uuid].empty():
             (sharedir,shareuuid) = taco.globals.share_listing_requests[peer_uuid].get()
             self.set_status("Filesystem thread has a pending share listing request: " + str((sharedir,shareuuid)))
-            self.listing_work_queue.put(sharedir) #TODO check to make sure valid dir here.
-            self.results_to_return.append([peer_uuid,sharedir,shareuuid])
+            rootsharedir = os.path.normpath(sharedir)
+            rootsharename = rootsharedir.split(u"/")[1]
+            rootpath = os.path.normpath(u"/" + u"/".join(rootsharedir.split(u"/")[2:]) + u"/")
+            directory = os.path.normpath(Convert_Share_To_Path(rootsharename) + u"/" + rootpath)
+            if (Is_Path_Under_A_Share(directory) and os.path.isdir(directory)) or rootsharedir == u"/":
+              self.listing_work_queue.put(sharedir)
+              self.results_to_return.append([peer_uuid,sharedir,shareuuid])
+            else:
+              self.set_status("User has requested a bogus share: " +str(sharedir))
 
       with self.files_open_for_r_lock:
         files_to_close = []
