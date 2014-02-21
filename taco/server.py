@@ -109,8 +109,8 @@ class TacoServer(threading.Thread):
 
 
     self.set_status("Stopping zmq server with 1 second linger")
-    server.close(1)
+    server.close(0)
     self.set_status("Stopping zmq ThreadedAuthenticator")
     serverauth.stop() 
     serverctx.term()
-    self.set_status("Dispatcher Exit")    
+    self.set_status("Server Exit")    

@@ -39,6 +39,7 @@ import taco.clients
 import taco.crypto
 import taco.settings
 import taco.filesystem
+import taco.downloadq
 
 signal.signal(signal.SIGINT, taco.globals.properexit)
 
@@ -54,6 +55,9 @@ taco.globals.clients.start()
 
 taco.globals.filesys = taco.filesystem.TacoFilesystemManager()
 taco.globals.filesys.start()
+
+taco.globals.downloadq = taco.downloadq.TacoDownloadq()
+taco.globals.downloadq.start()
 
 logging.info("Starting Local Webserver on " + taco.globals.settings["Web IP"] + ":" + str(taco.globals.settings["Web Port"]))
 logging.info("*** TacoNET Running ***")
