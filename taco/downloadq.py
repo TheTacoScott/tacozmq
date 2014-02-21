@@ -48,5 +48,7 @@ class TacoDownloadq(threading.Thread):
     while self.continue_running():
       if not self.continue_running(): break
       time.sleep(random.uniform(0.01, 0.05))
+      with taco.globals.download_q_lock:
+        pass
 
     self.set_status("DownloadQ Exit")
