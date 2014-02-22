@@ -56,6 +56,16 @@ def index():
     output["threads"]["server"]["lastupdate"] = abs(time.time() - float(output["threads"]["server"]["lastupdate"]))
 
     return json.dumps(output)
+
+  if bottle.request.json[u"action"] == u"downloadqadd":
+    pass
+  if bottle.request.json[u"action"] == u"downloadqremove":
+    pass
+  if bottle.request.json[u"action"] == u"downloadqget":
+    pass
+  if bottle.request.json[u"action"] == u"uploadqget":
+    pass
+
   if bottle.request.json[u"action"] == u"browseresult":
     output = {}
     if type(bottle.request.json[u"data"]) == type({}):
