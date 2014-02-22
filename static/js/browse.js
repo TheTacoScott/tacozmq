@@ -85,6 +85,10 @@ function Get_Share_Listing_Results(peer_uuid,sharedir)
                     }
                   });
                 });
+                $(".fileaddtoq").unbind("click").click(function(event) 
+                {
+                  event.stopPropagation();
+                });
                 $(this).fadeIn();
               });
             }
@@ -110,16 +114,23 @@ function Show_Peer_Shares(nickname,localnick,peer_uuid)
   $stage=2;
   console.log("Show_Peer_Shares: " + peer_uuid);
   $crumbs = [];
-  $crumbs.push('<li><a href="/browse.taco">Peer Listing</a></li>');
+  $crumbs.push('<li><a href="/browse.taco">Return to Peer Listing</a></li>');
   if (localnick != "") {
-    $crumbs.push('<li>'+nickname+' ('+localnick+')</li>');
+    $crumbs.push('<li><a id="peerrootcrumb" href="#">'+nickname+' ('+localnick+') Share Listing</a></li>');
   } else {
-    $crumbs.push('<li>'+nickname+'</li>');
+    $crumbs.push('<li><a id="peerrootcrumb" href="#">'+nickname+' Share Listing</a></li>');
   }
   $("#peercrumb").html('<ol class="breadcrumb">'+$crumbs.join("")+'</ol>');
   $("#peerlisting").addClass("hide");
+  $("#sharelisting").removeClass("hide");
   $("#loaderthing").removeClass("hide");
   $("#peercrumb").slideDown(150);
+  $("#peerrootcrumb").unbind("click").click(function () 
+  {
+    $("#sharelisting").fadeOut(200,function() {
+    Show_Peer_Shares(nickname,localnick,peer_uuid);
+    });
+  });
   var $api_action = {"action":"browse","data":{"uuid":peer_uuid,"sharedir":"/"}};
   $.ajax({url:"/api.post",type:"POST",data:JSON.stringify($api_action),contentType:"application/json; charset=utf-8",dataType:"json",error: API_Alert,success: function(data)
     {
