@@ -51,7 +51,7 @@ function Get_Share_Listing_Results(peer_uuid,sharedir)
           filelisting = [];
           for (var i = 0; i < data["result"][2].length; i++)
           {
-            thestring  = '<li data-uuid="'+peer_uuid+'" data-sharedir="'+btoa(sharedir)+'" data-filename="'+btoa(sharedir + "/" + data["result"][2][i][0])+'" class="fileclick list-group-item">';
+            thestring  = '<li data-uuid="'+peer_uuid+'" data-sharedir="'+btoa(sharedir)+'" data-filename="'+btoa(data["result"][2][i][0])+'" data-size='+data["result"][2][i][1]+' data-mod='+data["result"][2][i][2]+' class="fileclick list-group-item">';
             thestring += '<span class="sharelistingbuttonblock"><div class="btn-group btn-group-xs">';
             thestring += '<button type="button" class="btn btn-default fileaddtoq"><span class="glyphicon glyphicon-plus"></span></button>';
             thestring += '</div></span>';
@@ -88,6 +88,17 @@ function Get_Share_Listing_Results(peer_uuid,sharedir)
                 $(".fileaddtoq").unbind("click").click(function(event) 
                 {
                   event.stopPropagation();
+                  filename=$(this).closest(".fileclick").data("filename");
+                  path=$(this).closest(".fileclick").data("sharedir");
+                  peer_uuid=$(this).closest(".fileclick").data("uuid");
+                  modtime=$(this).closest(".fileclick").data("mod");
+                  size=$(this).closest(".fileclick").data("size");
+                  console.log(atob(filename));
+                  console.log(atob(path));
+                  console.log(peer_uuid);
+                  console.log(modtime);
+                  console.log(size);
+  
                 });
                 $(this).fadeIn();
               });
@@ -181,8 +192,6 @@ function Set_Up_Root_Peer_Names()
             $("#peerlisting").fadeOut(function() 
             {
               $(this).html($outputhtml);
-              //$(".peerclick button .glyphicon-download").parent().unbind("click").click(function(event) { event.stopPropagation(); });
-              //$(".peerclick button .glyphicon-bookmark").parent().unbind("click").click(function(event) { event.stopPropagation(); });
               $(".peerclick").unbind("click").click(function()
               {
                 Show_Peer_Shares($(this).data("nick"),$(this).data("localnick"),$(this).data("uuid"));

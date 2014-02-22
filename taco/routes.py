@@ -72,8 +72,7 @@ def index():
       if bottle.request.json[u"data"].has_key(u"sharedir") and bottle.request.json[u"data"].has_key(u"uuid"):
         with taco.globals.share_listings_lock:
           if taco.globals.share_listings.has_key((bottle.request.json[u"data"][u"uuid"],bottle.request.json[u"data"][u"sharedir"])):
-            output = {"result":taco.globals.share_listings[(bottle.request.json[u"data"][u"uuid"],bottle.request.json[u"data"][u"sharedir"])]}
-            del taco.globals.share_listings[(bottle.request.json[u"data"][u"uuid"],bottle.request.json[u"data"][u"sharedir"])] #TODO this datastructure local cachable
+            output = {"result":taco.globals.share_listings[(bottle.request.json[u"data"][u"uuid"],bottle.request.json[u"data"][u"sharedir"])][1]}
     return json.dumps(output)
 
   if bottle.request.json[u"action"] == u"browse":

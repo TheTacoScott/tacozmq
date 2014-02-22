@@ -161,6 +161,12 @@ class TacoFilesystemManager(threading.Thread):
         self.set_status("Purging old filesystem results")
         self.last_purge = time.time()
 
+        with taco.globals.share_listings_lock:
+          for iterkey in taco.globals.share_listings.keys():
+            if abs(time.time() - taco.globals.share_listings[iterkey][0]) > taco.constants.FILESYSTEM_CACHE_TIMEOUT:
+              self.set_status("Purging old local filesystem cached results")
+              del taco.globals.share_listings[iterkey]
+
         with self.listings_lock:
           for sharedir in self.listings.keys():
             [thetime,dirs,files] = self.listings[sharedir]
