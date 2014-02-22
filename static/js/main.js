@@ -12,6 +12,7 @@ function guid() {
 function API_Alert()
 {
   $("#apialert").removeClass("hide");
+  setTimeout(Check_For_API_Errors,1000);
 }
 
 function Check_For_API_Errors()
@@ -19,6 +20,7 @@ function Check_For_API_Errors()
   var $api_action = {"action":"apistatus","data":""};
   $.ajax({url:"/api.post",type:"POST",data:JSON.stringify($api_action),contentType:"application/json; charset=utf-8",dataType:"json",error: API_Alert,success: function(data)
   {
+    $("#apialert").addClass("hide");
     setTimeout(Check_For_API_Errors,1000);
   }
   });
