@@ -44,19 +44,19 @@ function Share_Browse($browsedir,$target,$target2)
       var updir = $browsedir.split("/");
       updir.pop()
       updir = updir.join("/");
-      items.push('<a href="#" data-browsedir="'+updir+'" class="list-group-item"><span class="glyphicon glyphicon-arrow-left"></span> &nbsp.. [BACK]</a>');
+      items.push('<a href="#" data-browsedir="'+btoa(updir)+'" class="list-group-item"><span class="glyphicon glyphicon-arrow-left"></span> &nbsp.. [BACK]</a>');
     }
     $.each(data,function(key,val)
     {
       if ($browsedir=="/") { $browsedir=""; }
-      items.push('<a href="#" data-browsedir="'+$browsedir+'/'+val+'" class="list-group-item"><span class="glyphicon glyphicon-folder-open"></span> &nbsp'+val+'</a>');
+      items.push('<a href="#" data-browsedir="'+btoa($browsedir+'/'+val)+'" class="list-group-item"><span class="glyphicon glyphicon-folder-open"></span> &nbsp'+val+'</a>');
     });
     $target.html(items.join(""));
     if ($browsedir=="") { $browsedir = "/"; }
     $target2.val($browsedir);
     $target.find("a[class='list-group-item']").unbind("click").click(function()
     {
-      $browsedir = $(this).data("browsedir");
+      $browsedir = atob($(this).data("browsedir"));
       Share_Browse($browsedir,$target,$target2);
     });
     $target.scrollTop(0);

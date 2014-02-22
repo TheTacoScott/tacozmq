@@ -25,7 +25,7 @@ function Get_Share_Listing_Results(peer_uuid,sharedir)
             updir.pop();
             updirstr = updir.join('/');
             if (updirstr == "") { updirstr = "/"; }
-            thestring = '<li data-uuid="'+peer_uuid+'" data-sharedir="'+updirstr+'" class="shareclick list-group-item">';
+            thestring = '<li data-uuid="'+peer_uuid+'" data-sharedir="'+btoa(updirstr)+'" class="shareclick list-group-item">';
             thestring += '<span class="glyphicon glyphicon-arrow-left"></span> <strong>.. [BACK]</strong>';
             thestring += '</li>';
             sharelisting.push(thestring);
@@ -34,11 +34,11 @@ function Get_Share_Listing_Results(peer_uuid,sharedir)
           for (var i = 0; i < data["result"][1].length; i++) 
           {
             if (sharedir=="/") { 
-              thestring = '<li data-uuid="'+peer_uuid+'" data-sharedir="'+sharedir+data["result"][1][i]+'" class="shareclick list-group-item">';
+              thestring = '<li data-uuid="'+peer_uuid+'" data-sharedir="'+btoa(sharedir+data["result"][1][i])+'" class="shareclick list-group-item">';
               thestring += '<span class="glyphicon glyphicon-bookmark"></span> <strong>'+data["result"][1][i]+'</strong>';
             }
             else {
-              thestring = '<li data-uuid="'+peer_uuid+'" data-sharedir="'+sharedir+"/"+data["result"][1][i]+'" class="shareclick list-group-item">';
+              thestring = '<li data-uuid="'+peer_uuid+'" data-sharedir="'+btoa(sharedir+"/"+data["result"][1][i])+'" class="shareclick list-group-item">';
               thestring += '<span class="sharelistingbuttonblock"><div class="btn-group btn-group-xs">';
               thestring += '<button type="button" class="btn btn-default diraddtoq"><span class="glyphicon glyphicon-plus"></span></button>';
               thestring += '<button type="button" class="btn btn-default dirsubscribe"><span class="glyphicon glyphicon-tag"></span></button>';
@@ -51,7 +51,7 @@ function Get_Share_Listing_Results(peer_uuid,sharedir)
           filelisting = [];
           for (var i = 0; i < data["result"][2].length; i++)
           {
-            thestring  = '<li data-uuid="'+peer_uuid+'" data-sharedir="'+sharedir+'" data-filename="" class="fileclick list-group-item">';
+            thestring  = '<li data-uuid="'+peer_uuid+'" data-sharedir="'+btoa(sharedir)+'" data-filename="'+btoa(sharedir + "/" + data["result"][2][i][0])+'" class="fileclick list-group-item">';
             thestring += '<span class="sharelistingbuttonblock"><div class="btn-group btn-group-xs">';
             thestring += '<button type="button" class="btn btn-default fileaddtoq"><span class="glyphicon glyphicon-plus"></span></button>';
             thestring += '</div></span>';
@@ -77,8 +77,8 @@ function Get_Share_Listing_Results(peer_uuid,sharedir)
                 $(".shareclick").unbind("click").click(function() 
                 { 
                   l_uuid = $(this).data("uuid");
-                  l_sharedir = $(this).data("sharedir");
-                  var $api_action = {"action":"browse","data":{"uuid":$(this).data("uuid"),"sharedir":$(this).data("sharedir")}};
+                  l_sharedir = atob($(this).data("sharedir"));
+                  var $api_action = {"action":"browse","data":{"uuid":$(this).data("uuid"),"sharedir":atob($(this).data("sharedir"))}};
                   $.ajax({url:"/api.post",type:"POST",data:JSON.stringify($api_action),contentType:"application/json; charset=utf-8",dataType:"json",error: API_Alert,success: function(data)
                     {
                       Get_Share_Listing_Results(l_uuid,l_sharedir);
