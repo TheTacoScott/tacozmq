@@ -5,7 +5,7 @@ function Get_Share_Listing_Results(peer_uuid,sharedir)
   console.log("Get_Share_Listing_Results: " + sharedir);
   $("#sharelisting").html("");
   $("#loaderthing").removeClass("hide");
-  if ($failcount > 31) 
+  if ($failcount > 200) 
   {
      $("#loaderthing").addClass("hide");
      $("#timedout").fadeIn();
