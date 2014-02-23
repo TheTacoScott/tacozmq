@@ -243,3 +243,26 @@ margin-top: 0px;
   -moz-animation: spinny 2s infinite linear;
   animation: spinny 2s infinite linear;
 }
+
+.navlink
+{
+  margin-left: 2px;
+}
+
+@media screen and (max-width: 1000px) 
+{
+  .navlink
+  {
+    display: none;
+  }
+
+}
+@media screen and (max-width: 767px)
+{
+  .navlink
+  {
+    display: initial;
+  }
+
+}
+
