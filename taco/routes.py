@@ -58,11 +58,37 @@ def index():
     return json.dumps(output)
 
   if bottle.request.json[u"action"] == u"downloadqadd":
-    pass
+    if type(bottle.request.json[u"data"]) == type({}):
+      try:
+        peer_uuid = bottle.request.json[u"data"][u"uuid"]
+        sharedir = bottle.request.json[u"data"][u"sharedir"]
+        filename = bottle.request.json[u"data"][u"filename"]
+        filesize = int(bottle.request.json[u"data"][u"filesize"])
+        filemod = float(bottle.request.json[u"data"][u"filemodtime"])
+      except:
+        return "-1"
+
+      with taco.globals.download_q_lock:
+        logging.debug("Adding File to Download Q:" + str((peer_uuid,sharedir,filename,filesize,filemod)))
+        if not taco.globals.download_q.has_key(peer_uuid): taco.globals.download_q[peer_uuid] = []
+        if (sharedir,filename,filesize,filemod) not in taco.globals.download_q[peer_uuid]:
+          taco.globals.download_q[peer_uuid].append((sharedir,filename,filesize,filemod))
+          return "1"
+        return "2"
+
   if bottle.request.json[u"action"] == u"downloadqremove":
     pass
+
   if bottle.request.json[u"action"] == u"downloadqget":
-    pass
+    output = {}
+    with taco.globals.settings_lock:
+      with taco.globals.download_q_lock:
+        peerinfo = {}
+        for peer_uuid in taco.globals.settings["Peers"].keys():
+          peerinfo[peer_uuid] = [taco.globals.settings["Peers"][peer_uuid]["nickname"],taco.globals.settings["Peers"][peer_uuid]["localnick"]]
+        output = {"result":taco.globals.download_q,"peerinfo":peerinfo}
+    return json.dumps(output)
+
   if bottle.request.json[u"action"] == u"uploadqget":
     pass
 

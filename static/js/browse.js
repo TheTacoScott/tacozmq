@@ -51,7 +51,7 @@ function Get_Share_Listing_Results(peer_uuid,sharedir)
           filelisting = [];
           for (var i = 0; i < data["result"][2].length; i++)
           {
-            thestring  = '<li data-uuid="'+peer_uuid+'" data-sharedir="'+btoa(sharedir)+'" data-filename="'+btoa(data["result"][2][i][0])+'" data-size='+data["result"][2][i][1]+' data-mod='+data["result"][2][i][2]+' class="fileclick list-group-item">';
+            thestring  = '<li data-uuid="'+peer_uuid+'" data-sharedir="'+btoa(sharedir)+'" data-filename="'+btoa(data["result"][2][i][0])+'" data-size="'+data["result"][2][i][1]+'" data-mod="'+data["result"][2][i][2]+'" class="fileclick list-group-item">';
             thestring += '<span class="sharelistingbuttonblock"><div class="btn-group btn-group-xs">';
             thestring += '<button type="button" class="btn btn-default fileaddtoq"><span class="glyphicon glyphicon-plus"></span></button>';
             thestring += '</div></span>';
@@ -93,11 +93,15 @@ function Get_Share_Listing_Results(peer_uuid,sharedir)
                   peer_uuid=$(this).closest(".fileclick").data("uuid");
                   modtime=$(this).closest(".fileclick").data("mod");
                   size=$(this).closest(".fileclick").data("size");
-                  console.log(atob(filename));
-                  console.log(atob(path));
-                  console.log(peer_uuid);
-                  console.log(modtime);
-                  console.log(size);
+                  $(this).find("span").toggleClass("glyphicon-refresh glyphicon-plus spinner");
+                  buttonthis = $(this);
+                  var $api_action = {"action":"downloadqadd","data":{"uuid":peer_uuid,"sharedir":atob(path),"filename":atob(filename),"filesize":size,"filemodtime":modtime}};
+                  $.ajax({url:"/api.post",type:"POST",data:JSON.stringify($api_action),contentType:"application/json; charset=utf-8",dataType:"json",error: API_Alert,success: function(data)
+                  {
+                    if (data == 1) { buttonthis.find("span").toggleClass("spinner glyphicon-refresh glyphicon-ok"); buttonthis.unbind("click"); buttonthis.toggleClass("btn-success"); }
+                    else if (data == 2) { buttonthis.find("span").toggleClass("spinner glyphicon-refresh glyphicon-ok"); buttonthis.unbind("click"); buttonthis.toggleClass("btn-info"); }
+                    else { buttonthis.find("span").toggleClass("spinner glyphicon-refresh glyphicon-remove"); buttonthis.unbind("click"); buttonthis.toggleClass("btn-danger"); }
+                  }});
   
                 });
                 $(this).fadeIn();

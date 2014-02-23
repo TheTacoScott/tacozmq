@@ -29,7 +29,7 @@ share_listing_requests = {}
 share_listings = {}
 share_listings_lock = threading.Lock()
 
-download_q = []
+download_q = {}
 download_q_lock = threading.Lock()
 
 upload_q = {}
