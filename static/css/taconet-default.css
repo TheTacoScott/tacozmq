@@ -246,9 +246,14 @@ margin-top: 0px;
 
 .navlink
 {
-  margin-left: 2px;
+  margin-left: 4px;
 }
 
+.trplaceholder
+{
+  background-color: green;
+
+}
 @media screen and (max-width: 1000px) 
 {
   .navlink

@@ -1,3 +1,15 @@
+trhelper = function(e, tr)
+{
+  var $originals = tr.children();
+  var $helper = tr.clone();
+  $helper.children().each(function(index)
+  {
+    // Set helper cell sizes to match the original sizes
+    $(this).width($originals.eq(index).width());
+  });
+  return $helper;
+}
+
 function Update_Download_Q()
 {
   var $api_action = {"action":"downloadqget","data":""};
@@ -19,15 +31,20 @@ function Update_Download_Q()
         table.push("<tbody>");
         for (var i = 0; i < data["result"][peer_uuid].length; i++) 
         {
-          table.push("<tr>");
-          table.push("<td><big>" + data["result"][peer_uuid][i][1] + "</big> ("+commify(data["result"][peer_uuid][i][2])+" bytes)<br>" + data["result"][peer_uuid][i][0] + "</td>");
-          table.push('<td style="width: 30%; vertical-align: middle;" class="text-center"><div style="margin-bottom: 0px" class="progress"><div class="progress-bar" role="progressbar" style="width: 5%;"></div></div>Data here</td>');
+          table.push("<tr style='cursor: move'>");
+          table.push("<td><big><b><span style='margin-right: 10px;' class='glyphicon glyphicon-file'></span> " + data["result"][peer_uuid][i][1] + "</b></big><br><small>"+ data["result"][peer_uuid][i][0]+"</small></td>");
+          table.push("<td class='text-right' style='width: 200px;vertical-align: middle;'>23,440 / "+commify(data["result"][peer_uuid][i][2])+"</td>");
+          table.push("</td>");
+          table.push('<td style="width: 250px; vertical-align: middle;" class="text-center"><div style="margin-bottom: 0px" class="progress"><div class="progress-bar" role="progressbar" style="width: 5%;"></div></div>35KB/s (ETA: 22 minutes)</td>');
+          table.push('<td class="text-center" style="width: 30px;vertical-align: middle;font-size: 16px"><span class="glyphicon glyphicon-minus-sign"></span></td>');
           table.push("</tr>");
           console.log(data["result"][peer_uuid][i]);
         }
         table.push("</tbody></table>");
       }
       $("#downloadqdiv").html(table.join(""));
+      $(".table tbody").sortable({helper: trhelper}).disableSelection();
+      $(".table tbody span").click(function() { });
     }
   }});
 
