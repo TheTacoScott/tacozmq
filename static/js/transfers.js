@@ -1,3 +1,5 @@
+var $dontrefresh = false;
+
 //http://stackoverflow.com/questions/1307705/jquery-ui-sortable-with-table-and-tr-width
 trhelper = function(e, tr)
 {
@@ -57,6 +59,7 @@ function Update_Download_Q()
       $("#downloadqdiv").html(table.join(""));
       $(".table tbody").sortable({helper: trhelper,start:starthelper,update:updatehelper}).disableSelection();
       $(".table tbody span").click(function() { });
+      $('.table').hover(function(){ console.log("in"); $dontrefresh=true; }, function(){ console.log("out"); $dontrefresh=false; } );
     }
   }});
 
@@ -65,4 +68,5 @@ function Update_Download_Q()
 $( document ).ready(function() {
   Check_For_API_Errors();
   Update_Download_Q();
+
 });
