@@ -18,6 +18,7 @@
     <link href="/static/css/taconet-default.css" rel="stylesheet">
 
     <script src="/static/js/jquery-1.11.0.min.js"></script>
+    <script src="/static/js/jquery-ui.js"></script>
     <script src="/static/js/bootstrap.min.js"></script>
     <script type="text/javascript" src="/static/js/main.js"></script>
     <script type="text/javascript" src="/static/js/{{title.lower()}}.js"></script>
@@ -30,7 +31,6 @@
       <div class="container">
         <div class="navbar-header">
           <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
-            <span class="sr-only">Toggle navigation</span>
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
