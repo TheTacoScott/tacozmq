@@ -40,12 +40,16 @@ import taco.crypto
 import taco.settings
 import taco.filesystem
 import taco.downloadq
+import taco.limiter
 
 signal.signal(signal.SIGINT, taco.globals.properexit)
 
 logging.info(taco.constants.APP_NAME + " v" + str(taco.constants.APP_VERSION) + " " + taco.constants.APP_STAGE + " STARTED")
 taco.settings.Load_Settings()
 taco.crypto.Init_Local_Crypto()
+
+taco.globals.upload_limiter = taco.limiter.Speedometer()
+taco.globals.download_limiter = taco.limiter.Speedometer()
 
 taco.globals.server = taco.server.TacoServer()
 taco.globals.server.start()
