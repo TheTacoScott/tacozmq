@@ -77,7 +77,36 @@ def index():
         return "2"
 
   if bottle.request.json[u"action"] == u"downloadqremove":
-    pass
+    if type(bottle.request.json[u"data"]) == type({}):
+      try:
+        peer_uuid = bottle.request.json[u"data"][u"uuid"]
+        sharedir = bottle.request.json[u"data"][u"sharedir"]
+        filename = bottle.request.json[u"data"][u"filename"]
+        filesize = int(bottle.request.json[u"data"][u"filesize"])
+        filemod = float(bottle.request.json[u"data"][u"filemodtime"])
+      except:
+        return "-1"
+
+      with taco.globals.download_q_lock:
+        logging.debug("Removing File to Download Q:" + str((peer_uuid,sharedir,filename,filesize,filemod)))
+        if taco.globals.download_q.has_key(peer_uuid): 
+          while (sharedir,filename,filesize,filemod) in taco.globals.download_q[peer_uuid]:
+            taco.globals.download_q[peer_uuid].remove((sharedir,filename,filesize,filemod))
+          if len(taco.globals.download_q[peer_uuid]) == 0: del taco.globals.download_q[peer_uuid]
+          return "1"
+        return "2"
+
+
+  if bottle.request.json[u"action"] == u"downloadqmove":
+    if type(bottle.request.json[u"data"]) == type({}):
+      try:
+        peer_uuid = bottle.request.json[u"data"][u"uuid"]
+        sharedir = bottle.request.json[u"data"][u"sharedir"]
+        filename = bottle.request.json[u"data"][u"filename"]
+        filesize = int(bottle.request.json[u"data"][u"filesize"])
+        filemod = float(bottle.request.json[u"data"][u"filemodtime"])
+      except:
+        return "-1"
 
   if bottle.request.json[u"action"] == u"downloadqget":
     output = {}
