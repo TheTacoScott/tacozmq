@@ -110,8 +110,17 @@ def index():
         filename = bottle.request.json[u"data"][u"filename"]
         filesize = int(bottle.request.json[u"data"][u"filesize"])
         filemod = float(bottle.request.json[u"data"][u"filemodtime"])
+        newloc =  int(bottle.request.json[u"data"][u"newloc"])
       except:
         return "-1"
+    with taco.globals.download_q_lock:
+      logging.debug("Moving File in Download Q:" + str((peer_uuid,sharedir,filename,filesize,filemod,newloc)))
+      if taco.globals.download_q.has_key(peer_uuid):
+        while (sharedir,filename,filesize,filemod) in taco.globals.download_q[peer_uuid]:
+          taco.globals.download_q[peer_uuid].remove((sharedir,filename,filesize,filemod))
+        taco.globals.download_q[peer_uuid].insert(min(newloc,len(taco.globals.download_q[peer_uuid])),((sharedir,filename,filesize,filemod)))
+        return "1"
+      return "2"
 
   if bottle.request.json[u"action"] == u"downloadqget":
     output = {}

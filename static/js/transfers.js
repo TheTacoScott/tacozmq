@@ -22,6 +22,19 @@ updatehelper = function(event,ui)
 {
   console.log(ui.item.data("startpos"),ui.item.index());
 
+  peer_uuid = ui.item.data("peeruuid");
+  modtime   = ui.item.data("modtime");
+  filesize  = ui.item.data("size");
+  filename  = atob(ui.item.data("filename"));
+  sharedir  = atob(ui.item.data("sharedir"));
+
+  var $api_action = {"action":"downloadqmove","data":{"uuid":peer_uuid,"sharedir":sharedir,"filename":filename,"filesize":filesize,"filemodtime":modtime,"newloc":ui.item.index()}};
+  $.ajax({url:"/api.post",type:"POST",data:JSON.stringify($api_action),contentType:"application/json; charset=utf-8",dataType:"json",error: API_Alert,success: function(data)
+  {
+    console.log(data);
+  }});
+
+
 }
 
 function Update_Download_Q()
