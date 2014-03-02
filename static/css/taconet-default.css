@@ -283,10 +283,33 @@ margin-top: 0px;
   margin-left: 10px;
 }
 
-
-
-@media screen and (max-width: 1000px) 
+.nav > li > a
 {
+  padding-left: 8px;
+  padding-right: 8px;
+
+}
+
+@media screen and (max-width: 1199px)
+{
+
+  .nav > li > a
+  {
+    padding-left: 4px;
+    padding-right: 4px;
+
+  }
+}
+
+
+@media screen and (max-width: 991px) 
+{
+  .nav > li > a
+  {
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+  
   .navlink
   {
     display: none;
@@ -298,6 +321,10 @@ margin-top: 0px;
   .navlink
   {
     display: initial;
+  }
+  .navlink-nohide
+  {
+    display: none !important;
   }
 
 }

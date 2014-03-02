@@ -103,5 +103,6 @@ function Update_Thread_Status()
 $( document ).ready(function() {
   Update_Peer_Status();
   Update_Thread_Status();
+  Check_For_API_Errors();
 });
 

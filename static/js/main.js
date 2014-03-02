@@ -24,6 +24,14 @@ function Check_For_API_Errors()
     setTimeout(Check_For_API_Errors,1000);
   }
   });
+  var $api_action = {"action":"speed","data":""};
+  $.ajax({url:"/api.post",type:"POST",data:JSON.stringify($api_action),contentType:"application/json; charset=utf-8",dataType:"json",error: API_Alert,success: function(data)
+  {
+    $("#downloadspeed").html((data[1]/1024).toFixed(2) + " KB/s");
+    $("#uploadspeed").html((data[0]/1024).toFixed(2) + " KB/s");
+  }
+  });
+
 }
 
 

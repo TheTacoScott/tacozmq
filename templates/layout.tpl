@@ -26,7 +26,6 @@
   </head>
 
   <body>
-
     <div class="navbar navbar-default navbar-fixed-top" role="navigation">
       <div class="container">
         <div class="navbar-header">
@@ -35,7 +34,7 @@
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
           </button>
-          <a class="navbar-brand" href="#"><img src="/static/images/taco.png" height="16"> <b>TacoNET</b></a>
+          <a class="navbar-brand" href="/"><img src="/static/images/taco.png" height="16"> <b>TacoNET</b></a>
         </div>
         <div class="collapse navbar-collapse">
           <ul class="nav navbar-nav">
@@ -46,6 +45,9 @@
             <li class="{{"active" if title=="Browse" else ""}}"><a href="/browse.taco"><i class="glyphicon glyphicon-folder-open"></i><span style="margin-left: 5px" class="navlink">Browse</span></a></li>
             <li class="{{"active" if title=="Settings" else ""}}"><a href="/settings.taco"><i class="glyphicon glyphicon-edit"></i><span class="navlink">Settings</span></a></li>
             <li class="{{"active" if title=="Help" else ""}}"><a target="_blank" href="https://github.com/withorwithoutgod/taconet/wiki"><i class="glyphicon glyphicon-info-sign"></i><span class="navlink">Help</span></a></li> 
+            <li class="navlink-nohide"><a href="."><i class="glyphicon glyphicon-arrow-down"></i> <span id="downloadspeed"></span></a></li>
+            <li class="navlink-nohide"><a href="."><i class="glyphicon glyphicon-arrow-up"></i> <span id="uploadspeed"></span></a></li>
+
           </ul>
       
       <ul class="nav navbar-nav navbar-right">

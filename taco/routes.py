@@ -57,6 +57,11 @@ def index():
 
     return json.dumps(output)
 
+  if bottle.request.json[u"action"] == u"speed":
+    with taco.globals.download_limiter_lock: down = taco.globals.download_limiter.get_rate()
+    with taco.globals.upload_limiter_lock:   up   = taco.globals.upload_limiter.get_rate()
+    return json.dumps([up,down])
+
   if bottle.request.json[u"action"] == u"downloadqadd":
     if type(bottle.request.json[u"data"]) == type({}):
       try:
