@@ -35,6 +35,9 @@ download_q_lock = threading.Lock()
 upload_q = {}
 upload_q_lock = threading.Lock()
 
+upload_limiter_lock = threading.Lock()
+download_limiter_lock = threading.Lock()
+
 high_priority_output_queue_lock = threading.Lock()
 medium_priority_output_queue_lock = threading.Lock()
 low_priority_output_queue_lock = threading.Lock()
