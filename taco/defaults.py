@@ -10,7 +10,7 @@ default_settings_kv["Web Port"] = 5340
 default_settings_kv["Web IP"] = "127.0.0.1"
 default_settings_kv["Download Limit"] = 50
 default_settings_kv["Upload Limit"] = 50
-default_settings_kv["Local UUID"] = unicode(str(uuid.uuid4()))
+default_settings_kv["Local UUID"] = unicode(uuid.uuid4().hex)
 default_settings_kv["TacoNET Certificates Store"] = "certstore/"
 
 default_peers_kv = {}
