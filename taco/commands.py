@@ -59,7 +59,7 @@ def Request_Chat(chatmsg):
   with taco.globals.chat_log_lock:
     taco.globals.chat_log.append([taco.globals.settings["Local UUID"],time.time(),chatmsg])
     with taco.globals.chat_uuid_lock:
-      taco.globals.chat_uuid = str(uuid.uuid4())
+      taco.globals.chat_uuid = uuid.uuid4().hex
     if len(taco.globals.chat_log) > taco.constants.CHAT_LOG_MAXSIZE:
       taco.globals.chat_log = taco.globals.chat_log[1:]
 
@@ -70,7 +70,7 @@ def Reply_Chat(peer_uuid,datablock):
   with taco.globals.chat_log_lock:
     taco.globals.chat_log.append([peer_uuid] + datablock)
     with taco.globals.chat_uuid_lock:
-      taco.globals.chat_uuid = str(uuid.uuid4())
+      taco.globals.chat_uuid = uuid.uuid4().hex
     if len(taco.globals.chat_log) > taco.constants.CHAT_LOG_MAXSIZE:
       taco.globals.chat_log = taco.globals.chat_log[1:]
   reply = Create_Reply(taco.constants.NET_REPLY_CHAT,{})

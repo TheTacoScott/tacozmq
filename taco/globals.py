@@ -11,7 +11,7 @@ settings = {}
 chat_log = []
 chat_log_lock = threading.Lock()
 
-chat_uuid = str(uuid.uuid4())
+chat_uuid = uuid.uuid4().hex
 chat_uuid_lock = threading.Lock()
 
 continue_running_lock = threading.Lock()

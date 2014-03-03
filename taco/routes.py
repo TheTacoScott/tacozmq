@@ -149,7 +149,7 @@ def index():
       if bottle.request.json[u"data"].has_key(u"uuid") and bottle.request.json[u"data"].has_key(u"sharedir"):
         peer_uuid = bottle.request.json[u"data"][u"uuid"]
         sharedir = bottle.request.json[u"data"][u"sharedir"]
-        browse_result_uuid = str(uuid.uuid4())
+        browse_result_uuid = uuid.uuid4().hex
         logging.critical("Getting Directory Listing from: " + peer_uuid + " for share: " + sharedir)
         request = taco.commands.Request_Share_Listing(peer_uuid,sharedir,browse_result_uuid)
         taco.globals.Add_To_Output_Queue(peer_uuid,request,2)
@@ -260,7 +260,7 @@ def getData(what):
   output = ""
   logging.debug("Route -- Getting your: " + what)
   if what=="uuid":
-    return str(uuid.uuid4())
+    return uuid.uuid4().hex
   if what=="ip":
     data = urllib.urlopen("http://checkip.dyndns.org/").read()
     m = re.match(r'.*Current IP Address: (.*)</body>',data)
