@@ -76,6 +76,9 @@ class TacoFilesystemManager(threading.Thread):
     self.listing_results_queue = Queue.Queue()
   
     self.results_to_return = []
+
+    self.download_q_check_time = time.time()
+    self.client_downloading = {}
  
   def add_listing(self,thetime,sharedir,dirs,files):
     with self.listings_lock:
@@ -89,37 +92,6 @@ class TacoFilesystemManager(threading.Thread):
     with self.status_lock:
       self.status = text
       self.status_time = time.time()
-
-  def close_file_w(self,filename):
-    self.set_status("Closing File for writing: " + filename)
-    with self.files_open_for_w_lock:
-      if filename in self.files_open_for_w.keys():
-        self.files_open_for_w[filename].close()
-        del self.files_open_for_w_time[filename]
-
-  def close_file_r(self,filename):
-    self.set_status("Closing File for reading: " + filename)
-    with self.files_open_for_r_lock:
-      if filename in self.files_open_for_r.keys():
-        self.files_open_for_r[filename].close()
-        del self.files_open_for_r_time[filename]
- 
-  def append_to_file(self,filename,data):
-    if os.path.isfile(os.path.normpath(filename)):
-      with self.files_open_for_w_lock:
-        if filename not in self.files_open_for_w.keys():
-          self.files_open_for_r[filename] = open(os.path.normpath(local_filename),"ab")
-        self.files_open_for_r[filename].write(data)
-        self.files_open_for_w_time[filename] = time.time()
-
-  def read_from_file(self,filename,offset=0):
-    if os.path.isfile(os.path.normpath(filename)):
-      with self.files_open_for_r_lock:
-        if filename not in self.files_open_for_r.keys():
-          self.files_open_for_r[filename] = open(os.path.normpath(local_filename),"rb")
-        self.files_open_for_r[filename].seek(offset)
-        self.files_open_for_r_time[filename] = time.time()
-        return self.files_open_for_r[filename].read(taco.constants.FILESYSTEM_CHUNK_SIZE)
 
   def get_status(self):
     with self.status_lock:
@@ -140,11 +112,26 @@ class TacoFilesystemManager(threading.Thread):
       self.workers.append(TacoFilesystemWorker(i))
     for i in self.workers:
       i.start()
-
+    self.did_something = True
     while self.continue_running():
-      time.sleep(0.01 + random.uniform(0.01, 0.05))
-
+      if not self.did_something: time.sleep(0.01 + random.uniform(0.01, 0.1))
+      self.did_something = False
       if not self.continue_running(): break
+
+      if time.time() >= self.download_q_check_time:
+        self.set_status("Checking if the download q is in a good state")
+        self.download_q_check_time = time.time() + taco.constants.DOWNLOAD_Q_CHECK_TIME
+        with taco.globals.download_q_lock:
+          for peer_uuid in taco.globals.download_q.keys():
+            if len(taco.globals.download_q[peer_uuid]) > 0:
+              (sharedir,filename,filesize,filemod) = taco.globals.download_q[peer_uuid][0]
+              if not self.client_downloading.has_key(peer_uuid): self.client_downloading[peer_uuid] = 0
+              if self.client_downloading[peer_uuid] != (sharedir,filename,filesize,filemod):
+                self.set_status("File we should be downloading has changed:" + str((peer_uuid,sharedir,filename,filesize,filemod)))
+                self.client_downloading[peer_uuid] = (sharedir,filename,filesize,filemod)
+                self.did_something = True
+            else:
+              self.client_downloading[peer_uuid] = 0 #download q empty
 
       if len(self.results_to_return) > 0:
         self.set_status("There are results that need to be sent once they are ready")
@@ -155,6 +142,7 @@ class TacoFilesystemManager(threading.Thread):
               request = taco.commands.Request_Share_Listing_Results(sharedir,shareuuid,self.listings[sharedir])
               taco.globals.Add_To_Output_Queue(peer_uuid,request,2)
               self.results_to_return.remove([peer_uuid,sharedir,shareuuid])
+              self.did_something = True
               
                  
       if abs(time.time() - self.last_purge) > taco.constants.FILESYSTEM_CACHE_PURGE:
@@ -195,28 +183,13 @@ class TacoFilesystemManager(threading.Thread):
               self.results_to_return.append([peer_uuid,sharedir,shareuuid])
             else:
               self.set_status("User has requested a bogus share: " +str(sharedir))
-
-      with self.files_open_for_r_lock:
-        files_to_close = []
-        for filename in self.files_open_for_r.keys():
-          if abs(time.time() - self.files_open_for_r_time[filename] > taco.constants.FILESYSTEM_CACHE_PURGE):
-            files_to_close.append(filename)
-      for filename in files_to_close:
-        self.close_file_r(filename)
-
-      with self.files_open_for_w_lock:
-        files_to_close = []
-        for filename in self.files_open_for_w.keys():
-          if abs(time.time() - self.files_open_for_w_time[filename] > taco.constants.FILESYSTEM_CACHE_PURGE):
-            files_to_close.append(filename)
-      for filename in files_to_close:
-        self.close_file_w(filename)
+            self.did_something = True
 
       while not self.listing_results_queue.empty():
         (success,thetime,sharedir,dirs,files) = self.listing_results_queue.get()
-        #self.set_status("Processing a worker result: " + str((success,thetime,sharename,sharepath,dirs,files)))
         self.set_status("Processing a worker result: " + sharedir)
         self.add_listing(thetime,sharedir,dirs,files)
+        self.did_something = True
       
       if not self.continue_running(): break
     self.set_status("Exiting")
@@ -270,8 +243,10 @@ class TacoFilesystemWorker(threading.Thread):
   
   def run(self):
     self.set_status("Starting Filesystem Worker #" + str(self.worker_id))
+    self.did_something = True
     while self.continue_running():
-      time.sleep(random.uniform(0.01, 0.05))
+      if not self.did_something: time.sleep(random.uniform(0.01, 0.1))
+      self.did_something = False
       if not self.continue_running(): break
       try:
         rootsharedir = taco.globals.filesys.listing_work_queue.get(True,0.25)
@@ -323,6 +298,7 @@ class TacoFilesystemWorker(threading.Thread):
         results = [0,time.time(),rootsharedir,[],[]]
 
       taco.globals.filesys.listing_results_queue.put(results)
+      self.did_something = True
 
     self.set_status("Exiting Filesystem Worker #" + str(self.worker_id))
 

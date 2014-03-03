@@ -34,8 +34,6 @@ class TacoClients(threading.Thread):
 
     self.client_timeout = {}
     
-    self.client_downloading = {}
-  
   def set_client_last_reply(self,peer_uuid):
     logging.debug("Got Reply from: " + peer_uuid)
     self.client_reconnect_mod[peer_uuid] = taco.constants.CLIENT_RECONNECT_MIN
@@ -90,7 +88,6 @@ class TacoClients(threading.Thread):
     poller = zmq.Poller()
 
     while self.continue_running():
-      #logging.debug("client")
       if not self.continue_running(): break
 
       with taco.globals.settings_lock:
@@ -128,20 +125,9 @@ class TacoClients(threading.Thread):
       socks = dict(poller.poll(500))
       if len(self.clients.keys()) == 0: time.sleep(0.5)
       self.did_something = 0
+
       for peer_uuid in self.clients.keys():
 
-        #PROCESS DOWNLOAD Q BLOCK
-        with taco.globals.download_q_lock:
-          if taco.globals.download_q.has_key(peer_uuid):
-            if len(taco.globals.download_q[peer_uuid]) > 0:
-              (sharedir,filename,filesize,filemod) = taco.globals.download_q[peer_uuid][0]
-              if not self.client_downloading.has_key(peer_uuid): self.client_downloading[peer_uuid] = {}
-              if self.client_downloading[peer_uuid].has_key((sharedir,filename,filesize,filemod)):
-                 (time_requested,offset,chunk_uuid) = self.client_downloading[peer_uuid][(sharedir,filename,filesize,filemod)] #restart requesting of data if time - time_requested too big.
-              else:
-                pass #set up initial download state
-            
-    
         #SEND BLOCK 
         if self.clients[peer_uuid] in socks and socks[self.clients[peer_uuid]] == zmq.POLLOUT:
           
