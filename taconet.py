@@ -60,9 +60,6 @@ taco.globals.clients.start()
 taco.globals.filesys = taco.filesystem.TacoFilesystemManager()
 taco.globals.filesys.start()
 
-taco.globals.downloadq = taco.downloadq.TacoDownloadq()
-taco.globals.downloadq.start()
-
 logging.info("Starting Local Webserver on " + taco.globals.settings["Web IP"] + ":" + str(taco.globals.settings["Web Port"]))
 logging.info("*** TacoNET Running ***")
 taco.bottle.run(host=taco.globals.settings["Web IP"], port=int(taco.globals.settings["Web Port"]),reloader=False,quiet=True,debug=True,server="cherrypy")

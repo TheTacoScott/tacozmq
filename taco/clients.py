@@ -24,8 +24,6 @@ class TacoClients(threading.Thread):
     self.next_request = ""
 
     self.clients = {}
-    self.long_clients = {}
-    self.short_clients = {}
 
     self.next_rollcall = {}
     self.client_connect_time = {}
@@ -35,6 +33,8 @@ class TacoClients(threading.Thread):
     self.client_last_reply_time_lock = threading.Lock()
 
     self.client_timeout = {}
+    
+    self.client_downloading = {}
   
   def set_client_last_reply(self,peer_uuid):
     logging.debug("Got Reply from: " + peer_uuid)
@@ -130,6 +130,15 @@ class TacoClients(threading.Thread):
       self.did_something = 0
       for peer_uuid in self.clients.keys():
 
+        #PROCESS DOWNLOAD Q BLOCK
+        with taco.globals.download_q_lock:
+          if taco.globals.download_q.has_key(peer_uuid):
+            (sharedir,filename,filesize,filemod) = taco.globals.download_q[peer_uuid]
+            if not self.client_downloading.has_key(peer_uuid): self.client_downloading[peer_uuid] = {}
+            if self.client_downloading[peer_uuid].has_key((sharedir,filename,filesize,filemod)):
+              (time_requested,offset) = self.client_downloading[peer_uuid][(sharedir,filename,filesize,filemod)]
+            
+    
         #SEND BLOCK 
         if self.clients[peer_uuid] in socks and socks[self.clients[peer_uuid]] == zmq.POLLOUT:
           
