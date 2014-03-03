@@ -200,7 +200,7 @@ class TacoClients(threading.Thread):
           self.client_connect_time[peer_uuid] = time.time() + self.client_reconnect_mod[peer_uuid]
           
 
-      if not self.did_something: time.sleep(0.2)
+      if not self.did_something: time.sleep(0.1)
             
           
 

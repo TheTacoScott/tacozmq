@@ -64,14 +64,6 @@ class TacoFilesystemManager(threading.Thread):
     self.listings_lock = threading.Lock()
     self.listings = {}
 
-    self.files_open_for_w_lock = threading.Lock()
-    self.files_open_for_w = {}
-    self.files_open_for_w_time = {}
-
-    self.files_open_for_r_lock = threading.Lock()
-    self.files_open_for_r = {}
-    self.files_open_for_r_time = {}
-
     self.listing_work_queue = Queue.Queue()
     self.listing_results_queue = Queue.Queue()
   
@@ -118,6 +110,7 @@ class TacoFilesystemManager(threading.Thread):
       self.did_something = False
       if not self.continue_running(): break
 
+      #DOWNLOAD Q CHECK
       if time.time() >= self.download_q_check_time:
         self.set_status("Checking if the download q is in a good state")
         self.download_q_check_time = time.time() + taco.constants.DOWNLOAD_Q_CHECK_TIME
@@ -197,14 +190,6 @@ class TacoFilesystemManager(threading.Thread):
       i.stop_running()
     for i in self.workers:
       i.join()
-    files_to_close = []
-    with self.files_open_for_r_lock:
-      for filename in self.files_open_for_r.keys(): files_to_close.append(filename)
-    for filename in files_to_close: self.close_file_r(filename)
-    with self.files_open_for_w_lock:
-      for filename in self.files_open_for_w.keys(): files_to_close.append(filename)
-    for filename in files_to_close: self.close_file_w(filename)
-
 
 class TacoFilesystemWorker(threading.Thread):
   def __init__(self,worker_id):
