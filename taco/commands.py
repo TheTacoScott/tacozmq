@@ -196,3 +196,18 @@ def Reply_Share_Listing_Result(peer_uuid,datablock):
 
   return msgpack.packb(reply)
 
+def Request_Get_File_Chunk(sharedir,filename,offset,amount):
+  pass
+def Process_Request_Get_File_Chunk(peer_uuid,unpacked):
+  pass
+def Reply_Get_File_Chunk():
+  pass
+
+def Request_Give_File_Chunk():
+  pass
+def Process_Request_Give_File_Chunk(peer_uuid,unpacked):
+  pass
+def Reply_Give_File_Chunk():
+  pass
+
+

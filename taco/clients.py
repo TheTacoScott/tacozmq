@@ -133,10 +133,13 @@ class TacoClients(threading.Thread):
         #PROCESS DOWNLOAD Q BLOCK
         with taco.globals.download_q_lock:
           if taco.globals.download_q.has_key(peer_uuid):
-            (sharedir,filename,filesize,filemod) = taco.globals.download_q[peer_uuid]
-            if not self.client_downloading.has_key(peer_uuid): self.client_downloading[peer_uuid] = {}
-            if self.client_downloading[peer_uuid].has_key((sharedir,filename,filesize,filemod)):
-              (time_requested,offset) = self.client_downloading[peer_uuid][(sharedir,filename,filesize,filemod)]
+            if len(taco.globals.download_q[peer_uuid]) > 0:
+              (sharedir,filename,filesize,filemod) = taco.globals.download_q[peer_uuid][0]
+              if not self.client_downloading.has_key(peer_uuid): self.client_downloading[peer_uuid] = {}
+              if self.client_downloading[peer_uuid].has_key((sharedir,filename,filesize,filemod)):
+                 (time_requested,offset,chunk_uuid) = self.client_downloading[peer_uuid][(sharedir,filename,filesize,filemod)] #restart requesting of data if time - time_requested too big.
+              else:
+                pass #set up initial download state
             
     
         #SEND BLOCK 
