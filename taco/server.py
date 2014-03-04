@@ -25,7 +25,7 @@ class TacoServer(threading.Thread):
     self.client_last_request_time_lock = threading.Lock()
 
   def set_client_last_request(self,peer_uuid):
-    self.set_status("Server has serviced a request from:" + peer_uuid)
+    #self.set_status("Server has serviced a request from:" + peer_uuid)
     with self.client_last_request_time_lock:
       self.client_last_request_time[peer_uuid] = time.time()
 

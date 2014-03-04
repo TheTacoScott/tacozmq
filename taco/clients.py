@@ -35,7 +35,7 @@ class TacoClients(threading.Thread):
     self.client_timeout = {}
     
   def set_client_last_reply(self,peer_uuid):
-    logging.debug("Got Reply from: " + peer_uuid)
+    #logging.debug("Got Reply from: " + peer_uuid)
     self.client_reconnect_mod[peer_uuid] = taco.constants.CLIENT_RECONNECT_MIN
     self.client_timeout[peer_uuid] = time.time() + taco.constants.ROLLCALL_TIMEOUT
     with self.client_last_reply_time_lock:
@@ -101,10 +101,10 @@ class TacoClients(threading.Thread):
             if time.time() >= self.client_connect_time[peer_uuid]:
               if peer_uuid not in self.clients.keys():
                 self.set_status("Starting Client for: " + peer_uuid)
-                self.set_status("Doing DNS lookup on: " + taco.globals.settings["Peers"][peer_uuid]["hostname"])
+                #self.set_status("Doing DNS lookup on: " + taco.globals.settings["Peers"][peer_uuid]["hostname"])
                 ip_of_client = socket.gethostbyname(taco.globals.settings["Peers"][peer_uuid]["hostname"])
 
-                self.set_status("Creating client zmq context for: " + peer_uuid)
+                #self.set_status("Creating client zmq context for: " + peer_uuid)
                 self.clients[peer_uuid] = clientctx.socket(zmq.REQ)
                 self.clients[peer_uuid].setsockopt(zmq.LINGER, 0)
                 client_public, client_secret = zmq.auth.load_certificate(os.path.normpath(os.path.abspath(privatedir + "/" + taco.constants.KEY_GENERATION_PREFIX +"-client.key_secret")))
@@ -112,7 +112,7 @@ class TacoClients(threading.Thread):
                 self.clients[peer_uuid].curve_publickey = client_public
                 self.clients[peer_uuid].curve_serverkey = str(taco.globals.settings["Peers"][peer_uuid]["serverkey"])
 
-                self.set_status("Attempt to connect to: " + peer_uuid + " @ tcp://" + ip_of_client + ":" + str(taco.globals.settings["Peers"][peer_uuid]["port"]))
+                #self.set_status("Attempt to connect to: " + peer_uuid + " @ tcp://" + ip_of_client + ":" + str(taco.globals.settings["Peers"][peer_uuid]["port"]))
                 self.clients[peer_uuid].connect("tcp://" + ip_of_client + ":" + str(taco.globals.settings["Peers"][peer_uuid]["port"]))
                 self.next_rollcall[peer_uuid] = time.time()
 
@@ -122,8 +122,8 @@ class TacoClients(threading.Thread):
 
                 poller.register(self.clients[peer_uuid],zmq.POLLIN|zmq.POLLOUT)
 
-      socks = dict(poller.poll(500))
-      if len(self.clients.keys()) == 0: time.sleep(0.5)
+      socks = dict(poller.poll(100))
+      if len(self.clients.keys()) == 0: time.sleep(0.1)
       self.did_something = 0
 
       for peer_uuid in self.clients.keys():
@@ -146,6 +146,7 @@ class TacoClients(threading.Thread):
             if not taco.globals.medium_priority_output_queue[peer_uuid].empty():
               data = taco.globals.medium_priority_output_queue[peer_uuid].get()
               self.set_status("medium priority output q not empty:" + peer_uuid)
+              self.set_status(data)
               self.clients[peer_uuid].send(data)
               with taco.globals.upload_limiter_lock: taco.globals.upload_limiter.add(len(data))
               self.did_something = 1
@@ -163,7 +164,7 @@ class TacoClients(threading.Thread):
 
           #rollcall special case
           if self.next_rollcall[peer_uuid] < time.time():
-            self.set_status("Requesting Rollcall from: " + peer_uuid)
+            #self.set_status("Requesting Rollcall from: " + peer_uuid)
             data = taco.commands.Request_Rollcall()
             self.clients[peer_uuid].send(data)
             with taco.globals.upload_limiter_lock: taco.globals.upload_limiter.add(len(data))
@@ -200,7 +201,7 @@ class TacoClients(threading.Thread):
           self.client_connect_time[peer_uuid] = time.time() + self.client_reconnect_mod[peer_uuid]
           
 
-      if not self.did_something: time.sleep(0.1)
+      if not self.did_something: time.sleep(0.05)
             
           
 

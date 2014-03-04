@@ -28,13 +28,14 @@ elif os.name=='posix':
 
 def Is_Path_Under_A_Share(path):
   return_value = False
-  with taco.globals.settings_lock:
-    for [sharename,sharepath] in taco.globals.settings["Shares"]:
-      dirpath = os.path.abspath(os.path.normcase(unicode(sharepath)))
-      dirpath2 = os.path.abspath(os.path.normcase(unicode(path)))
-      if os.path.commonprefix([dirpath,dirpath2]) == dirpath:
-        return_value = True
-        break
+  if os.path.isdir(os.path.normpath(path)):
+    with taco.globals.settings_lock:
+      for [sharename,sharepath] in taco.globals.settings["Shares"]:
+        dirpath = os.path.abspath(os.path.normcase(unicode(sharepath)))
+        dirpath2 = os.path.abspath(os.path.normcase(unicode(path)))
+        if os.path.commonprefix([dirpath,dirpath2]) == dirpath:
+          return_value = True
+          break
   logging.debug(path + " -- " + str(return_value))
   return return_value
 
@@ -65,10 +66,11 @@ class TacoFilesystemManager(threading.Thread):
     self.listings_lock = threading.Lock()
     self.listings = {}
 
-    self.listing_work_queue        = Queue.Queue()
-    self.listing_results_queue     = Queue.Queue()
-    self.chunk_requests_work_queue = Queue.Queue() 
-    self.chunk_requests_ack_queue  = Queue.Queue() 
+    self.listing_work_queue            = Queue.Queue()
+    self.listing_results_queue         = Queue.Queue()
+    self.chunk_requests_incoming_queue = Queue.Queue() 
+    self.chunk_requests_outgoing_queue = Queue.Queue() 
+    self.chunk_requests_ack_queue      = Queue.Queue() 
 
     self.results_to_return = []
 
@@ -76,6 +78,11 @@ class TacoFilesystemManager(threading.Thread):
     self.client_downloading = {}
     self.client_downloading_status = {}
     self.client_downloading_chunk_uuid = {}
+
+    self.files_w = {}
+    self.files_r = {}
+    self.files_r_last_access = {}
+    self.files_w_last_access = {}
  
   def add_listing(self,thetime,sharedir,dirs,files):
     with self.listings_lock:
@@ -115,24 +122,62 @@ class TacoFilesystemManager(threading.Thread):
       self.did_something = False
       if not self.continue_running(): break
 
-      #DOWNLOAD Q CHECK
+      #check for chunk ack
+      while not self.chunk_requests_ack_queue.empty():
+        q_get_success = True
+        try:
+          (peer_uuid,chunk_uuid) = self.chunk_requests_ack_queue.get(0)
+        except:
+          q_get_success = False
+          break
+        if self.client_downloading_chunk_uuid.has_key(peer_uuid) and self.client_downloading_status.has_key(peer_uuid) and q_get_success:
+          if chunk_uuid == self.client_downloading_chunk_uuid[peer_uuid]:
+            (time_request_sent,time_request_ack,offset) = self.client_downloading_status[peer_uuid]
+            self.client_downloading_status[peer_uuid] = (time_request_sent,time.time(),offset)
+            self.set_status("File Chunk request has been ACK'D:" + str((peer_uuid,time_request_sent,chunk_uuid)))
+            self.did_something = True
+
+      #chunk data has been recieved
+      while not self.chunk_requests_incoming_queue.empty():
+        q_get_success = True
+        try:
+          (peer_uuid,chunk_uuid,data) = self.chunk_requests_incoming_queue.get(0)
+        except:
+          q_get_success = False
+          break
+
+      #chunk data has been requested 
+      while not self.chunk_requests_outgoing_queue.empty():
+        q_get_success = True
+        try:
+          (peer_uuid,sharedir,filename,offset,chunk_uuid) = self.chunk_requests_outgoing_queue.get(0)
+        except:
+          q_get_success = False
+          break
+        self.set_status("Need to send a chunk of data: " + str((peer_uuid,sharedir,filename,offset,chunk_uuid)))
+        rootsharename = sharedir.split(u"/")[1]
+        rootpath = os.path.normpath(u"/" + u"/".join(sharedir.split(u"/")[2:]) + u"/")
+        directory = os.path.normpath(Convert_Share_To_Path(rootsharename) + u"/" + rootpath)
+        fullpath = os.path.normpath(directory + u"/" + filename)
+        if not Is_Path_Under_A_Share(os.path.dirname(fullpath)): break
+        if not os.path.isdir(directory): break
+        if fullpath not in self.files_r.keys():
+          self.set_status("I need to open a file for reading:" + fullpath)
+          self.files_r[fullpath] = open(fullpath,"rb")
+        self.files_r_last_access[fullpath] = time.time()
+        if offset < os.path.getsize(fullpath):
+          self.files_r[fullpath].seek(offset)
+          chunk_data = self.files_r[fullpath].read(taco.constants.FILESYSTEM_CHUNK_SIZE)
+          request = taco.commands.Request_Give_File_Chunk(chunk_data,chunk_uuid)
+          taco.globals.Add_To_Output_Queue(peer_uuid,request,3)
+            
+
+
+
       if time.time() >= self.download_q_check_time:
         #self.set_status("Checking if the download q is in a good state")
         with taco.globals.settings_lock: local_copy_download_directory = os.path.normpath(taco.globals.settings["Download Location"])
         self.download_q_check_time = time.time() + taco.constants.DOWNLOAD_Q_CHECK_TIME
-
-        #check for ack'd requests
-        while not self.chunk_requests_ack_queue.empty():
-          q_get_success = True
-          try:
-            (peer_uuid,chunk_uuid) = chunk_requests_ack_queue.get(0)
-          except:
-            q_get_success = False
-          if self.client_downloading_chunk_uuid.has_key(peer_uuid) and self.client_downloading_status.has_key(peer_uuid) and q_get_success:
-            if chunk_uuid == self.client_downloading_chunk_uuid[peer_uuid]:
-              (time_request_sent,time_request_ack,offset) = self.client_downloading_status[peer_uuid]
-              self.client_downloading_status[peer_uuid] = (time_request_sent,time.time(),offset)
-              self.did_something = True
 
         #check for download q items      
         with taco.globals.download_q_lock:
@@ -174,10 +219,14 @@ class TacoFilesystemManager(threading.Thread):
                 self.set_status("Starting a new download for: " + str((peer_uuid,sharedir,filename,filesize,filemod)))
                 self.client_downloading_chunk_uuid[peer_uuid] = uuid.uuid4().hex
                 self.client_downloading_status[peer_uuid] = (time.time(),0.0,0)
+                request = taco.commands.Request_Get_File_Chunk(sharedir,filename,0,self.client_downloading_chunk_uuid[peer_uuid])
+                taco.globals.Add_To_Output_Queue(peer_uuid,request,3)
 
-          elif abs(time.time() - time_request_sent) > taco.constants.DOWNLOAD_Q_WAIT_FOR_ACK: #too much time has passed since we sent the request for data, and have gotten no ack,re-requesting
+          elif time_request_ack == 0 and abs(time.time() - time_request_sent) > taco.constants.DOWNLOAD_Q_WAIT_FOR_ACK: #too much time has passed since we sent the request for data, and have gotten no ack,re-requesting
+            self.set_status("We have sent a request, but no ACK has come back for: " + str(peer_uuid))
             self.client_downloading_status[peer_uuid] = (0.0,0.0,0)
-          elif abs(time.time() - time_request_ack)  > taco.constants.DOWNLOAD_Q_WAIT_FOR_DATA: #too much time has passed since we got an ack for the data, and have gotten no data,re-requesting
+          elif time_request_ack != 0 and abs(time.time() - time_request_ack)  > taco.constants.DOWNLOAD_Q_WAIT_FOR_DATA: #too much time has passed since we got an ack for the data, and have gotten no data,re-requesting
+            self.set_status("File chunk has been ack'd, but no data has come through:" + str((peer_uuid)))
             self.client_downloading_status[peer_uuid] = (0.0,0.0,0)
 
       if len(self.results_to_return) > 0:
@@ -195,6 +244,22 @@ class TacoFilesystemManager(threading.Thread):
       if abs(time.time() - self.last_purge) > taco.constants.FILESYSTEM_CACHE_PURGE:
         self.set_status("Purging old filesystem results")
         self.last_purge = time.time()
+        
+        for filename in self.files_r_last_access.keys():
+          if abs(time.time() - self.files_r_last_access[filename]) > taco.constants.FILESYSTEM_CACHE_TIMEOUT:
+            if filename in self.files_r.keys():
+              self.set_status("Closing a file for reading due to inactivity:" + filename)
+              self.files_r[filename].close()
+              del self.files_r[filename]
+            del self.files_r_last_access[filename]
+
+        for filename in self.files_w_last_access.keys():
+          if abs(time.time() - self.files_w_last_access[filename]) > taco.constants.FILESYSTEM_CACHE_TIMEOUT:
+            if filename in self.files_w.keys():
+              self.set_status("Closing a file for writing due to inactivity:" + filename)       
+              self.files_w[filename].close()
+              del self.files_w[filename]
+            del self.files_w_last_access[filename]
 
         with taco.globals.share_listings_lock:
           for iterkey in taco.globals.share_listings.keys():
@@ -239,11 +304,16 @@ class TacoFilesystemManager(threading.Thread):
         self.did_something = True
       
       if not self.continue_running(): break
-    self.set_status("Exiting")
+    self.set_status("Killing Workers")
     for i in self.workers:
       i.stop_running()
     for i in self.workers:
       i.join()
+    self.set_status("Closing Open Files")
+    for filename in self.files_r: self.files_r[filename].close()
+    for filename in self.files_w: self.files_w[filename].close()
+    self.set_status("Filesystem Manager Exit")
+
 
 class TacoFilesystemWorker(threading.Thread):
   def __init__(self,worker_id):
@@ -291,11 +361,11 @@ class TacoFilesystemWorker(threading.Thread):
         rootsharedir = taco.globals.filesys.listing_work_queue.get(True,0.25)
         self.set_status(str(self.worker_id) + " -- " + str(rootsharedir))
         rootsharedir = os.path.normpath(rootsharedir)
-        logging.debug("rootsharedir: " + rootsharedir + " -- " + os.path.normpath(rootsharedir))
+        #logging.debug("rootsharedir: " + rootsharedir + " -- " + os.path.normpath(rootsharedir))
         rootsharename = rootsharedir.split(u"/")[1]
         rootpath = os.path.normpath(u"/" + u"/".join(rootsharedir.split(u"/")[2:]) + u"/")
-        logging.debug("rootsharename:" + rootsharename) 
-        logging.debug("rootpath:" + rootpath) 
+        #logging.debug("rootsharename:" + rootsharename) 
+        #logging.debug("rootpath:" + rootpath) 
         directory = os.path.normpath(Convert_Share_To_Path(rootsharename) + u"/" + rootpath)
         if rootsharedir == u"/":
           self.set_status("Root share listing request")

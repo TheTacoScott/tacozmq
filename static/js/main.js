@@ -12,7 +12,7 @@ function guid() {
 function API_Alert()
 {
   $("#apialert").removeClass("hide");
-  setTimeout(Check_For_API_Errors,1000);
+  //setTimeout(Check_For_API_Errors,10000);
 }
 
 function Check_For_API_Errors()

@@ -20,16 +20,22 @@ def Create_Reply(command=taco.constants.NET_GARBAGE,data=""):
   return reply
 
 def Proccess_Request(packed):
-  reply = ("0",Create_Request())
+  reply = Create_Request()
   try:
     unpacked = msgpack.unpackb(packed)
     assert unpacked.has_key(taco.constants.NET_DATABLOCK)
     assert unpacked.has_key(taco.constants.NET_IDENT)
   except:
     logging.warning("Got a bad request")
-    return msgpack.packb(reply)
+    return ("0",msgpack.packb(reply))
   if unpacked.has_key(taco.constants.NET_REQUEST):
-    logging.info("NET_REQUEST: " + str(unpacked))
+    if unpacked[taco.constants.NET_REQUEST] == taco.constants.NET_REQUEST_GIVE_FILE_CHUNK:
+      if unpacked[taco.constants.NET_DATABLOCK].has_key("data"):
+        logging.info("NET_REQUEST (FileChunk DATA): " + str(len(unpacked[taco.constants.NET_DATABLOCK]["data"])))
+      else:
+        logging.info("NET_REQUEST (FileChunk): " + str(len(str(unpacked[taco.constants.NET_DATABLOCK]))))
+    else:
+      logging.info("NET_REQUEST: " + str(unpacked))
     IDENT = unpacked[taco.constants.NET_IDENT]
     if unpacked[taco.constants.NET_REQUEST] == taco.constants.NET_REQUEST_ROLLCALL:              return (IDENT,Reply_Rollcall())
     if unpacked[taco.constants.NET_REQUEST] == taco.constants.NET_REQUEST_CERTS:                 return (IDENT,Reply_Certs(IDENT,unpacked[taco.constants.NET_DATABLOCK]))
@@ -37,8 +43,10 @@ def Proccess_Request(packed):
     if unpacked[taco.constants.NET_REQUEST] == taco.constants.NET_REQUEST_SHARE_LISTING:         return (IDENT,Reply_Share_Listing(IDENT,unpacked[taco.constants.NET_DATABLOCK]))
     if unpacked[taco.constants.NET_REQUEST] == taco.constants.NET_REQUEST_SHARE_LISTING_RESULTS: return (IDENT,Reply_Share_Listing_Result(IDENT,unpacked[taco.constants.NET_DATABLOCK]))
     if unpacked[taco.constants.NET_REQUEST] == taco.constants.NET_REQUEST_GET_FILE_CHUNK:        return (IDENT,Reply_Get_File_Chunk(IDENT,unpacked[taco.constants.NET_DATABLOCK]))
-  
-  return msgpack.packb(reply)
+    if unpacked[taco.constants.NET_REQUEST] == taco.constants.NET_REQUEST_GIVE_FILE_CHUNK:       return (IDENT,Reply_Give_File_Chunk(IDENT,unpacked[taco.constants.NET_DATABLOCK]))
+
+  logging.debug("Unknown Request") 
+  return ("0",msgpack.packb(reply))
 
 def Process_Reply(peer_uuid,packed):
   response = ""
@@ -47,6 +55,7 @@ def Process_Reply(peer_uuid,packed):
     assert unpacked.has_key(taco.constants.NET_DATABLOCK)
     assert unpacked.has_key(taco.constants.NET_IDENT)
   except:
+    logging.debug("Bad Reply")
     return response
   if unpacked.has_key(taco.constants.NET_REPLY):
     logging.info("NET_REPLY: " + str(unpacked))
@@ -93,7 +102,7 @@ def Reply_Rollcall():
  
 def Process_Reply_Rollcall(peer_uuid,unpacked):
   requested_peers = []
-  logging.warning(str(unpacked))
+  #logging.warning(str(unpacked))
   with taco.globals.settings_lock:
     new_nickname = unpacked[0]
     if taco.globals.settings["Peers"].has_key(peer_uuid):
@@ -167,7 +176,7 @@ def Reply_Share_Listing(peer_uuid,datablock):
     reply[taco.constants.NET_DATABLOCK] = 0
     return msgpack.packb(reply)
 
-  logging.debug("Got a share listing request from: " + peer_uuid + " for: " + sharedir)
+  #logging.debug("Got a share listing request from: " + peer_uuid + " for: " + sharedir)
   with taco.globals.share_listing_requests_lock:
     if not taco.globals.share_listing_requests.has_key(peer_uuid): taco.globals.share_listing_requests[peer_uuid] = Queue.Queue()
     taco.globals.share_listing_requests[peer_uuid].put((sharedir,shareuuid))
@@ -190,7 +199,7 @@ def Reply_Share_Listing_Result(peer_uuid,datablock):
     reply = Create_Reply(taco.constants.NET_REPLY_SHARE_LISTING_RESULTS,0)
     return msgpack.packb(reply)
   
-  logging.debug("Got share listing RESULTS from: " + peer_uuid + " for: " + sharedir)
+  #logging.debug("Got share listing RESULTS from: " + peer_uuid + " for: " + sharedir)
   with taco.globals.share_listings_lock:
     taco.globals.share_listings[(peer_uuid,sharedir)] = [time.time(),results]
   with taco.globals.share_listings_i_care_about_lock:
@@ -202,7 +211,7 @@ def Request_Get_File_Chunk(sharedir,filename,offset,chunk_uuid):
   request = Create_Request(taco.constants.NET_REQUEST_GET_FILE_CHUNK,{"sharedir":sharedir,"filename":filename,"offset":offset,"chunk_uuid":chunk_uuid})
   return msgpack.packb(request)
 
-def Reply_Get_File_Chunk(peer_uuid,unpacked):
+def Reply_Get_File_Chunk(peer_uuid,datablock):
   try:
     sharedir   = datablock["sharedir"]
     filename   = datablock["filename"]
@@ -211,7 +220,7 @@ def Reply_Get_File_Chunk(peer_uuid,unpacked):
   except:
     reply = Create_Reply(taco.constants.NET_REPLY_GET_FILE_CHUNK,{"status":0})
     return msgpack.packb(reply)
-  taco.globals.filesys.chunk_requests_work_queue.put((peer_uuid,sharedir,filename,offset,chunk_uuid))
+  taco.globals.filesys.chunk_requests_outgoing_queue.put((peer_uuid,sharedir,filename,offset,chunk_uuid))
   reply = Create_Reply(taco.constants.NET_REPLY_GET_FILE_CHUNK,{"chunk_uuid":chunk_uuid,"status":1})
   return msgpack.packb(reply)
 
@@ -220,13 +229,19 @@ def Process_Reply_Get_File_Chunk(peer_uuid,datablock):
     status     = datablock["status"]
     chunk_uuid = datablock["chunk_uuid"] 
   except:
-    return
+    return ""
   taco.globals.filesys.chunk_requests_ack_queue.put((peer_uuid,chunk_uuid))
+  return ""
     
-def Request_Give_File_Chunk():
-  pass
+def Request_Give_File_Chunk(data,chunk_uuid):
+  request = Create_Request(taco.constants.NET_REQUEST_GIVE_FILE_CHUNK,{"data":data,"chunk_uuid":chunk_uuid})
+  return msgpack.packb(request)
 
-def Process_Request_Give_File_Chunk(peer_uuid,unpacked):
+def Reply_Give_File_Chunk(peer_uuid,datablock):
+  reply = Create_Reply()
+  return msgpack.packb(reply)
+
+def Process_Request_Give_File_Chunk(peer_uuid,datablock):
   pass
 
 def Process_Reply_Give_File_Chunk():
