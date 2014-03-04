@@ -32,8 +32,6 @@ def Proccess_Request(packed):
     if unpacked[taco.constants.NET_REQUEST] == taco.constants.NET_REQUEST_GIVE_FILE_CHUNK:
       if unpacked[taco.constants.NET_DATABLOCK].has_key("data"):
         logging.info("NET_REQUEST (FileChunk DATA): " + str(len(unpacked[taco.constants.NET_DATABLOCK]["data"])))
-      else:
-        logging.info("NET_REQUEST (FileChunk): " + str(len(str(unpacked[taco.constants.NET_DATABLOCK]))))
     else:
       logging.info("NET_REQUEST: " + str(unpacked))
     IDENT = unpacked[taco.constants.NET_IDENT]
