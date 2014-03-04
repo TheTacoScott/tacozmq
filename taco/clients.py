@@ -146,7 +146,6 @@ class TacoClients(threading.Thread):
             if not taco.globals.medium_priority_output_queue[peer_uuid].empty():
               data = taco.globals.medium_priority_output_queue[peer_uuid].get()
               self.set_status("medium priority output q not empty:" + peer_uuid)
-              self.set_status(data)
               self.clients[peer_uuid].send(data)
               with taco.globals.upload_limiter_lock: taco.globals.upload_limiter.add(len(data))
               self.did_something = 1
