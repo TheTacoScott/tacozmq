@@ -62,6 +62,7 @@ def Add_To_Output_Queue(peer_uuid,msg,priority=3):
       if low_priority_output_queue.has_key(peer_uuid):
         low_priority_output_queue[peer_uuid].put(msg)
         return 1
+  taco.globals.filesys.sleep.clear()
   return 0
 
 def Add_To_All_Output_Queues(msg,priority=3):
@@ -81,6 +82,7 @@ def Add_To_All_Output_Queues(msg,priority=3):
       for keyname in low_priority_output_queue.keys():
         low_priority_output_queue[keyname].put(msg)
       return 1
+  taco.globals.filesys.sleep.clear()
   return 0
 
 

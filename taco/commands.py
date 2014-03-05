@@ -219,6 +219,7 @@ def Reply_Get_File_Chunk(peer_uuid,datablock):
     reply = Create_Reply(taco.constants.NET_REPLY_GET_FILE_CHUNK,{"status":0})
     return msgpack.packb(reply)
   taco.globals.filesys.chunk_requests_outgoing_queue.put((peer_uuid,sharedir,filename,offset,chunk_uuid))
+  taco.globals.filesys.sleep.set()
   reply = Create_Reply(taco.constants.NET_REPLY_GET_FILE_CHUNK,{"chunk_uuid":chunk_uuid,"status":1})
   return msgpack.packb(reply)
 
@@ -229,6 +230,7 @@ def Process_Reply_Get_File_Chunk(peer_uuid,datablock):
   except:
     return ""
   taco.globals.filesys.chunk_requests_ack_queue.put((peer_uuid,chunk_uuid))
+  taco.globals.filesys.sleep.set()
   return ""
     
 def Request_Give_File_Chunk(data,chunk_uuid):
@@ -243,4 +245,5 @@ def Reply_Give_File_Chunk(peer_uuid,datablock):
   except:
     return msgpack.packb(reply)
   taco.globals.filesys.chunk_requests_incoming_queue.put((peer_uuid,chunk_uuid,data))
+  taco.globals.filesys.sleep.set()
   return msgpack.packb(reply)
