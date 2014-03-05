@@ -15,9 +15,8 @@ class TacoClients(threading.Thread):
   def __init__(self):
     threading.Thread.__init__(self)
 
-    self.stop_lock = threading.Lock()     
-    self.stop = False
-    
+    self.stop = threading.Event() 
+
     self.status_lock = threading.Lock()
     self.status = ""
     self.status_time = -1
@@ -62,15 +61,6 @@ class TacoClients(threading.Thread):
     with self.status_lock:
       return (self.status,self.status_time)     
 
-  def stop_running(self):
-    with self.stop_lock:
-      self.stop = True
-
-  def continue_running(self):
-    with self.stop_lock:
-      continue_run = not self.stop
-    return continue_run
-
   def run(self):
     self.set_status("Client Startup")
     self.set_status("Creating zmq Contexts",1)
@@ -89,8 +79,8 @@ class TacoClients(threading.Thread):
     
     poller = zmq.Poller()
     self.did_something = 1
-    while self.continue_running():
-      if not self.continue_running(): break
+    while not self.stop.is_set():
+      if self.stop.is_set(): break
       if self.did_something > 0:
         self.did_something -= 1
       else:

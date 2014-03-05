@@ -53,8 +53,7 @@ class TacoFilesystemManager(threading.Thread):
   def __init__(self):
     threading.Thread.__init__(self)
 
-    self.stop = False
-    self.stop_lock = threading.Lock()
+    self.stop = threading.Event()
 
     self.status_lock = threading.Lock()
     self.status = ""
@@ -101,15 +100,6 @@ class TacoFilesystemManager(threading.Thread):
     with self.status_lock:
       return (self.status,self.status_time)
 
-  def stop_running(self):
-    with self.stop_lock:
-      self.stop = True
-      
-  def continue_running(self):
-    with self.stop_lock:
-      continue_run = not self.stop
-    return continue_run    
-        
   def run(self):
     self.set_status("Starting Up Filesystem Manager")
     for i in range(taco.constants.FILESYSTEM_WORKER_COUNT):
@@ -117,12 +107,12 @@ class TacoFilesystemManager(threading.Thread):
     for i in self.workers:
       i.start()
     self.did_something = 1
-    while self.continue_running():
+    while not self.stop.is_set():
       if self.did_something > 0:
         self.did_something -= 1
       else:
         time.sleep(0.005)
-      if not self.continue_running(): break
+      if self.stop.is_set(): break
       
       #CHECK downloadq state
       if time.time() >= self.download_q_check_time:
@@ -321,10 +311,10 @@ class TacoFilesystemManager(threading.Thread):
         self.add_listing(thetime,sharedir,dirs,files)
         self.did_something += taco.constants.LOOP_TOKEN_COUNT
       
-      if not self.continue_running(): break
+      if self.stop.is_set(): break
     self.set_status("Killing Workers")
     for i in self.workers:
-      i.stop_running()
+      i.stop.set()
     for i in self.workers:
       i.join()
     self.set_status("Closing Open Files")
@@ -337,8 +327,7 @@ class TacoFilesystemWorker(threading.Thread):
   def __init__(self,worker_id):
     threading.Thread.__init__(self)
 
-    self.stop = False
-    self.stop_lock = threading.Lock()
+    self.stop = threading.Event()
 
     self.worker_id = worker_id
 
@@ -359,22 +348,13 @@ class TacoFilesystemWorker(threading.Thread):
     with self.status_lock:
       return (self.status,self.status_time)
 
-  def stop_running(self):
-    with self.stop_lock:
-      self.stop = True
-
-  def continue_running(self):
-    with self.stop_lock:
-      continue_run = not self.stop
-    return continue_run
-  
   def run(self):
     self.set_status("Starting Filesystem Worker #" + str(self.worker_id))
     self.did_something = True
-    while self.continue_running():
+    while not self.stop.is_set():
       if not self.did_something: time.sleep(random.uniform(0.01, 0.1))
       self.did_something = False
-      if not self.continue_running(): break
+      if self.stop.is_set(): break
       try:
         rootsharedir = taco.globals.filesys.listing_work_queue.get(True,0.25)
         self.set_status(str(self.worker_id) + " -- " + str(rootsharedir))

@@ -14,9 +14,8 @@ class TacoServer(threading.Thread):
   def __init__(self):
     threading.Thread.__init__(self)
 
-    self.stop_lock = threading.Lock()     
-    self.stop = False
-    
+    self.stop = threading.Event() 
+
     self.status_lock = threading.Lock()
     self.status = ""
     self.status_time = -1
@@ -45,15 +44,6 @@ class TacoServer(threading.Thread):
   def get_status(self):
     with self.status_lock:
       return (self.status,self.status_time)     
-
-  def stop_running(self):
-    with self.stop_lock:
-      self.stop = True
-
-  def continue_running(self):
-    with self.stop_lock:
-      continue_run = not self.stop
-    return continue_run
 
   def run(self):
     self.set_status("Server Startup")
@@ -93,8 +83,8 @@ class TacoServer(threading.Thread):
     poller = zmq.Poller()
     poller.register(server, zmq.POLLIN|zmq.POLLOUT)
 
-    while self.continue_running():
-      if not self.continue_running(): break
+    while not self.stop.is_set():
+      if self.stop.is_set(): break
       socks = dict(poller.poll(500))
       if server in socks and socks[server] == zmq.POLLIN:
         #self.set_status("Getting a request")
@@ -110,7 +100,7 @@ class TacoServer(threading.Thread):
         
 
 
-    self.set_status("Stopping zmq server with 1 second linger")
+    self.set_status("Stopping zmq server with 0 second linger")
     server.close(0)
     self.set_status("Stopping zmq ThreadedAuthenticator")
     serverauth.stop() 
