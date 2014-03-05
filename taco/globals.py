@@ -51,19 +51,20 @@ def Add_To_Output_Queue(peer_uuid,msg,priority=3):
     with high_priority_output_queue_lock:
       if high_priority_output_queue.has_key(peer_uuid):
         high_priority_output_queue[peer_uuid].put(msg)
+        taco.globals.clients.sleep.set()
         return 1
   elif priority==2:
     with medium_priority_output_queue_lock:
       if medium_priority_output_queue.has_key(peer_uuid):
         medium_priority_output_queue[peer_uuid].put(msg)
+        taco.globals.clients.sleep.set()
         return 1
   else:
     with low_priority_output_queue_lock:
       if low_priority_output_queue.has_key(peer_uuid):
         low_priority_output_queue[peer_uuid].put(msg)
+        taco.globals.clients.sleep.set()
         return 1
-  taco.globals.filesys.sleep.clear()
-  taco.globals.clients.sleep.clear()
   return 0
 
 def Add_To_All_Output_Queues(msg,priority=3):
@@ -72,19 +73,20 @@ def Add_To_All_Output_Queues(msg,priority=3):
     with high_priority_output_queue_lock:
       for keyname in high_priority_output_queue.keys():
         high_priority_output_queue[keyname].put(msg)
+        taco.globals.clients.sleep.set()
       return 1
   elif priority==2:
     with medium_priority_output_queue_lock:
       for keyname in medium_priority_output_queue.keys():
         medium_priority_output_queue[keyname].put(msg)
+        taco.globals.clients.sleep.set()
       return 1
   else:
     with low_priority_output_queue_lock:
       for keyname in low_priority_output_queue.keys():
         low_priority_output_queue[keyname].put(msg)
+        taco.globals.clients.sleep.set()
       return 1
-  taco.globals.filesys.sleep.clear()
-  taco.globals.clients.sleep.clear()
   return 0
 
 
