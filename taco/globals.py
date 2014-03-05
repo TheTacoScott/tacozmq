@@ -63,6 +63,7 @@ def Add_To_Output_Queue(peer_uuid,msg,priority=3):
         low_priority_output_queue[peer_uuid].put(msg)
         return 1
   taco.globals.filesys.sleep.clear()
+  taco.globals.clients.sleep.clear()
   return 0
 
 def Add_To_All_Output_Queues(msg,priority=3):
@@ -83,6 +84,7 @@ def Add_To_All_Output_Queues(msg,priority=3):
         low_priority_output_queue[keyname].put(msg)
       return 1
   taco.globals.filesys.sleep.clear()
+  taco.globals.clients.sleep.clear()
   return 0
 
 
@@ -94,8 +96,10 @@ def properexit(signum, frame):
   server.stop.set()
   logging.info("Stopping Clients")
   clients.stop.set()
+  clients.sleep.set()
   logging.info("Stopping Filesystem Workers")
   filesys.stop.set()
+  filesys.sleep.set()
   server.join()
   clients.join()
   filesys.join()

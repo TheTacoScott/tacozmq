@@ -299,8 +299,8 @@ class TacoFilesystemManager(threading.Thread):
         (success,thetime,sharedir,dirs,files) = self.listing_results_queue.get()
         self.set_status("Processing a worker result: " + sharedir)
         self.add_listing(thetime,sharedir,dirs,files)
+        self.sleep.set()
       
-      if self.stop.is_set(): break
     self.set_status("Killing Workers")
     for i in self.workers:
       i.stop.set()
@@ -387,6 +387,7 @@ class TacoFilesystemWorker(threading.Thread):
         results = [0,time.time(),rootsharedir,[],[]]
 
       taco.globals.filesys.listing_results_queue.put(results)
+      taco.globals.filesys.sleep.set()
 
     self.set_status("Exiting Filesystem Worker #" + str(self.worker_id))
 

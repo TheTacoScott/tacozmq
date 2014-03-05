@@ -84,7 +84,6 @@ class TacoServer(threading.Thread):
     poller.register(server, zmq.POLLIN|zmq.POLLOUT)
 
     while not self.stop.is_set():
-      if self.stop.is_set(): break
       socks = dict(poller.poll(500))
       if server in socks and socks[server] == zmq.POLLIN:
         #self.set_status("Getting a request")

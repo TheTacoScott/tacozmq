@@ -15,8 +15,9 @@ class TacoClients(threading.Thread):
   def __init__(self):
     threading.Thread.__init__(self)
 
-    self.stop = threading.Event() 
-
+    self.stop  = threading.Event() 
+    self.sleep = threading.Event() 
+    
     self.status_lock = threading.Lock()
     self.status = ""
     self.status_time = -1
@@ -78,13 +79,10 @@ class TacoClients(threading.Thread):
     clientauth.configure_curve(domain='*', location=publicdir)
     
     poller = zmq.Poller()
-    self.did_something = 1
     while not self.stop.is_set():
+      self.sleep.wait(0.2)
+      self.sleep.clear()
       if self.stop.is_set(): break
-      if self.did_something > 0:
-        self.did_something -= 1
-      else:
-        time.sleep(0.01)
 
       if abs(time.time() - self.connect_block_time) > 1:
         self.connect_block_time = time.time() 
@@ -122,7 +120,7 @@ class TacoClients(threading.Thread):
 
       if len(self.clients.keys()) == 0: continue
 
-      socks = dict(poller.poll(100))
+      socks = dict(poller.poll(5))
       for peer_uuid in self.clients.keys():
 
         #SEND BLOCK 
@@ -135,7 +133,6 @@ class TacoClients(threading.Thread):
               self.set_status("high priority output q not empty:" + peer_uuid)
               self.clients[peer_uuid].send(data)
               with taco.globals.upload_limiter_lock: taco.globals.upload_limiter.add(len(data))
-              self.did_something += taco.constants.LOOP_TOKEN_COUNT
               continue
 
           #medium priority queue processing
@@ -145,7 +142,6 @@ class TacoClients(threading.Thread):
               self.set_status("medium priority output q not empty:" + peer_uuid)
               self.clients[peer_uuid].send(data)
               with taco.globals.upload_limiter_lock: taco.globals.upload_limiter.add(len(data))
-              self.did_something += taco.constants.LOOP_TOKEN_COUNT
               continue
 
           #low priority queue processing
@@ -155,7 +151,6 @@ class TacoClients(threading.Thread):
               self.set_status("low priority output q not empty:" + peer_uuid)
               self.clients[peer_uuid].send(data)
               with taco.globals.upload_limiter_lock: taco.globals.upload_limiter.add(len(data))
-              self.did_something += taco.constants.LOOP_TOKEN_COUNT
               continue
 
           #rollcall special case
@@ -176,7 +171,6 @@ class TacoClients(threading.Thread):
           if self.next_request != "":
             with taco.globals.medium_priority_output_queue_lock:
               taco.globals.medium_priority_output_queue[peer_uuid].put(self.next_request)
-          self.did_something += taco.constants.LOOP_TOKEN_COUNT
 
         #cleanup block
         self.error_msg = []
