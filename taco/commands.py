@@ -237,12 +237,10 @@ def Request_Give_File_Chunk(data,chunk_uuid):
 
 def Reply_Give_File_Chunk(peer_uuid,datablock):
   reply = Create_Reply()
+  try:
+    chunk_uuid = datablock["chunk_uuid"]
+    data = datablock["data"]
+  except:
+    return msgpack.packb(reply)
+  taco.globals.filesys.chunk_requests_incoming_queue.put((peer_uuid,chunk_uuid,data))
   return msgpack.packb(reply)
-
-def Process_Request_Give_File_Chunk(peer_uuid,datablock):
-  pass
-
-def Process_Reply_Give_File_Chunk():
-  pass
-
-
