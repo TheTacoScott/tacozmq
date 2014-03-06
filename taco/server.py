@@ -91,7 +91,7 @@ class TacoServer(threading.Thread):
         with taco.globals.download_limiter_lock: taco.globals.download_limiter.add(len(data))
         (client_uuid,reply) = taco.commands.Proccess_Request(data)
         if client_uuid!="0": self.set_client_last_request(client_uuid)
-      socks = dict(poller.poll(0))
+      socks = dict(poller.poll(5))
       if server in socks and socks[server] == zmq.POLLOUT:
         #self.set_status("Replying to a request")
         with taco.globals.upload_limiter_lock: taco.globals.upload_limiter.add(len(reply))
