@@ -7,6 +7,7 @@ import random
 import taco.constants
 import taco.globals
 import uuid
+from collections import defaultdict
 
 if os.name=='nt':
   import ctypes
@@ -76,9 +77,10 @@ class TacoFilesystemManager(threading.Thread):
 
     self.download_q_check_time = time.time()
     self.client_downloading = {}
-    self.client_downloading_status = {}
-    self.client_downloading_chunk_uuid = {}
+    self.client_downloading_status = defaultdict(dict)
+    self.client_downloading_pending_chunks = {}
     self.client_downloading_filename = {} 
+    self.client_downloading_credits = {} 
     self.files_w = {}
     self.files_r = {}
     self.files_r_last_access = {}
@@ -121,15 +123,29 @@ class TacoFilesystemManager(threading.Thread):
         #check for download q items
         with taco.globals.download_q_lock:
           for peer_uuid in taco.globals.download_q.keys():
+            if not self.client_downloading_credits.has_key(peer_uuid): self.client_downloading_credits[peer_uuid] = taco.constants.FILESYSTEM_CREDIT_MAX
             if len(taco.globals.download_q[peer_uuid]) > 0:
               (sharedir,filename,filesize,filemod) = taco.globals.download_q[peer_uuid][0]
               if not self.client_downloading.has_key(peer_uuid): self.client_downloading[peer_uuid] = 0
               if self.client_downloading[peer_uuid] != (sharedir,filename,filesize,filemod):
                 self.set_status("File we should be downloading has changed:" + str((peer_uuid,sharedir,filename,filesize,filemod)))
                 self.client_downloading[peer_uuid] = (sharedir,filename,filesize,filemod)
-                self.sleep.set()
-            else:
-              self.client_downloading[peer_uuid] = 0 #download q empty
+                self.client_downloading_pending_chunks[peer_uuid] = []
+                if os.path.isdir(local_copy_download_directory):
+                  filename_incomplete = os.path.normpath(local_copy_download_directory + u"/" + filename + taco.constants.FILESYSTEM_WORKINPROGRESS_SUFFIX)
+                  filename_complete   = os.path.normpath(local_copy_download_directory + u"/" + filename)
+                  if os.path.isfile(filename_complete):
+                    pass
+                else:
+                  try:
+                    current_size = os.path.getsize(filename_incomplete)
+                  except:
+                    current_size = 0
+                  if current_size != filesize:
+                    for file_offset in xrange(current_size,filesize+1,taco.constants.FILESYSTEM_CHUNK_SIZE):
+                      tmp_uuid = uuid.uuid4().hex
+                      self.client_downloading_pending_chunks[peer_uuid].append((tmp_uuid,file_offset,0.0,0.0))
+                      self.client_downloading_status[peer_uuid][tmp_uuid] = (time.time(),0.0,file_offset)
 
       #check for chunk ack
       while not self.chunk_requests_ack_queue.empty():
@@ -192,49 +208,6 @@ class TacoFilesystemManager(threading.Thread):
           self.sleep.set()
           taco.globals.clients.sleep.set()
             
-      #send out requests for downloadq items
-      for peer_uuid in self.client_downloading.keys():
-        (sharedir,filename,filesize,filemod) = self.client_downloading[peer_uuid]
-        if not self.client_downloading_status.has_key(peer_uuid): self.client_downloading_status[peer_uuid] = (0.0,0.0,0)
-        (time_request_sent,time_request_ack,offset) = self.client_downloading_status[peer_uuid]
-        if time_request_sent == 0.0: #request more data
-          if os.path.isdir(local_copy_download_directory):
-            filename_incomplete = os.path.normpath(local_copy_download_directory + u"/" + filename + taco.constants.FILESYSTEM_WORKINPROGRESS_SUFFIX)
-            filename_complete = os.path.normpath(local_copy_download_directory + u"/" + filename)
-            
-            if os.path.isfile(filename_complete):
-              if os.path.getsize(filename_complete) == filesize:
-                pass #file download is complete, or has been re-requested on a filename of the same size do cleanup/ignore
-              else:
-                pass #file download SHOULD be complete, but it's filesize different from the filesize of the incoming file.
-            elif os.path.isfile(filename_incomplete): #partial download exists
-              current_size = os.path.getsize(filename_incomplete)
-              if current_size != filesize:
-                self.set_status("Continuing download for: " + str((peer_uuid,sharedir,filename,filesize,filemod,current_size)))
-                self.client_downloading_chunk_uuid[peer_uuid] = uuid.uuid4().hex
-                self.client_downloading_status[peer_uuid] = (time.time(),0.0,current_size)
-                request = taco.commands.Request_Get_File_Chunk(sharedir,filename,current_size,self.client_downloading_chunk_uuid[peer_uuid])
-                taco.globals.Add_To_Output_Queue(peer_uuid,request,3)
-                self.sleep.set()
-                taco.globals.clients.sleep.set()
-              else: #file download thinks it's incomplete, but really is complete, rename and cleanup
-                pass
-            else: #no partial or complete file download exists, start a new download from the start
-              self.set_status("Starting a new download for: " + str((peer_uuid,sharedir,filename,filesize,filemod)))
-              self.client_downloading_chunk_uuid[peer_uuid] = uuid.uuid4().hex
-              self.client_downloading_status[peer_uuid] = (time.time(),0.0,0)
-              self.client_downloading_filename[peer_uuid] = filename_incomplete
-              request = taco.commands.Request_Get_File_Chunk(sharedir,filename,0,self.client_downloading_chunk_uuid[peer_uuid])
-              taco.globals.Add_To_Output_Queue(peer_uuid,request,3)
-              self.sleep.set()
-              taco.globals.clients.sleep.set()
-        elif time_request_ack == 0 and abs(time.time() - time_request_sent) > taco.constants.DOWNLOAD_Q_WAIT_FOR_ACK: #too much time has passed since we sent the request for data, and have gotten no ack,re-requesting
-          self.set_status("We have sent a request, but no ACK has come back for: " + str(peer_uuid))
-          self.client_downloading_status[peer_uuid] = (0.0,0.0,0)
-        elif time_request_ack != 0 and abs(time.time() - time_request_ack)  > taco.constants.DOWNLOAD_Q_WAIT_FOR_DATA: #too much time has passed since we got an ack for the data, and have gotten no data,re-requesting
-          self.set_status("File chunk has been ack'd, but no data has come through:" + str((peer_uuid)))
-          self.client_downloading_status[peer_uuid] = (0.0,0.0,0)
-      
       if len(self.results_to_return) > 0:
         #self.set_status("There are results that need to be sent once they are ready")
         with self.listings_lock:
