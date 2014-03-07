@@ -272,8 +272,10 @@ def index(browse_path="/"):
   contents = os.listdir(browse_path)
   final_contents = []
   for item in contents:
-    if os.path.isdir(os.path.join(browse_path,item)):
-      final_contents.append(item)
+    try:
+      if os.path.isdir(os.path.join(browse_path,item)): final_contents.append(item)
+    except:
+      continue
   final_contents.sort()
   return json.dumps(final_contents)
       

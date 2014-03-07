@@ -117,9 +117,7 @@ class TacoClients(threading.Thread):
 
                   poller.register(self.clients[peer_uuid],zmq.POLLIN)
 
-      if len(self.clients.keys()) == 0: 
-        self.set_status("No Active Clients in clients dict")
-        continue
+      if len(self.clients.keys()) == 0: continue
 
       peer_keys = self.clients.keys()
       random.shuffle(peer_keys)
