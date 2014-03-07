@@ -2,6 +2,7 @@ import threading
 import logging
 import time
 import zmq
+from zmq.auth.thread import ThreadAuthenticator
 import taco.globals
 import taco.constants
 import taco.commands
@@ -67,7 +68,8 @@ class TacoClients(threading.Thread):
     self.set_status("Creating zmq Contexts",1)
     clientctx = zmq.Context() 
     self.set_status("Starting zmq ThreadedAuthenticator",1)
-    clientauth = zmq.auth.ThreadedAuthenticator(clientctx)
+    #clientauth = zmq.auth.ThreadedAuthenticator(clientctx)
+    clientauth = ThreadAuthenticator(clientctx)
     clientauth.start()
     
     with taco.globals.settings_lock:
