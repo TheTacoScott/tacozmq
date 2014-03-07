@@ -31,6 +31,9 @@ share_listings_lock = threading.Lock()
 download_q = {}
 download_q_lock = threading.Lock()
 
+completed_q = []
+completed_q_lock = threading.Lock()
+
 upload_q = {}
 upload_q_lock = threading.Lock()
 

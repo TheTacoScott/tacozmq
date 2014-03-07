@@ -36,7 +36,17 @@ updatehelper = function(event,ui)
 
 
 }
+function Update_Completed_Q()
+{
+  var $api_action = {"action":"completedqget","data":""};
+  $.ajax({url:"/api.post",type:"POST",data:JSON.stringify($api_action),contentType:"application/json; charset=utf-8",dataType:"json",error: API_Alert,success: function(data)
+  {
+    for (var i = 0; i < data["result"][peer_uuid].length; i++)
+    {
+    }
+  });
 
+}
 function Update_Download_Q()
 {
   var $api_action = {"action":"downloadqget","data":""};
