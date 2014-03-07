@@ -188,7 +188,12 @@ def index():
           outgoing = taco.globals.clients.get_client_last_reply(peer_uuid)
           timediffinc = abs(time.time()-incoming)
           timediffout = abs(time.time()-outgoing)
-          output[peer_uuid] = [incoming,outgoing,timediffinc,timediffout,taco.globals.settings["Peers"][peer_uuid]["nickname"],taco.globals.settings["Peers"][peer_uuid]["localnick"]]
+          nickname_status = "Unknown"
+          try:
+            nickname_status = taco.globals.settings["Peers"][peer_uuid]["nickname"]
+          except:
+            nickname_status = "Unknown"
+          output[peer_uuid] = [incoming,outgoing,timediffinc,timediffout,nickname_status,taco.globals.settings["Peers"][peer_uuid]["localnick"]]
     return json.dumps(output)
 
   if bottle.request.json[u"action"] == u"settingssave":
