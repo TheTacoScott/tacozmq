@@ -245,6 +245,7 @@ def Reply_Give_File_Chunk(peer_uuid,datablock):
     data = datablock["data"]
   except:
     return msgpack.packb(reply)
+  logging.debug("Incoming Chunk Processed")
   taco.globals.filesys.chunk_requests_incoming_queue.put((peer_uuid,chunk_uuid,data))
   taco.globals.filesys.sleep.set()
   return msgpack.packb(reply)

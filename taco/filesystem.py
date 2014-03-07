@@ -37,7 +37,7 @@ def Is_Path_Under_A_Share(path):
         if os.path.commonprefix([dirpath,dirpath2]) == dirpath:
           return_value = True
           break
-  logging.debug(path + " -- " + str(return_value))
+  #logging.debug(path + " -- " + str(return_value))
   return return_value
 
 def Convert_Share_To_Path(share):
@@ -47,7 +47,7 @@ def Convert_Share_To_Path(share):
       if sharename==share:
         return_val = sharepath
         break
-  logging.debug(share + " -- " + str(return_val))
+  #logging.debug(share + " -- " + str(return_val))
   return return_val
 
 class TacoFilesystemManager(threading.Thread):
@@ -110,6 +110,7 @@ class TacoFilesystemManager(threading.Thread):
     for i in self.workers:
       i.start()
     while not self.stop.is_set():
+      self.set_status("FILESYS")
       self.sleep.wait(0.2)
       self.sleep.clear()
       if self.stop.is_set(): break
@@ -129,6 +130,65 @@ class TacoFilesystemManager(threading.Thread):
               (sharedir,filename,filesize,filemod) = taco.globals.download_q[peer_uuid][0]
               if not peer_uuid in self.client_downloading: self.client_downloading[peer_uuid] = 0
               if self.client_downloading[peer_uuid] != (sharedir,filename,filesize,filemod):
+                self.set_status("File we should be downloading has changed:" + str((peer_uuid,sharedir,filename,filesize,filemod)))
+                self.set_status("File we should be downloading has changed:" + str((peer_uuid,sharedir,filename,filesize,filemod)))
+                self.set_status("File we should be downloading has changed:" + str((peer_uuid,sharedir,filename,filesize,filemod)))
+                self.set_status("File we should be downloading has changed:" + str((peer_uuid,sharedir,filename,filesize,filemod)))
+                self.set_status("File we should be downloading has changed:" + str((peer_uuid,sharedir,filename,filesize,filemod)))
+                self.set_status("File we should be downloading has changed:" + str((peer_uuid,sharedir,filename,filesize,filemod)))
+                self.set_status("File we should be downloading has changed:" + str((peer_uuid,sharedir,filename,filesize,filemod)))
+                self.set_status("File we should be downloading has changed:" + str((peer_uuid,sharedir,filename,filesize,filemod)))
+                self.set_status("File we should be downloading has changed:" + str((peer_uuid,sharedir,filename,filesize,filemod)))
+                self.set_status("File we should be downloading has changed:" + str((peer_uuid,sharedir,filename,filesize,filemod)))
+                self.set_status("File we should be downloading has changed:" + str((peer_uuid,sharedir,filename,filesize,filemod)))
+                self.set_status("File we should be downloading has changed:" + str((peer_uuid,sharedir,filename,filesize,filemod)))
+                self.set_status("File we should be downloading has changed:" + str((peer_uuid,sharedir,filename,filesize,filemod)))
+                self.set_status("File we should be downloading has changed:" + str((peer_uuid,sharedir,filename,filesize,filemod)))
+                self.set_status("File we should be downloading has changed:" + str((peer_uuid,sharedir,filename,filesize,filemod)))
+                self.set_status("File we should be downloading has changed:" + str((peer_uuid,sharedir,filename,filesize,filemod)))
+                self.set_status("File we should be downloading has changed:" + str((peer_uuid,sharedir,filename,filesize,filemod)))
+                self.set_status("File we should be downloading has changed:" + str((peer_uuid,sharedir,filename,filesize,filemod)))
+                self.set_status("File we should be downloading has changed:" + str((peer_uuid,sharedir,filename,filesize,filemod)))
+                self.set_status("File we should be downloading has changed:" + str((peer_uuid,sharedir,filename,filesize,filemod)))
+                self.set_status("File we should be downloading has changed:" + str((peer_uuid,sharedir,filename,filesize,filemod)))
+                self.set_status("File we should be downloading has changed:" + str((peer_uuid,sharedir,filename,filesize,filemod)))
+                self.set_status("File we should be downloading has changed:" + str((peer_uuid,sharedir,filename,filesize,filemod)))
+                self.set_status("File we should be downloading has changed:" + str((peer_uuid,sharedir,filename,filesize,filemod)))
+                self.set_status("File we should be downloading has changed:" + str((peer_uuid,sharedir,filename,filesize,filemod)))
+                self.set_status("File we should be downloading has changed:" + str((peer_uuid,sharedir,filename,filesize,filemod)))
+                self.set_status("File we should be downloading has changed:" + str((peer_uuid,sharedir,filename,filesize,filemod)))
+                self.set_status("File we should be downloading has changed:" + str((peer_uuid,sharedir,filename,filesize,filemod)))
+                self.set_status("File we should be downloading has changed:" + str((peer_uuid,sharedir,filename,filesize,filemod)))
+                self.set_status("File we should be downloading has changed:" + str((peer_uuid,sharedir,filename,filesize,filemod)))
+                self.set_status("File we should be downloading has changed:" + str((peer_uuid,sharedir,filename,filesize,filemod)))
+                self.set_status("File we should be downloading has changed:" + str((peer_uuid,sharedir,filename,filesize,filemod)))
+                self.set_status("File we should be downloading has changed:" + str((peer_uuid,sharedir,filename,filesize,filemod)))
+                self.set_status("File we should be downloading has changed:" + str((peer_uuid,sharedir,filename,filesize,filemod)))
+                self.set_status("File we should be downloading has changed:" + str((peer_uuid,sharedir,filename,filesize,filemod)))
+                self.set_status("File we should be downloading has changed:" + str((peer_uuid,sharedir,filename,filesize,filemod)))
+                self.set_status("File we should be downloading has changed:" + str((peer_uuid,sharedir,filename,filesize,filemod)))
+                self.set_status("File we should be downloading has changed:" + str((peer_uuid,sharedir,filename,filesize,filemod)))
+                self.set_status("File we should be downloading has changed:" + str((peer_uuid,sharedir,filename,filesize,filemod)))
+                self.set_status("File we should be downloading has changed:" + str((peer_uuid,sharedir,filename,filesize,filemod)))
+                self.set_status("File we should be downloading has changed:" + str((peer_uuid,sharedir,filename,filesize,filemod)))
+                self.set_status("File we should be downloading has changed:" + str((peer_uuid,sharedir,filename,filesize,filemod)))
+                self.set_status("File we should be downloading has changed:" + str((peer_uuid,sharedir,filename,filesize,filemod)))
+                self.set_status("File we should be downloading has changed:" + str((peer_uuid,sharedir,filename,filesize,filemod)))
+                self.set_status("File we should be downloading has changed:" + str((peer_uuid,sharedir,filename,filesize,filemod)))
+                self.set_status("File we should be downloading has changed:" + str((peer_uuid,sharedir,filename,filesize,filemod)))
+                self.set_status("File we should be downloading has changed:" + str((peer_uuid,sharedir,filename,filesize,filemod)))
+                self.set_status("File we should be downloading has changed:" + str((peer_uuid,sharedir,filename,filesize,filemod)))
+                self.set_status("File we should be downloading has changed:" + str((peer_uuid,sharedir,filename,filesize,filemod)))
+                self.set_status("File we should be downloading has changed:" + str((peer_uuid,sharedir,filename,filesize,filemod)))
+                self.set_status("File we should be downloading has changed:" + str((peer_uuid,sharedir,filename,filesize,filemod)))
+                self.set_status("File we should be downloading has changed:" + str((peer_uuid,sharedir,filename,filesize,filemod)))
+                self.set_status("File we should be downloading has changed:" + str((peer_uuid,sharedir,filename,filesize,filemod)))
+                self.set_status("File we should be downloading has changed:" + str((peer_uuid,sharedir,filename,filesize,filemod)))
+                self.set_status("File we should be downloading has changed:" + str((peer_uuid,sharedir,filename,filesize,filemod)))
+                self.set_status("File we should be downloading has changed:" + str((peer_uuid,sharedir,filename,filesize,filemod)))
+                self.set_status("File we should be downloading has changed:" + str((peer_uuid,sharedir,filename,filesize,filemod)))
+                self.set_status("File we should be downloading has changed:" + str((peer_uuid,sharedir,filename,filesize,filemod)))
+                self.set_status("File we should be downloading has changed:" + str((peer_uuid,sharedir,filename,filesize,filemod)))
                 self.set_status("File we should be downloading has changed:" + str((peer_uuid,sharedir,filename,filesize,filemod)))
                 self.client_downloading[peer_uuid] = (sharedir,filename,filesize,filemod)
                 self.client_downloading_pending_chunks[peer_uuid] = []
@@ -151,6 +211,7 @@ class TacoFilesystemManager(threading.Thread):
                         self.client_downloading_pending_chunks[peer_uuid].append((tmp_uuid,file_offset))
                         self.client_downloading_status[peer_uuid][tmp_uuid] = (0.0,0.0,file_offset)
                       self.client_downloading_pending_chunks[peer_uuid].reverse()
+                      self.set_status("Building in memory 'torrent' -- done")
 
       #send out requests for downloads 
       for peer_uuid in self.client_downloading:
@@ -161,21 +222,18 @@ class TacoFilesystemManager(threading.Thread):
             (chunk_uuid,file_offset) = self.client_downloading_pending_chunks[peer_uuid].pop()
             self.set_status("Credits Free:" + str((sharedir,filename,filesize,filemod,chunk_uuid,file_offset)))
             request = taco.commands.Request_Get_File_Chunk(sharedir,filename,file_offset,chunk_uuid)
-            taco.globals.Add_To_Output_Queue(peer_uuid,request,3)
+            taco.globals.Add_To_Output_Queue(peer_uuid,request,2)
             self.client_downloading_requested_chunks[peer_uuid].append(chunk_uuid)
             (time_request_sent,time_request_ack,offset) = self.client_downloading_status[peer_uuid][chunk_uuid]
             self.client_downloading_status[peer_uuid][chunk_uuid] = (time.time(),0.0,offset)
       
       #check for chunk ack
       while not self.chunk_requests_ack_queue.empty():
-        q_get_success = True
         try:
           (peer_uuid,chunk_uuid) = self.chunk_requests_ack_queue.get(0)
         except:
-          self.set_status("Ack QUEUE get failed")
-          q_get_success = False
           break
-        if peer_uuid in self.client_downloading_requested_chunks and chunk_uuid in self.client_downloading_requested_chunks[peer_uuid] and peer_uuid in self.client_downloading_status and q_get_success:
+        if peer_uuid in self.client_downloading_requested_chunks and chunk_uuid in self.client_downloading_requested_chunks[peer_uuid] and peer_uuid in self.client_downloading_status:
           (time_request_sent,time_request_ack,offset) = self.client_downloading_status[peer_uuid][chunk_uuid]
           self.client_downloading_status[peer_uuid][chunk_uuid] = (time_request_sent,time.time(),offset)
           self.set_status("File Chunk request has been ACK'D:" + str((peer_uuid,time_request_sent,chunk_uuid)))
@@ -183,6 +241,7 @@ class TacoFilesystemManager(threading.Thread):
 
       #chunk data has been recieved
       while not self.chunk_requests_incoming_queue.empty():
+        if self.stop.is_set(): break
         try:
           (peer_uuid,chunk_uuid,data) = self.chunk_requests_incoming_queue.get(0)
         except:
@@ -203,8 +262,11 @@ class TacoFilesystemManager(threading.Thread):
           self.client_downloading_requested_chunks[peer_uuid].remove(chunk_uuid)
           self.sleep.set()
 
+      if self.stop.is_set(): break
+
       #chunk data has been requested 
-      while not self.chunk_requests_outgoing_queue.empty():
+      if not self.chunk_requests_outgoing_queue.empty():
+        if self.stop.is_set(): break
         try:
           (peer_uuid,sharedir,filename,offset,chunk_uuid) = self.chunk_requests_outgoing_queue.get(0)
         except:
@@ -227,6 +289,8 @@ class TacoFilesystemManager(threading.Thread):
           taco.globals.Add_To_Output_Queue(peer_uuid,request,3)
           self.sleep.set()
           taco.globals.clients.sleep.set()
+
+      if self.stop.is_set(): break
             
       if len(self.results_to_return) > 0:
         #self.set_status("There are results that need to be sent once they are ready")

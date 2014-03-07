@@ -119,56 +119,53 @@ class TacoClients(threading.Thread):
         self.set_status("No Active Clients in clients dict")
         continue
 
-      socks = dict(poller.poll(0))
-      for peer_uuid in self.clients.keys():
-        #SEND BLOCK 
-        if True or self.clients[peer_uuid] in socks and socks[self.clients[peer_uuid]] == zmq.POLLOUT:
-          
-          #self.set_status("Socket Write Possible:" + peer_uuid)
-          #high priority queue processing
-          with taco.globals.high_priority_output_queue_lock:
-            if not taco.globals.high_priority_output_queue[peer_uuid].empty():
-              data = taco.globals.high_priority_output_queue[peer_uuid].get()
-              self.set_status("high priority output q not empty:" + peer_uuid)
-              self.clients[peer_uuid].send_multipart(['',data])
-              self.sleep.set()
-              with taco.globals.upload_limiter_lock: taco.globals.upload_limiter.add(len(data))
-              continue
+      peer_keys = self.clients.keys()
+      random.shuffle(peer_keys)
+      for peer_uuid in peer_keys:
+        #self.set_status("Socket Write Possible:" + peer_uuid)
 
-          #medium priority queue processing
-          with taco.globals.medium_priority_output_queue_lock:
-            if not taco.globals.medium_priority_output_queue[peer_uuid].empty():
-              data = taco.globals.medium_priority_output_queue[peer_uuid].get()
-              self.set_status("medium priority output q not empty:" + peer_uuid)
-              self.clients[peer_uuid].send_multipart(['',data])
-              self.sleep.set()
-              with taco.globals.upload_limiter_lock: taco.globals.upload_limiter.add(len(data))
-              continue
-
-          #low priority queue processing
-          with taco.globals.low_priority_output_queue_lock:
-            if not taco.globals.low_priority_output_queue[peer_uuid].empty():
-              data = taco.globals.low_priority_output_queue[peer_uuid].get()
-              self.set_status("low priority output q not empty:" + peer_uuid)
-              self.clients[peer_uuid].send_multipart(['',data])
-              self.sleep.set()
-              with taco.globals.upload_limiter_lock: taco.globals.upload_limiter.add(len(data))
-              continue
-
-          #rollcall special case
-          if self.next_rollcall[peer_uuid] < time.time():
-            self.set_status("Requesting Rollcall from: " + peer_uuid)
-            data = taco.commands.Request_Rollcall()
+        #high priority queue processing
+        with taco.globals.high_priority_output_queue_lock:
+          while not taco.globals.high_priority_output_queue[peer_uuid].empty():
+            self.set_status("high priority output q not empty:" + peer_uuid)
+            data = taco.globals.high_priority_output_queue[peer_uuid].get()
             self.clients[peer_uuid].send_multipart(['',data])
-            with taco.globals.upload_limiter_lock: taco.globals.upload_limiter.add(len(data))
-            self.next_rollcall[peer_uuid] = time.time() + random.randint(taco.constants.ROLLCALL_MIN,taco.constants.ROLLCALL_MAX)
             self.sleep.set()
-            continue
+            with taco.globals.upload_limiter_lock: taco.globals.upload_limiter.add(len(data))
 
-        #socks = dict(poller.poll(0))
+        #medium priority queue processing
+        with taco.globals.medium_priority_output_queue_lock:
+          while not taco.globals.medium_priority_output_queue[peer_uuid].empty():
+            self.set_status("medium priority output q not empty:" + peer_uuid)
+            data = taco.globals.medium_priority_output_queue[peer_uuid].get()
+            self.clients[peer_uuid].send_multipart(['',data])
+            self.sleep.set()
+            with taco.globals.upload_limiter_lock: taco.globals.upload_limiter.add(len(data))
+
+        #low priority queue processing
+        with taco.globals.low_priority_output_queue_lock:
+          if not taco.globals.low_priority_output_queue[peer_uuid].empty():
+            self.set_status("low priority output q not empty:" + peer_uuid)
+            data = taco.globals.low_priority_output_queue[peer_uuid].get()
+            self.clients[peer_uuid].send_multipart(['',data])
+            self.sleep.set()
+            with taco.globals.upload_limiter_lock: taco.globals.upload_limiter.add(len(data))
+            #continue
+
+        #rollcall special case
+        if self.next_rollcall[peer_uuid] < time.time():
+          #self.set_status("Requesting Rollcall from: " + peer_uuid)
+          data = taco.commands.Request_Rollcall()
+          self.clients[peer_uuid].send_multipart(['',data])
+          with taco.globals.upload_limiter_lock: taco.globals.upload_limiter.add(len(data))
+          self.next_rollcall[peer_uuid] = time.time() + random.randint(taco.constants.ROLLCALL_MIN,taco.constants.ROLLCALL_MAX)
+          self.sleep.set()
+          #continue
+
         #RECEIVE BLOCK
-        if self.clients[peer_uuid] in socks and socks[self.clients[peer_uuid]] == zmq.POLLIN:
-          self.set_status("Socket Read Possible")
+        socks = dict(poller.poll(0))
+        while self.clients[peer_uuid] in socks and socks[self.clients[peer_uuid]] == zmq.POLLIN:
+          #self.set_status("Socket Read Possible")
           sink,data = self.clients[peer_uuid].recv_multipart()
           with taco.globals.download_limiter_lock: taco.globals.download_limiter.add(len(data))
           self.set_client_last_reply(peer_uuid)
@@ -177,6 +174,7 @@ class TacoClients(threading.Thread):
             with taco.globals.medium_priority_output_queue_lock:
               taco.globals.medium_priority_output_queue[peer_uuid].put(self.next_request)
           self.sleep.set()
+          socks = dict(poller.poll(0))
 
         #cleanup block
         self.error_msg = []
