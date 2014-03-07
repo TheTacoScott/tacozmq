@@ -289,7 +289,10 @@ margin-top: 0px;
   padding-right: 8px;
 
 }
-
+.progress-bar
+{
+  transition: none;
+} 
 @media screen and (max-width: 1199px)
 {
 

@@ -9,6 +9,7 @@ import re,time
 import os,uuid
 import logging
 import json
+from collections import defaultdict
 
 #static content
 @bottle.route('/static/<filename:path>')
@@ -101,7 +102,6 @@ def index():
           return "1"
         return "2"
 
-
   if bottle.request.json[u"action"] == u"downloadqmove":
     if type(bottle.request.json[u"data"]) == type({}):
       try:
@@ -125,13 +125,27 @@ def index():
   if bottle.request.json[u"action"] == u"downloadqget":
     output = {}
     with taco.globals.settings_lock:
+      local_copy_download_directory = os.path.normpath(taco.globals.settings["Download Location"])
       with taco.globals.download_q_lock:
         peerinfo = {}
-        for peer_uuid in taco.globals.settings["Peers"].keys():
+        fileinfo = defaultdict(dict)
+        for peer_uuid in taco.globals.settings["Peers"]:
           peerinfo[peer_uuid] = [taco.globals.settings["Peers"][peer_uuid]["nickname"],taco.globals.settings["Peers"][peer_uuid]["localnick"]]
-        output = {"result":taco.globals.download_q,"peerinfo":peerinfo}
+        for peer_uuid in taco.globals.download_q:
+          for (sharedir,filename,filesize,modtime) in taco.globals.download_q[peer_uuid]:
+            filename_incomplete = os.path.normpath(local_copy_download_directory + u"/" + filename + taco.constants.FILESYSTEM_WORKINPROGRESS_SUFFIX)
+            try:
+              current_size = os.path.getsize(filename_incomplete)
+            except:
+              current_size = 0
+            fileinfo[peer_uuid][filename] = current_size
+        output = {"result":taco.globals.download_q,"peerinfo":peerinfo,"fileinfo":fileinfo}
     return json.dumps(output)
-  
+  if bottle.request.json[u"action"] == u"completedqclear":
+    with taco.globals.completed_q_lock:
+      taco.globals.completed_q = []
+    return "1"
+
   if bottle.request.json[u"action"] == u"completedqget":
     output = {}
     with taco.globals.settings_lock:
@@ -139,7 +153,7 @@ def index():
         peerinfo = {}
         for peer_uuid in taco.globals.settings["Peers"].keys():
           peerinfo[peer_uuid] = [taco.globals.settings["Peers"][peer_uuid]["nickname"],taco.globals.settings["Peers"][peer_uuid]["localnick"]]
-        output = {"result":taco.globals.completed_q,"peerinfo":peerinfo}
+        output = {"result":taco.globals.completed_q[::-1],"peerinfo":peerinfo}
     return json.dumps(output)
 
   if bottle.request.json[u"action"] == u"uploadqget":

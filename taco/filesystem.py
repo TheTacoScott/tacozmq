@@ -170,9 +170,9 @@ class TacoFilesystemManager(threading.Thread):
                     (root,ext) = os.path.splitext(filename_complete)
                     filename_complete = root + u"." + unicode(uuid.uuid4().hex) + u"." + ext
                     os.rename(filename_incomplete,filename_complete)
-                    with taco.globals.completed_q_lock:
-                      taco.globals.completed_q.append((time.time(),peer_uuid,sharedir,filename,filesize))
-                    del taco.globals.download_q[peer_uuid][0]
+                  with taco.globals.completed_q_lock:
+                    taco.globals.completed_q.append((time.time(),peer_uuid,sharedir,filename,filesize))
+                  del taco.globals.download_q[peer_uuid][0]
 
 
       #send out requests for downloads 
