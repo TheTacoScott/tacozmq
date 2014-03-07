@@ -21,7 +21,7 @@ def Load_Settings(needlock=True):
 
   logging.debug("Verifying the settings loaded from the json isn't missing any required keys")
   for keyname in taco.defaults.default_settings_kv.keys():
-    if not taco.globals.settings.has_key(keyname):
+    if not keyname in taco.globals.settings:
       taco.globals.settings[keyname] =  taco.defaults.default_settings_kv[keyname]
       save_after = True
 

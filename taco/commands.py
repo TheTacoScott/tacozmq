@@ -23,14 +23,14 @@ def Proccess_Request(packed):
   reply = Create_Request()
   try:
     unpacked = msgpack.unpackb(packed)
-    assert unpacked.has_key(taco.constants.NET_DATABLOCK)
-    assert unpacked.has_key(taco.constants.NET_IDENT)
+    assert taco.constants.NET_DATABLOCK in unpacked
+    assert taco.constants.NET_IDENT in unpacked
   except:
     logging.warning("Got a bad request")
     return ("0",msgpack.packb(reply))
-  if unpacked.has_key(taco.constants.NET_REQUEST):
+  if taco.constants.NET_REQUEST in unpacked:
     if unpacked[taco.constants.NET_REQUEST] == taco.constants.NET_REQUEST_GIVE_FILE_CHUNK:
-      if unpacked[taco.constants.NET_DATABLOCK].has_key("data"):
+      if "data" in unpacked[taco.constants.NET_DATABLOCK]:
         logging.info("NET_REQUEST (FileChunk DATA): " + str(len(unpacked[taco.constants.NET_DATABLOCK]["data"])))
     else:
       logging.info("NET_REQUEST: " + str(unpacked))
@@ -50,12 +50,12 @@ def Process_Reply(peer_uuid,packed):
   response = ""
   try:
     unpacked = msgpack.unpackb(packed)
-    assert unpacked.has_key(taco.constants.NET_DATABLOCK)
-    assert unpacked.has_key(taco.constants.NET_IDENT)
+    assert taco.constants.NET_DATABLOCK in unpacked
+    assert taco.constants.NET_IDENT in unpacked
   except:
     logging.debug("Bad Reply")
     return response
-  if unpacked.has_key(taco.constants.NET_REPLY):
+  if taco.constants.NET_REPLY in unpacked:
     logging.info("NET_REPLY: " + str(unpacked))
     if unpacked[taco.constants.NET_REPLY] == taco.constants.NET_REPLY_ROLLCALL:       return Process_Reply_Rollcall(peer_uuid,unpacked[taco.constants.NET_DATABLOCK])
     if unpacked[taco.constants.NET_REPLY] == taco.constants.NET_REPLY_CERTS:          return Process_Reply_Certs(peer_uuid,unpacked[taco.constants.NET_DATABLOCK])
@@ -103,8 +103,8 @@ def Process_Reply_Rollcall(peer_uuid,unpacked):
   #logging.warning(str(unpacked))
   with taco.globals.settings_lock:
     new_nickname = unpacked[0]
-    if taco.globals.settings["Peers"].has_key(peer_uuid):
-      if taco.globals.settings["Peers"][peer_uuid].has_key("nickname"):
+    if peer_uuid in taco.globals.settings["Peers"]:
+      if "nickname" in taco.globals.settings["Peers"][peer_uuid]:
         if taco.globals.settings["Peers"][peer_uuid]["nickname"]!= new_nickname:
           if taco.constants.NICKNAME_CHECKER.match(new_nickname):
             taco.globals.settings["Peers"][peer_uuid]["nickname"] = new_nickname
@@ -131,7 +131,7 @@ def Reply_Certs(peer_uuid,datablock):
   reply = Create_Reply(taco.constants.NET_REPLY_CERTS,{})
   with taco.globals.settings_lock:
     for peer_uuid in datablock:
-      if taco.globals.settings["Peers"].has_key(peer_uuid):
+      if peer_uuid in taco.globals.settings["Peers"]:
         reply[taco.constants.NET_DATABLOCK][peer_uuid] = [taco.globals.settings["Peers"][peer_uuid]["nickname"],taco.globals.settings["Peers"][peer_uuid]["hostname"],taco.globals.settings["Peers"][peer_uuid]["port"],taco.globals.settings["Peers"][peer_uuid]["clientkey"],taco.globals.settings["Peers"][peer_uuid]["serverkey"],taco.globals.settings["Peers"][peer_uuid]["dynamic"]]
   return msgpack.packb(reply)
 
@@ -143,7 +143,7 @@ def Process_Reply_Certs(peer_uuid,unpacked):
       if len(unpacked[peerid]) == 6:
         (nickname,hostname,port,clientkey,serverkey,dynamic) = unpacked[peerid]
         with taco.globals.settings_lock:
-          if not taco.globals.settings["Peers"].has_key(peerid):
+          if not peerid in taco.globals.settings["Peers"]:
             taco.globals.settings["Peers"][peerid] = {}
             taco.globals.settings["Peers"][peerid]["hostname"] = hostname
             taco.globals.settings["Peers"][peerid]["port"] = int(port)
@@ -176,7 +176,7 @@ def Reply_Share_Listing(peer_uuid,datablock):
 
   #logging.debug("Got a share listing request from: " + peer_uuid + " for: " + sharedir)
   with taco.globals.share_listing_requests_lock:
-    if not taco.globals.share_listing_requests.has_key(peer_uuid): taco.globals.share_listing_requests[peer_uuid] = Queue.Queue()
+    if not peer_uuid in taco.globals.share_listing_requests: taco.globals.share_listing_requests[peer_uuid] = Queue.Queue()
     taco.globals.share_listing_requests[peer_uuid].put((sharedir,shareuuid))
     taco.globals.filesys.sleep.set()
 

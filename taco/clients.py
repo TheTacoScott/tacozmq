@@ -45,7 +45,7 @@ class TacoClients(threading.Thread):
 
   def get_client_last_reply(self,peer_uuid):
     with self.client_last_reply_time_lock:
-      if self.client_last_reply_time.has_key(peer_uuid):
+      if peer_uuid in self.client_last_reply_time:
         return self.client_last_reply_time[peer_uuid]
     return -1
   
@@ -92,9 +92,9 @@ class TacoClients(threading.Thread):
           for peer_uuid in taco.globals.settings["Peers"].keys():
             if taco.globals.settings["Peers"][peer_uuid]["enabled"]:
               #init some defaults
-              if not self.client_reconnect_mod.has_key(peer_uuid): self.client_reconnect_mod[peer_uuid] = taco.constants.CLIENT_RECONNECT_MIN
-              if not self.client_connect_time.has_key(peer_uuid): self.client_connect_time[peer_uuid] = time.time() + self.client_reconnect_mod[peer_uuid]
-              if not self.client_timeout.has_key(peer_uuid): self.client_timeout[peer_uuid] = time.time() + taco.constants.ROLLCALL_TIMEOUT
+              if not peer_uuid in self.client_reconnect_mod: self.client_reconnect_mod[peer_uuid] = taco.constants.CLIENT_RECONNECT_MIN
+              if not peer_uuid in self.client_connect_time:  self.client_connect_time[peer_uuid]  = time.time() + self.client_reconnect_mod[peer_uuid]
+              if not peer_uuid in self.client_timeout:       self.client_timeout[peer_uuid]       = time.time() + taco.constants.ROLLCALL_TIMEOUT
 
               if time.time() >= self.client_connect_time[peer_uuid]:
                 if peer_uuid not in self.clients.keys():

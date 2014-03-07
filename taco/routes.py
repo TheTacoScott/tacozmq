@@ -37,8 +37,8 @@ def index():
     api_call = bottle.request.json
   except:
     return "0"
-  if not bottle.request.json.has_key("action"): return "0"
-  if not bottle.request.json.has_key("data"): return "0"
+  if not "action" in bottle.request.json: return "0"
+  if not "data" in bottle.request.json: return "0"
   if bottle.request.json[u"action"] == u"apistatus":
     return json.dumps({"status":1})
   if bottle.request.json[u"action"] == u"threadstatus":
@@ -75,7 +75,7 @@ def index():
 
       with taco.globals.download_q_lock:
         logging.debug("Adding File to Download Q:" + str((peer_uuid,sharedir,filename,filesize,filemod)))
-        if not taco.globals.download_q.has_key(peer_uuid): taco.globals.download_q[peer_uuid] = []
+        if not peer_uuid in taco.globals.download_q: taco.globals.download_q[peer_uuid] = []
         if (sharedir,filename,filesize,filemod) not in taco.globals.download_q[peer_uuid]:
           taco.globals.download_q[peer_uuid].append((sharedir,filename,filesize,filemod))
           return "1"
@@ -94,7 +94,7 @@ def index():
 
       with taco.globals.download_q_lock:
         logging.debug("Removing File to Download Q:" + str((peer_uuid,sharedir,filename,filesize,filemod)))
-        if taco.globals.download_q.has_key(peer_uuid): 
+        if peer_uuid in taco.globals.download_q: 
           while (sharedir,filename,filesize,filemod) in taco.globals.download_q[peer_uuid]:
             taco.globals.download_q[peer_uuid].remove((sharedir,filename,filesize,filemod))
           if len(taco.globals.download_q[peer_uuid]) == 0: del taco.globals.download_q[peer_uuid]
@@ -115,7 +115,7 @@ def index():
         return "-1"
     with taco.globals.download_q_lock:
       logging.debug("Moving File in Download Q:" + str((peer_uuid,sharedir,filename,filesize,filemod,newloc)))
-      if taco.globals.download_q.has_key(peer_uuid):
+      if peer_uuid in taco.globals.download_q:
         while (sharedir,filename,filesize,filemod) in taco.globals.download_q[peer_uuid]:
           taco.globals.download_q[peer_uuid].remove((sharedir,filename,filesize,filemod))
         taco.globals.download_q[peer_uuid].insert(min(newloc,len(taco.globals.download_q[peer_uuid])),((sharedir,filename,filesize,filemod)))
@@ -138,15 +138,15 @@ def index():
   if bottle.request.json[u"action"] == u"browseresult":
     output = {}
     if type(bottle.request.json[u"data"]) == type({}):
-      if bottle.request.json[u"data"].has_key(u"sharedir") and bottle.request.json[u"data"].has_key(u"uuid"):
+      if u"sharedir" in bottle.request.json[u"data"] and u"uuid" in bottle.request.json[u"data"]:
         with taco.globals.share_listings_lock:
-          if taco.globals.share_listings.has_key((bottle.request.json[u"data"][u"uuid"],bottle.request.json[u"data"][u"sharedir"])):
+          if (bottle.request.json[u"data"][u"uuid"],bottle.request.json[u"data"][u"sharedir"]) in taco.globals.share_listings:
             output = {"result":taco.globals.share_listings[(bottle.request.json[u"data"][u"uuid"],bottle.request.json[u"data"][u"sharedir"])][1]}
     return json.dumps(output)
 
   if bottle.request.json[u"action"] == u"browse":
     if type(bottle.request.json[u"data"]) == type({}):
-      if bottle.request.json[u"data"].has_key(u"uuid") and bottle.request.json[u"data"].has_key(u"sharedir"):
+      if u"uuid" in bottle.request.json[u"data"] and u"sharedir" in bottle.request.json[u"data"]:
         peer_uuid = bottle.request.json[u"data"][u"uuid"]
         sharedir = bottle.request.json[u"data"][u"sharedir"]
         browse_result_uuid = uuid.uuid4().hex
@@ -194,7 +194,7 @@ def index():
       localuuid  = taco.globals.settings["Local UUID"]
       with taco.globals.chat_log_lock:
         for [puuid,thetime,msg] in taco.globals.chat_log:
-          if taco.globals.settings["Peers"].has_key(puuid) and taco.globals.settings["Peers"][puuid].has_key("nickname"):
+          if puuid in taco.globals.settings["Peers"] and "nickname" in taco.globals.settings["Peers"][puuid]:
             nickname = taco.globals.settings["Peers"][puuid]["nickname"]
           elif taco.globals.settings["Local UUID"] == puuid:
             nickname = taco.globals.settings["Nickname"]

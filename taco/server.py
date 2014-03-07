@@ -30,7 +30,7 @@ class TacoServer(threading.Thread):
 
   def get_client_last_request(self,peer_uuid):
     with self.client_last_request_time_lock:
-      if self.client_last_request_time.has_key(peer_uuid):
+      if peer_uuid in self.client_last_request_time:
         return self.client_last_request_time[peer_uuid]
     return -1
 

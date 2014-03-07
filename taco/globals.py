@@ -49,19 +49,19 @@ def Add_To_Output_Queue(peer_uuid,msg,priority=3):
   logging.debug("Add to "+ peer_uuid+" output q @ " + str(priority))
   if priority==1:
     with high_priority_output_queue_lock:
-      if high_priority_output_queue.has_key(peer_uuid):
+      if peer_uuid in high_priority_output_queue:
         high_priority_output_queue[peer_uuid].put(msg)
         taco.globals.clients.sleep.set()
         return 1
   elif priority==2:
     with medium_priority_output_queue_lock:
-      if medium_priority_output_queue.has_key(peer_uuid):
+      if peer_uuid in medium_priority_output_queue:
         medium_priority_output_queue[peer_uuid].put(msg)
         taco.globals.clients.sleep.set()
         return 1
   else:
     with low_priority_output_queue_lock:
-      if low_priority_output_queue.has_key(peer_uuid):
+      if peer_uuid in low_priority_output_queue:
         low_priority_output_queue[peer_uuid].put(msg)
         taco.globals.clients.sleep.set()
         return 1

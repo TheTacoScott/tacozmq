@@ -123,10 +123,10 @@ class TacoFilesystemManager(threading.Thread):
         #check for download q items
         with taco.globals.download_q_lock:
           for peer_uuid in taco.globals.download_q.keys():
-            if not self.client_downloading_credits.has_key(peer_uuid): self.client_downloading_credits[peer_uuid] = taco.constants.FILESYSTEM_CREDIT_MAX
+            if not peer_uuid in self.client_downloading_credits: self.client_downloading_credits[peer_uuid] = taco.constants.FILESYSTEM_CREDIT_MAX
             if len(taco.globals.download_q[peer_uuid]) > 0:
               (sharedir,filename,filesize,filemod) = taco.globals.download_q[peer_uuid][0]
-              if not self.client_downloading.has_key(peer_uuid): self.client_downloading[peer_uuid] = 0
+              if not peer_uuid in self.client_downloading: self.client_downloading[peer_uuid] = 0
               if self.client_downloading[peer_uuid] != (sharedir,filename,filesize,filemod):
                 self.set_status("File we should be downloading has changed:" + str((peer_uuid,sharedir,filename,filesize,filemod)))
                 self.client_downloading[peer_uuid] = (sharedir,filename,filesize,filemod)
@@ -136,16 +136,16 @@ class TacoFilesystemManager(threading.Thread):
                   filename_complete   = os.path.normpath(local_copy_download_directory + u"/" + filename)
                   if os.path.isfile(filename_complete):
                     pass
-                else:
-                  try:
-                    current_size = os.path.getsize(filename_incomplete)
-                  except:
-                    current_size = 0
-                  if current_size != filesize:
-                    for file_offset in xrange(current_size,filesize+1,taco.constants.FILESYSTEM_CHUNK_SIZE):
-                      tmp_uuid = uuid.uuid4().hex
-                      self.client_downloading_pending_chunks[peer_uuid].append((tmp_uuid,file_offset,0.0,0.0))
-                      self.client_downloading_status[peer_uuid][tmp_uuid] = (time.time(),0.0,file_offset)
+                  else:
+                    try:
+                      current_size = os.path.getsize(filename_incomplete)
+                    except:
+                      current_size = 0
+                    if current_size != filesize:
+                      for file_offset in xrange(current_size,filesize+1,taco.constants.FILESYSTEM_CHUNK_SIZE):
+                        tmp_uuid = uuid.uuid4().hex
+                        self.client_downloading_pending_chunks[peer_uuid].append((tmp_uuid,file_offset,0.0,0.0))
+                        self.client_downloading_status[peer_uuid][tmp_uuid] = (time.time(),0.0,file_offset)
 
       #check for chunk ack
       while not self.chunk_requests_ack_queue.empty():
@@ -156,7 +156,7 @@ class TacoFilesystemManager(threading.Thread):
           self.set_status("Ack QUEUE get failed")
           q_get_success = False
           break
-        if self.client_downloading_chunk_uuid.has_key(peer_uuid) and self.client_downloading_status.has_key(peer_uuid) and q_get_success:
+        if peer_uuid in self.client_downloading_chunk_uuid and peer_uuid in self.client_downloading_status and q_get_success:
           if chunk_uuid == self.client_downloading_chunk_uuid[peer_uuid]:
             (time_request_sent,time_request_ack,offset) = self.client_downloading_status[peer_uuid]
             self.client_downloading_status[peer_uuid] = (time_request_sent,time.time(),offset)
@@ -169,7 +169,7 @@ class TacoFilesystemManager(threading.Thread):
           (peer_uuid,chunk_uuid,data) = self.chunk_requests_incoming_queue.get(0)
         except:
           break
-        if self.client_downloading_chunk_uuid.has_key(peer_uuid) and self.client_downloading_chunk_uuid[peer_uuid] == chunk_uuid and self.client_downloading_filename.has_key(peer_uuid):
+        if peer_uuid in self.client_downloading_chunk_uuid and self.client_downloading_chunk_uuid[peer_uuid] == chunk_uuid and peer_uuid in self.client_downloading_filename:
           (sharedir,filename,filesize,filemod) = self.client_downloading[peer_uuid]
           fullpath = self.client_downloading_filename[peer_uuid]
           if fullpath not in self.files_w.keys():
