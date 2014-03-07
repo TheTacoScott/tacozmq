@@ -39,7 +39,6 @@ import taco.clients
 import taco.crypto
 import taco.settings
 import taco.filesystem
-import taco.downloadq
 import taco.limiter
 
 signal.signal(signal.SIGINT, taco.globals.properexit)
