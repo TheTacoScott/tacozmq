@@ -249,8 +249,8 @@ def index():
           for (hostname,port,localnick,peeruuid,clientpub,serverpub,dynamic,enabled) in bottle.request.json[u"data"]:
             taco.globals.settings["Peers"][unicode(peeruuid)] = {"hostname":hostname,"port": int(port),"localnick":localnick,"dynamic":int(dynamic),"enabled":int(enabled),"clientkey":clientpub,"serverkey":serverpub}
           taco.settings.Save_Settings(False)
-        taco.globals.server.stop_running()
-        taco.globals.clients.stop_running()
+        taco.globals.server.stop.set()
+        taco.globals.clients.stop.set()
         taco.globals.server.join()
         taco.globals.clients.join()
         taco.globals.server = taco.server.TacoServer()
