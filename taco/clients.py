@@ -85,8 +85,7 @@ class TacoClients(threading.Thread):
     poller = zmq.Poller()
     while not self.stop.is_set():
       #logging.debug("PRE")
-      if time.time() >= self.file_request_time-0.2: self.sleep.set()
-      result = self.sleep.wait(0.2)
+      result = self.sleep.wait(0.1)
       #logging.debug(result)
       self.sleep.clear()
       if self.stop.is_set(): break
@@ -95,7 +94,7 @@ class TacoClients(threading.Thread):
         with taco.globals.settings_lock: self.max_upload_rate   = taco.globals.settings["Upload Limit"] * taco.constants.KB
         with taco.globals.settings_lock: self.max_download_rate = taco.globals.settings["Download Limit"] * taco.constants.KB
         self.chunk_request_rate = float(taco.constants.FILESYSTEM_CHUNK_SIZE) / float(self.max_download_rate)
-        logging.debug(str((self.max_download_rate,taco.constants.FILESYSTEM_CHUNK_SIZE,self.chunk_request_rate)))
+        #logging.debug(str((self.max_download_rate,taco.constants.FILESYSTEM_CHUNK_SIZE,self.chunk_request_rate)))
         self.connect_block_time = time.time() 
         with taco.globals.settings_lock:
           for peer_uuid in taco.globals.settings["Peers"].keys():
@@ -152,15 +151,15 @@ class TacoClients(threading.Thread):
 
         #filereq q, aka the download throttle 
         if time.time() >= self.file_request_time:
-          self.file_request_time = time.time()
+          self.file_request_time = time.time() 
           with taco.globals.file_request_output_queue_lock:
             if not taco.globals.file_request_output_queue[peer_uuid].empty():
               with taco.globals.download_limiter_lock: download_rate = taco.globals.download_limiter.get_rate()
 
               bw_percent = download_rate / self.max_download_rate
               wait_time = self.chunk_request_rate * bw_percent
-              self.set_status(str((download_rate,self.max_download_rate,self.chunk_request_rate,bw_percent,wait_time)))
-              self.file_request_time += wait_time
+              #self.set_status(str((download_rate,self.max_download_rate,self.chunk_request_rate,bw_percent,wait_time)))
+              if wait_time > 0.001: self.file_request_time += wait_time
 
               if download_rate < self.max_download_rate:
                 self.set_status("filereq output q not empty+free bw:" + peer_uuid)
