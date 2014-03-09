@@ -310,7 +310,7 @@ class TacoFilesystemManager(threading.Thread):
               
                  
       if abs(time.time() - self.last_purge) > taco.constants.FILESYSTEM_CACHE_PURGE:
-        self.set_status("Purging old filesystem results")
+        #self.set_status("Purging old filesystem results")
         self.last_purge = time.time()
         
         for filename in self.files_r_last_access.keys():
