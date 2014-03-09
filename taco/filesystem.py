@@ -180,7 +180,7 @@ class TacoFilesystemManager(threading.Thread):
       for peer_uuid in self.client_downloading:
         if self.client_downloading[peer_uuid] == 0: continue
         (sharedir,filename,filesize,filemod) = self.client_downloading[peer_uuid]
-        while len(self.client_downloading_pending_chunks[peer_uuid]) > 0 and len(self.client_downloading_requested_chunks[peer_uuid]) < taco.constants.FILESYSTEM_CREDIT_MAX:
+        while len(self.client_downloading_pending_chunks[peer_uuid]) > 0 and len(self.client_downloading_requested_chunks[peer_uuid]) < taco.constants.FILESYSTEM_CREDIT_MAX: 
           (chunk_uuid,file_offset) = self.client_downloading_pending_chunks[peer_uuid].pop()
           self.set_status("Credits Free:" + str((sharedir,filename,filesize,filemod,chunk_uuid,file_offset)))
           request = taco.commands.Request_Get_File_Chunk(sharedir,filename,file_offset,chunk_uuid)

@@ -148,9 +148,8 @@ class TacoClients(threading.Thread):
         with taco.globals.low_priority_output_queue_lock:
           if not taco.globals.low_priority_output_queue[peer_uuid].empty():
             with taco.globals.upload_limiter_lock: upload_rate = taco.globals.upload_limiter.get_rate()
-            logging.debug(str((upload_rate,self.max_upload_rate)))
             if upload_rate < self.max_upload_rate:
-              self.set_status("low priority output q not empty:" + peer_uuid)
+              self.set_status("low priority output q not empty+free bw:" + peer_uuid)
               data = taco.globals.low_priority_output_queue[peer_uuid].get()
               self.clients[peer_uuid].send_multipart(['',data])
               self.sleep.set()
