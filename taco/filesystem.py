@@ -201,25 +201,21 @@ class TacoFilesystemManager(threading.Thread):
           self.set_status("File Chunk request has been ACK'D:" + str((peer_uuid,time_request_sent,chunk_uuid)))
           self.sleep.set()
 
-      #if chunk has not been ack'd in > x time
+      #if chunk has not been ack'd in > x time or no data in > x time
       for peer_uuid in self.client_downloading_status:
         for chunk_uuid in self.client_downloading_status[peer_uuid]:
           (time_request_sent,time_request_ack,offset) = self.client_downloading_status[peer_uuid][chunk_uuid]
-          if time_request_sent > 0.0 and time_request_ack == 0.0:
-            if abs(time.time() - time_request_sent) > taco.constants.DOWNLOAD_Q_WAIT_FOR_ACK:
-              if peer_uuid in self.client_downloading:
+          if time_request_sent > 0.0 and peer_uuid in self.client_downloading:
+            if time_request_ack == 0.0:
+              if abs(time.time() - time_request_sent) > taco.constants.DOWNLOAD_Q_WAIT_FOR_ACK:
                 self.set_status("Download is hosed up (no ack) for: " + peer_uuid)
                 self.client_downloading[peer_uuid] = 0
                 break
-          if time_request_sent > 0.0 and time_request_ack > 0.0:
-            if abs(time.time() - time_request_ack) > taco.constants.DOWNLOAD_Q_WAIT_FOR_DATA:
-              if peer_uuid in self.client_downloading:
+            elif time_request_ack > 0.0:
+              if abs(time.time() - time_request_ack) > taco.constants.DOWNLOAD_Q_WAIT_FOR_DATA:
                 self.set_status("Download is hosed up (no data for too long) for: " + peer_uuid)
                 self.client_downloading[peer_uuid] = 0
                 break
-          
-      #if chunk has been ack'd but no data has come in in > x time
-      
 
       #chunk data has been recieved
       while not self.chunk_requests_incoming_queue.empty():
