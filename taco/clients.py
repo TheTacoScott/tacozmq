@@ -75,7 +75,6 @@ class TacoClients(threading.Thread):
     clientauth.start()
     
     with taco.globals.settings_lock:
-      localuuid  = taco.globals.settings["Local UUID"]
       publicdir  = os.path.normpath(os.path.abspath(taco.globals.settings["TacoNET Certificates Store"] + "/"  + taco.globals.settings["Local UUID"] + "/public/"))
       privatedir = os.path.normpath(os.path.abspath(taco.globals.settings["TacoNET Certificates Store"] + "/"  + taco.globals.settings["Local UUID"] + "/private/"))
 
@@ -217,6 +216,7 @@ class TacoClients(threading.Thread):
           with taco.globals.high_priority_output_queue_lock:    del taco.globals.high_priority_output_queue[peer_uuid]
           with taco.globals.medium_priority_output_queue_lock:  del taco.globals.medium_priority_output_queue[peer_uuid]
           with taco.globals.low_priority_output_queue_lock:     del taco.globals.low_priority_output_queue[peer_uuid]
+          with taco.globals.file_request_output_queue_lock:     del taco.globals.file_request_output_queue[peer_uuid]
           self.client_reconnect_mod[peer_uuid] = min(self.client_reconnect_mod[peer_uuid] + taco.constants.CLIENT_RECONNECT_MOD,taco.constants.CLIENT_RECONNECT_MAX)
           self.client_connect_time[peer_uuid] = time.time() + self.client_reconnect_mod[peer_uuid]
           
