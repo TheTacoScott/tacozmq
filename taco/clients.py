@@ -89,7 +89,8 @@ class TacoClients(threading.Thread):
       if self.stop.is_set(): break
 
       if abs(time.time() - self.connect_block_time) > 1:
-        with taco.globals.settings_lock: self.max_upload_rate = taco.globals.settings["Upload Limit"] * taco.constants.KB
+        with taco.globals.settings_lock: self.max_upload_rate   = taco.globals.settings["Upload Limit"] * taco.constants.KB
+        with taco.globals.settings_lock: self.max_download_rate = taco.globals.settings["Download Limit"] * taco.constants.KB
 
         self.connect_block_time = time.time() 
         with taco.globals.settings_lock:
@@ -116,6 +117,7 @@ class TacoClients(threading.Thread):
                   with taco.globals.high_priority_output_queue_lock:   taco.globals.high_priority_output_queue[peer_uuid]   = Queue.Queue()
                   with taco.globals.medium_priority_output_queue_lock: taco.globals.medium_priority_output_queue[peer_uuid] = Queue.Queue()
                   with taco.globals.low_priority_output_queue_lock:    taco.globals.low_priority_output_queue[peer_uuid]    = Queue.Queue()
+                  with taco.globals.file_request_output_queue_lock:    taco.globals.file_request_output_queue[peer_uuid]    = Queue.Queue()
 
                   poller.register(self.clients[peer_uuid],zmq.POLLIN)
 
@@ -143,6 +145,16 @@ class TacoClients(threading.Thread):
             self.clients[peer_uuid].send_multipart(['',data])
             self.sleep.set()
             with taco.globals.upload_limiter_lock: taco.globals.upload_limiter.add(len(data))
+
+        with taco.globals.file_request_output_queue_lock:
+          if not taco.globals.file_request_output_queue[peer_uuid].empty():
+            with taco.globals.download_limiter_lock: download_rate = taco.globals.download_limiter.get_rate()
+            if download_rate < self.max_download_rate:
+              self.set_status("filereq output q not empty+free bw:" + peer_uuid)
+              data = taco.globals.file_request_output_queue[peer_uuid].get()
+              self.clients[peer_uuid].send_multipart(['',data])
+              self.sleep.set()
+              with taco.globals.upload_limiter_lock: taco.globals.upload_limiter.add(len(data))
 
         #low priority queue processing
         with taco.globals.low_priority_output_queue_lock:

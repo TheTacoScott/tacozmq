@@ -43,10 +43,12 @@ download_limiter_lock = threading.Lock()
 high_priority_output_queue_lock = threading.Lock()
 medium_priority_output_queue_lock = threading.Lock()
 low_priority_output_queue_lock = threading.Lock()
+file_request_output_queue_lock = threading.Lock()
 
 high_priority_output_queue = {}
 medium_priority_output_queue = {}
 low_priority_output_queue = {}
+file_request_output_queue = {}
 
 def Add_To_Output_Queue(peer_uuid,msg,priority=3):
   logging.debug("Add to "+ peer_uuid+" output q @ " + str(priority))
@@ -62,34 +64,48 @@ def Add_To_Output_Queue(peer_uuid,msg,priority=3):
         medium_priority_output_queue[peer_uuid].put(msg)
         taco.globals.clients.sleep.set()
         return 1
-  else:
+  elif priority==3:
     with low_priority_output_queue_lock:
       if peer_uuid in low_priority_output_queue:
         low_priority_output_queue[peer_uuid].put(msg)
         taco.globals.clients.sleep.set()
         return 1
+  else:
+    with file_request_output_queue_lock:
+      if peer_uuid in file_request_output_queue:
+        file_request_output_queue[peer_uuid].put(msg)
+        taco.globals.clients.sleep.set()
+        return 1
+
   return 0
 
 def Add_To_All_Output_Queues(msg,priority=3):
   logging.debug("Add to ALL output q @ " + str(priority))
   if priority==1:
     with high_priority_output_queue_lock:
-      for keyname in high_priority_output_queue.keys():
+      for keyname in high_priority_output_queue:
         high_priority_output_queue[keyname].put(msg)
         taco.globals.clients.sleep.set()
       return 1
   elif priority==2:
     with medium_priority_output_queue_lock:
-      for keyname in medium_priority_output_queue.keys():
+      for keyname in medium_priority_output_queue:
         medium_priority_output_queue[keyname].put(msg)
         taco.globals.clients.sleep.set()
       return 1
-  else:
+  elif priority==3:
     with low_priority_output_queue_lock:
-      for keyname in low_priority_output_queue.keys():
+      for keyname in low_priority_output_queue:
         low_priority_output_queue[keyname].put(msg)
         taco.globals.clients.sleep.set()
       return 1
+  else:
+    with file_request_output_queue_lock:
+      for keyname in file_request_output_queue:
+        file_request_output_queue[keyname].put(msg)
+        taco.globals.clients.sleep.set()
+        return 1
+
   return 0
 
 
