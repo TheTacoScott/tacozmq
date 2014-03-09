@@ -132,8 +132,9 @@ class TacoFilesystemManager(threading.Thread):
             else:
               (sharedir,filename,filesize,filemod) = taco.globals.download_q[peer_uuid][0]
               if not peer_uuid in self.client_downloading: self.client_downloading[peer_uuid] = 0
+
               if self.client_downloading[peer_uuid] != (sharedir,filename,filesize,filemod):
-                self.set_status("File we should be downloading has changed:" + str((peer_uuid,sharedir,filename,filesize,filemod)))
+                self.set_status("Need to check on the file we should be downloading:" + str((peer_uuid,sharedir,filename,filesize,filemod)))
                 self.client_downloading[peer_uuid] = (sharedir,filename,filesize,filemod)
                 self.client_downloading_pending_chunks[peer_uuid] = []
                 self.client_downloading_requested_chunks[peer_uuid] = []
@@ -199,6 +200,26 @@ class TacoFilesystemManager(threading.Thread):
           self.client_downloading_status[peer_uuid][chunk_uuid] = (time_request_sent,time.time(),offset)
           self.set_status("File Chunk request has been ACK'D:" + str((peer_uuid,time_request_sent,chunk_uuid)))
           self.sleep.set()
+
+      #if chunk has not been ack'd in > x time
+      for peer_uuid in self.client_downloading_status:
+        for chunk_uuid in self.client_downloading_status[peer_uuid]:
+          (time_request_sent,time_request_ack,offset) = self.client_downloading_status[peer_uuid][chunk_uuid]
+          if time_request_sent > 0.0 and time_request_ack == 0.0:
+            if abs(time.time() - time_request_sent) > taco.constants.DOWNLOAD_Q_WAIT_FOR_ACK:
+              if peer_uuid in self.client_downloading:
+                self.set_status("Download is hosed up (no ack) for: " + peer_uuid)
+                self.client_downloading[peer_uuid] = 0
+                break
+          if time_request_sent > 0.0 and time_request_ack > 0.0:
+            if abs(time.time() - time_request_ack) > taco.constants.DOWNLOAD_Q_WAIT_FOR_DATA:
+              if peer_uuid in self.client_downloading:
+                self.set_status("Download is hosed up (no data for too long) for: " + peer_uuid)
+                self.client_downloading[peer_uuid] = 0
+                break
+          
+      #if chunk has been ack'd but no data has come in in > x time
+      
 
       #chunk data has been recieved
       while not self.chunk_requests_incoming_queue.empty():
