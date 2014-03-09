@@ -158,8 +158,8 @@ class TacoClients(threading.Thread):
 
               bw_percent = download_rate / self.max_download_rate
               wait_time = self.chunk_request_rate * bw_percent
-              #self.set_status(str((download_rate,self.max_download_rate,self.chunk_request_rate,bw_percent,wait_time)))
-              if wait_time > 0.001: self.file_request_time += wait_time
+              self.set_status(str((download_rate,self.max_download_rate,self.chunk_request_rate,bw_percent,wait_time)))
+              if wait_time > 0.01: self.file_request_time += wait_time
 
               if download_rate < self.max_download_rate:
                 self.set_status("filereq output q not empty+free bw:" + peer_uuid)

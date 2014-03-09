@@ -148,6 +148,7 @@ class TacoFilesystemManager(threading.Thread):
                 if current_size != filesize:
                   self.set_status("Building in memory 'torrent'")
                   self.client_downloading_filename[peer_uuid] = filename_incomplete
+                  self.client_downloading_status = defaultdict(dict)
                   for file_offset in range(current_size,filesize+1,taco.constants.FILESYSTEM_CHUNK_SIZE):
                     tmp_uuid = uuid.uuid4().hex
                     self.client_downloading_pending_chunks[peer_uuid].append((tmp_uuid,file_offset))
@@ -240,6 +241,8 @@ class TacoFilesystemManager(threading.Thread):
           del self.client_downloading_status[peer_uuid][chunk_uuid]
           self.client_downloading_requested_chunks[peer_uuid].remove(chunk_uuid)
           self.sleep.set()
+        else:
+          self.set_status("Got a chunk, but it's bogus:" + str((peer_uuid,chunk_uuid,len(data))))
 
       if self.stop.is_set(): break
 
