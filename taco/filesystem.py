@@ -125,6 +125,17 @@ class TacoFilesystemManager(threading.Thread):
         #check for download q items
         with taco.globals.download_q_lock:
           for peer_uuid in taco.globals.download_q.keys():
+
+            incoming = taco.globals.server.get_client_last_request(peer_uuid)
+            outgoing = taco.globals.clients.get_client_last_reply(peer_uuid)
+
+            if incoming < 0 or outgoing < 0: 
+              self.set_status("I have items in the download queue, but client has never been contactable: "+peer_uuid)
+              continue
+            if abs(time.time() - incoming) > taco.constants.ROLLCALL_TIMEOUT or abs(time.time() - outgoing) > taco.constants.ROLLCALL_TIMEOUT: 
+              self.set_status("I have items in the download queue, but client has timed out rollcalls: "+peer_uuid)
+              continue
+
             if len(taco.globals.download_q[peer_uuid]) == 0:
               self.set_status("Download Q empty for: " + peer_uuid)
               self.client_downloading[peer_uuid] = 0
@@ -222,8 +233,8 @@ class TacoFilesystemManager(threading.Thread):
       #    self.client_downloading[peer_uuid] = 0
       
       for peer_uuid in self.client_downloading_chunks_last_recieved:
-        if abs(time.time() - self.client_downloading_chunks_last_recieved[peer_uuid]) > taco.constants.DOWNLOAD_Q_WAIT_FOR_DATA:
-          if peer_uuid in self.client_downloading:
+        if peer_uuid in self.client_downloading and self.client_downloading[peer_uuid] != 0:
+          if abs(time.time() - self.client_downloading_chunks_last_recieved[peer_uuid]) > taco.constants.DOWNLOAD_Q_WAIT_FOR_DATA:
             self.set_status("Download Borked for: "+ peer_uuid)
             self.client_downloading[peer_uuid] = 0
         
