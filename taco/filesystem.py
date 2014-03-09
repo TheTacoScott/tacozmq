@@ -225,6 +225,7 @@ class TacoFilesystemManager(threading.Thread):
         except:
           break
         if peer_uuid in self.client_downloading_requested_chunks and chunk_uuid in self.client_downloading_requested_chunks[peer_uuid] and peer_uuid in self.client_downloading_filename:
+          if peer_uuid in self.client_downloading and self.client_downloading[peer_uuid] == 0: continue
           self.set_status("Chunk data has been recieved: " + str((peer_uuid,chunk_uuid,len(data))))
           (sharedir,filename,filesize,filemod) = self.client_downloading[peer_uuid]
           fullpath = self.client_downloading_filename[peer_uuid]
