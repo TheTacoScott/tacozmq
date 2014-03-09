@@ -1,22 +1,19 @@
-TacoNET
-=======
+#TacoNET
 
-###Install Procedure (far from accurate)
+TacoNET is a friend to friend [darknet](http://en.wikipedia.org/wiki/Darknet_%28file_sharing%29) written in [Python](http://www.python.org) and [ZeroMQ](http://www.zeromq.org).
 
+##Current Features
 
-####zeromq
-* pip install --upgrade cython
-* wget https://pypi.python.org/packages/source/p/pyzmq/pyzmq-14.0.1.tar.gz
-* wget http://download.zeromq.org/zeromq-4.0.3.tar.gz
-* wget --no-check-certificate https://download.libsodium.org/libsodium/releases/libsodium-0.4.5.tar.gz
-* untar all
-* libsodium ./configure
-* zeromq ./configure --prefix=/opt/zmq4.0.3 --with-libsodium=/usr/local/lib/
-* pyzmq git clone https://github.com/zeromq/pyzmq.git .
-* python setup.py configure --zmq=/opt/zmq4.0.3
-* python setup.py build
-* cd working dir of taconet or whatever needs new version of zmq
-* mkdir -p ~/.local/lib/python2.7/site-packages
-* cd ~/.local/lib/python2.7/site-packages
-* ln -s ~/github/pyzmq/build/lib.linux-x86_64-2.7/zmq/
+ * Linux variants only for now.
+ * Self-healing web of peers
+  * When someone adds a new peer, their information is spread to all other peers automatically. Each user can then enable that peer if they choose to.
+ * File transfers with a download queue.
+ * Configurable upload and download rate limits
 
+##Planned Features
+
+ * Directory Downloading
+ * Peer Searching
+ * Subscibing to a directory to monitoring and download all future updates
+ * Put in a issue/feature request if you want something added!
+ * Windows + MacOS support.
