@@ -140,6 +140,10 @@ class TacoFilesystemManager(threading.Thread):
               self.set_status("Download Q empty for: " + peer_uuid)
               self.client_downloading[peer_uuid] = 0
               del taco.globals.download_q[peer_uuid]
+              self.client_downloading_pending_chunks[peer_uuid] = []
+              self.client_downloading_requested_chunks[peer_uuid] = []
+              self.client_downloading_status = defaultdict(dict)
+              self.client_downloading_chunks_last_recieved = {}
               continue
             else:
               (sharedir,filename,filesize,filemod) = taco.globals.download_q[peer_uuid][0]
