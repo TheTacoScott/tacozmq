@@ -83,7 +83,7 @@ NET_REQUEST_GIVE_FILE_CHUNK = "z"
 NET_REPLY_GIVE_FILE_CHUNK   = "Z"
 
 
-RE_UUID_CHECKER = "[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}"
+RE_UUID_CHECKER = "([a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}|[a-f0-9]{32})"
 RE_NICKNAME_CHECKER = "^[\w\.\-\(\) ]{3,"+str(MAX_NICKNAME_LENGTH)+"}$"
 RE_PORT_CHECKER = "^0*(?:6553[0-5]|655[0-2][0-9]|65[0-4][0-9]{2}|6[0-4][0-9]{3}|[1-5][0-9]{4}|[1-9][0-9]{1,3}|[0-9])$"
 RE_HOST_CHECKER = "^(?:(?:(?:(?:[a-zA-Z0-9][-a-zA-Z0-9]{0,61})?[a-zA-Z0-9])[.])*(?:[a-zA-Z][-a-zA-Z0-9]{0,61}[a-zA-Z0-9]|[a-zA-Z])[.]?)$"
