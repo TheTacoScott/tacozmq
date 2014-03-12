@@ -21,7 +21,7 @@ if zmq.zmq_version_info() < (4,0):
 if sys.version_info < (2, 6, 5):
   raise RuntimeError("must use python 2.6.6 or greater")
   
-parser = argparse.ArgumentParser(description='TacoNET: a darknet written in python and zeromq')
+parser = argparse.ArgumentParser(description='TacoZMQ: a darknet written in python and zeromq')
 parser.add_argument('--config', default=taco.constants.JSON_SETTINGS_FILENAME,dest='configfile',help='specify the location of the config json')
 parser.add_argument("--verbose", default=False,dest="verbose",help="increase output verbosity",action="store_true")
 args = parser.parse_args()

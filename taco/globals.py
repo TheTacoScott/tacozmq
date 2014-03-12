@@ -111,7 +111,7 @@ def Add_To_All_Output_Queues(msg,priority=3):
 
 
 def properexit(signum, frame):
-  logging.warning("SIGINT Detected, stopping TacoNET")
+  logging.warning("SIGINT Detected, stopping " + taco.constants.APP_NAME)
   stop.set()
   logging.info("Stopping Server")
   server.stop.set()

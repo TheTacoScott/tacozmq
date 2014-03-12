@@ -29,7 +29,7 @@ CHUNK_SIZE = 1024 * 16
 JSON_SETTINGS_FILENAME = "settings.json"
 CERT_STORE_DIR = "certstore/"
 
-KEY_GENERATION_PREFIX = "taconet"
+KEY_GENERATION_PREFIX = "taconet" #needs to be changed later
 
 LOOP_TOKEN_COUNT = 250
 
