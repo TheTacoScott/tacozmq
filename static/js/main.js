@@ -11,7 +11,10 @@ function guid() {
 
 function API_Alert()
 {
-  $("#apialert").removeClass("hide");
+  setTimeout(function()
+  {
+    $("#apialert").removeClass("hide");
+  },2000);
   //setTimeout(Check_For_API_Errors,10000);
 }
 
