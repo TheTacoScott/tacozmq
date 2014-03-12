@@ -34,14 +34,14 @@
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
           </button>
-          <a class="navbar-brand" href="/"><img src="/static/images/taco.png" height="16"> <b>TacoNET</b></a>
+          <a class="navbar-brand" href="/"><img src="/static/images/taco.png" height="16"> <b>{{taco.constants.APP_NAME}}</b></a>
         </div>
         <div class="collapse navbar-collapse">
           <ul class="nav navbar-nav">
             <li class="{{"active" if title=="Home" else ""}}"><a href="/"><i class="glyphicon glyphicon-home"></i><span class="navlink">Home</span></a></li>
             <li class="{{"active" if title=="Chat" else ""}}"><a href="/chat.taco"><i class="glyphicon glyphicon-comment"></i><span class="navlink">Chat</span></a></li>
             <li class="{{"active" if title=="Transfers" else ""}}"><a href="/transfers.taco"><i class="glyphicon glyphicon-transfer"></i><span class="navlink">Transfers</span></a></li>
-            <li class="{{"active" if title=="Search" else ""}}"><a href="/search.taco"><i class="glyphicon glyphicon-search"></i><span class="navlink">Search</span></a></li>
+            <!-- <li class="{{"active" if title=="Search" else ""}}"><a href="/search.taco"><i class="glyphicon glyphicon-search"></i><span class="navlink">Search</span></a></li> -->
             <li class="{{"active" if title=="Browse" else ""}}"><a href="/browse.taco"><i class="glyphicon glyphicon-folder-open"></i><span style="margin-left: 5px" class="navlink">Browse</span></a></li>
             <li class="{{"active" if title=="Settings" else ""}}"><a href="/settings.taco"><i class="glyphicon glyphicon-edit"></i><span class="navlink">Settings</span></a></li>
             <li class="{{"active" if title=="Help" else ""}}"><a target="_blank" href="https://github.com/withorwithoutgod/taconet/wiki"><i class="glyphicon glyphicon-info-sign"></i><span class="navlink">Help</span></a></li> 

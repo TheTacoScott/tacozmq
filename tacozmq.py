@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 """
-TacoNET: darknet written in python and zeromq
+TacoDARKNET: darknet written in python and zeromq
 
 Author: Scott Powers
 """
@@ -60,5 +60,5 @@ taco.globals.filesys = taco.filesystem.TacoFilesystemManager()
 taco.globals.filesys.start()
 
 logging.info("Starting Local Webserver on " + taco.globals.settings["Web IP"] + ":" + str(taco.globals.settings["Web Port"]))
-logging.info("*** TacoNET Running ***")
+logging.info("*** TacoDARKNET Running ***")
 taco.bottle.run(host=taco.globals.settings["Web IP"], port=int(taco.globals.settings["Web Port"]),reloader=False,quiet=True,debug=True,server="cherrypy")
