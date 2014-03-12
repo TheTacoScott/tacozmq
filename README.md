@@ -1,6 +1,6 @@
-#TacoDARKNET
+#TacoZMQ
 
-TacoDARKNET (TacoNET or TacoD for short) is a friend to friend [darknet](http://en.wikipedia.org/wiki/Darknet_%28file_sharing%29) written in [Python](http://www.python.org) and [ZeroMQ](http://www.zeromq.org).
+TacoZMQ (previously TacoNET) is a friend to friend [darknet](http://en.wikipedia.org/wiki/Darknet_%28file_sharing%29) written in [Python](http://www.python.org) and [ZeroMQ](http://www.zeromq.org).
 
 ##Current Features
 
