@@ -26,7 +26,7 @@ def Load_Settings(needlock=True):
       save_after = True
 
   if not os.path.isdir(taco.globals.settings["TacoNET Certificates Store"]): 
-    logging.debug("Making TacoNET Certificates Store")
+    logging.debug("Making "+taco.constants.APP_NAME+" Certificates Store")
     os.makedirs(taco.globals.settings["TacoNET Certificates Store"])
 
   logging.debug("Verifying settings share list is in correct format")
@@ -84,7 +84,7 @@ def Disable_Keys(keys_to_keep,needlock=True):
 def Enable_Key(peeruuid,keytype,keystring,needlock):
   logging.info("Enabling KEY for UUID:" +peeruuid + " -- " + keytype + " -- " + keystring)
   template = """
-#   **** Saved on %s by taconet  ****
+#   **** Saved on %s by tacozmq  ****
 #   for peer: %s
 #   type: %s
 #   ZeroMQ CURVE Public Certificate

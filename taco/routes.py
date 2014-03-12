@@ -16,7 +16,7 @@ from collections import defaultdict
 def send_file(filename):
   return bottle.static_file(filename, root=os.path.normpath(os.getcwd() + '/static/'))
 
-#terminate taconet
+#terminate
 @bottle.route('/shutitdown')
 def taco_page():
   taco.globals.properexit(1,1)

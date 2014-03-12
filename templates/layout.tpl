@@ -15,7 +15,7 @@
 
     <!-- Bootstrap core CSS -->
     <link href="/static/css/bootstrap.css" rel="stylesheet">
-    <link href="/static/css/taconet-default.css" rel="stylesheet">
+    <link href="/static/css/tacozmq-default.css" rel="stylesheet">
 
     <script src="/static/js/jquery-1.11.0.min.js"></script>
     <script src="/static/js/jquery-ui.js"></script>
@@ -44,7 +44,7 @@
             <!-- <li class="{{"active" if title=="Search" else ""}}"><a href="/search.taco"><i class="glyphicon glyphicon-search"></i><span class="navlink">Search</span></a></li> -->
             <li class="{{"active" if title=="Browse" else ""}}"><a href="/browse.taco"><i class="glyphicon glyphicon-folder-open"></i><span style="margin-left: 5px" class="navlink">Browse</span></a></li>
             <li class="{{"active" if title=="Settings" else ""}}"><a href="/settings.taco"><i class="glyphicon glyphicon-edit"></i><span class="navlink">Settings</span></a></li>
-            <li class="{{"active" if title=="Help" else ""}}"><a target="_blank" href="https://github.com/withorwithoutgod/taconet/wiki"><i class="glyphicon glyphicon-info-sign"></i><span class="navlink">Help</span></a></li> 
+            <li class="{{"active" if title=="Help" else ""}}"><a target="_blank" href="https://github.com/withorwithoutgod/tacozmq/wiki"><i class="glyphicon glyphicon-info-sign"></i><span class="navlink">Help</span></a></li> 
             <li class="navlink-nohide"><a href="."><i class="glyphicon glyphicon-arrow-down"></i> <span id="downloadspeed"></span></a></li>
             <li class="navlink-nohide"><a href="."><i class="glyphicon glyphicon-arrow-up"></i> <span id="uploadspeed"></span></a></li>
 
