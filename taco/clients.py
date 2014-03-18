@@ -106,7 +106,11 @@ class TacoClients(threading.Thread):
               if time.time() >= self.client_connect_time[peer_uuid]:
                 if peer_uuid not in self.clients.keys():
                   self.set_status("Starting Client for: " + peer_uuid)
-                  ip_of_client = socket.gethostbyname(taco.globals.settings["Peers"][peer_uuid]["hostname"])
+                  try:
+                    ip_of_client = socket.gethostbyname(taco.globals.settings["Peers"][peer_uuid]["hostname"])
+                  except:
+                    self.set_status("Starting of client failed due to bad dns lookup:" + peer_uuid)
+                    continue
                   self.clients[peer_uuid] = clientctx.socket(zmq.DEALER)
                   self.clients[peer_uuid].setsockopt(zmq.LINGER, 0)
                   client_public, client_secret = zmq.auth.load_certificate(os.path.normpath(os.path.abspath(privatedir + "/" + taco.constants.KEY_GENERATION_PREFIX +"-client.key_secret")))
