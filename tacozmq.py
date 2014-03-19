@@ -8,7 +8,12 @@ Author: Scott Powers
 
 import sys
 import argparse
-import zmq
+import platform
+if platform.system() == "Linux":
+  if platform.machine() == "i686":
+    import pyzmqi686l as zmq
+  elif platform.machine() == "x86_64":
+    import zmq
 import json
 import logging
 import signal
