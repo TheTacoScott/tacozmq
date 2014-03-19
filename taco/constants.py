@@ -11,7 +11,7 @@ APP_TAGLINE.append("You're going to say THAT about Swifty? To ME of all people? 
 APP_TAGLINE.append("Forget the search feature. Why would we spend time developing something nobody will use? --Scott")
 APP_TAGLINE.append("No is an acceptable answer. --Scott")
 
-APP_VERSION = 0.1
+APP_VERSION = 0.2
 APP_STAGE = "Beta"
 APP_AUTHOR = ["Scott Powers"]
 

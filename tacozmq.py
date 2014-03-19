@@ -18,8 +18,8 @@ import taco.constants
 
 if zmq.zmq_version_info() < (4,0):
   raise RuntimeError("Security is not supported in libzmq version < 4.0. libzmq version {0}".format(zmq.zmq_version()))
-if sys.version_info < (2, 6, 5):
-  raise RuntimeError("must use python 2.6.6 or greater")
+if sys.version_info < (2, 7):
+  raise RuntimeError("must use python 2.7 or greater")
   
 parser = argparse.ArgumentParser(description='TacoZMQ: a darknet written in python and zeromq')
 parser.add_argument('--config', default=taco.constants.JSON_SETTINGS_FILENAME,dest='configfile',help='specify the location of the config json')
