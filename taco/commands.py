@@ -113,6 +113,9 @@ def Process_Reply_Rollcall(peer_uuid,unpacked):
         if taco.constants.NICKNAME_CHECKER.match(new_nickname):
           taco.globals.settings["Peers"][peer_uuid]["nickname"] = new_nickname
           taco.settings.Save_Settings(False)
+        else:
+          taco.globals.settings["Peers"][peer_uuid]["nickname"] = "GENERIC NICKNAME"
+          taco.settings.Save_Settings(False)
     for peerid in unpacked[1:]:
       if taco.constants.UUID_CHECKER.match(peerid):
         if peerid not in taco.globals.settings["Peers"].keys() and peerid != taco.globals.settings["Local UUID"]:
