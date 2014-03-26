@@ -133,7 +133,7 @@ def index():
           try:
             peerinfo[peer_uuid] = [taco.globals.settings["Peers"][peer_uuid]["nickname"],taco.globals.settings["Peers"][peer_uuid]["localnick"]]
           except:
-            peerinfo[peer_uuid] [u"Unknown Nickname",u""]
+            peerinfo[peer_uuid] = [u"Unknown Nickname",u""]
         for peer_uuid in taco.globals.download_q:
           for (sharedir,filename,filesize,modtime) in taco.globals.download_q[peer_uuid]:
             filename_incomplete = os.path.normpath(local_copy_download_directory + u"/" + filename + taco.constants.FILESYSTEM_WORKINPROGRESS_SUFFIX)
