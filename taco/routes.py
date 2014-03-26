@@ -155,7 +155,10 @@ def index():
       with taco.globals.completed_q_lock:
         peerinfo = {}
         for peer_uuid in taco.globals.settings["Peers"].keys():
-          peerinfo[peer_uuid] = [taco.globals.settings["Peers"][peer_uuid]["nickname"],taco.globals.settings["Peers"][peer_uuid]["localnick"]]
+          try:
+            peerinfo[peer_uuid] = [taco.globals.settings["Peers"][peer_uuid]["nickname"],taco.globals.settings["Peers"][peer_uuid]["localnick"]]
+          except:
+            peerinfo[peer_uuid] = [u"Unknown Nickname",u""]
         output = {"result":taco.globals.completed_q[::-1],"peerinfo":peerinfo}
     return json.dumps(output)
 
