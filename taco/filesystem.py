@@ -77,7 +77,7 @@ class TacoFilesystemManager(threading.Thread):
 
     self.download_q_check_time = time.time()
     self.client_downloading = {}
-    self.client_downloading_status = defaultdict(dict)
+    self.client_downloading_status = {}
     self.client_downloading_pending_chunks = {}
     self.client_downloading_requested_chunks = {}
     self.client_downloading_chunks_last_recieved = {}
@@ -142,7 +142,7 @@ class TacoFilesystemManager(threading.Thread):
               del taco.globals.download_q[peer_uuid]
               self.client_downloading_pending_chunks[peer_uuid] = []
               self.client_downloading_requested_chunks[peer_uuid] = []
-              self.client_downloading_status = defaultdict(dict)
+              self.client_downloading_status[peer_uuid] = {}
               self.client_downloading_chunks_last_recieved = {}
               continue
             else:
@@ -164,7 +164,7 @@ class TacoFilesystemManager(threading.Thread):
                 if current_size != filesize:
                   self.set_status("Building in memory 'torrent'")
                   self.client_downloading_filename[peer_uuid] = filename_incomplete
-                  self.client_downloading_status = defaultdict(dict)
+                  self.client_downloading_status[peer_uuid] = {}
                   self.client_downloading_chunks_last_recieved = {}
                   for file_offset in range(current_size,filesize+1,taco.constants.FILESYSTEM_CHUNK_SIZE):
                     tmp_uuid = uuid.uuid4().hex
