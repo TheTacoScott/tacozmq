@@ -120,22 +120,29 @@ function Update_Download_Q()
       $(".table tbody span").click(function() { });
       $(".table td span.removeiteminq").click(function(event) {
         event.stopPropagation();
-        peer_uuid = $(this).closest("tr").data("peeruuid");
+        var remove_q_peer_uuid = $(this).closest("tr").data("peeruuid");
         modtime = $(this).closest("tr").data("modtime");
         filesize = $(this).closest("tr").data("size");
         filename = atob($(this).closest("tr").data("filename"));
         sharedir = atob($(this).closest("tr").data("sharedir"));
-        console.log(peer_uuid,modtime,filesize,filename,sharedir);
+        console.log(remove_q_peer_uuid,modtime,filesize,filename,sharedir);
         $("#removeModal #removefilename").html(filename);
         $("#removeModal #removesharedir").html(sharedir);
         $("#removeModal #removesize").html("(" + commify(filesize) + " bytes)");
         buttonthis = $(this);
         $("#removeModal #removebutton").unbind("click").click(function() {
           $('#removeModal').modal('hide');
-          var $api_action = {"action":"downloadqremove","data":{"uuid":peer_uuid,"sharedir":sharedir,"filename":filename,"filesize":filesize,"filemodtime":modtime}};
+          var $api_action = {"action":"downloadqremove","data":{"uuid":remove_q_peer_uuid,"sharedir":sharedir,"filename":filename,"filesize":filesize,"filemodtime":modtime}};
+          console.log($api_action)
           $.ajax({url:"/api.post",type:"POST",data:JSON.stringify($api_action),contentType:"application/json; charset=utf-8",dataType:"json",error: API_Alert,success: function(data)
           {
-            if (data == 1) { buttonthis.closest("tr").fadeOut(function() { $(this).remove(); location.reload();});}
+            console.log("DOWNLOAD Q REMOVE STATUS:" + data);
+            if (data == 1) { 
+              buttonthis.closest("tr").fadeOut(function() { 
+                $(this).remove(); 
+                //location.reload();
+              });
+            }
           }});
 
         });

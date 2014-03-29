@@ -95,7 +95,9 @@ def index():
 
       with taco.globals.download_q_lock:
         logging.debug("Removing File to Download Q:" + str((peer_uuid,sharedir,filename,filesize,filemod)))
-        if peer_uuid in taco.globals.download_q: 
+        if peer_uuid in taco.globals.download_q:
+          #logging.debug(str(((sharedir,filename,filesize,filemod))))
+          #logging.debug(str(taco.globals.download_q[peer_uuid]))
           while (sharedir,filename,filesize,filemod) in taco.globals.download_q[peer_uuid]:
             taco.globals.download_q[peer_uuid].remove((sharedir,filename,filesize,filemod))
           #if len(taco.globals.download_q[peer_uuid]) == 0: del taco.globals.download_q[peer_uuid]
